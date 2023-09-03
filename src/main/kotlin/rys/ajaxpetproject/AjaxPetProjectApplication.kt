@@ -1,11 +1,21 @@
 package rys.ajaxpetproject
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.runApplication
 
-@SpringBootApplication
-class AjaxPetProjectApplication
+
+@SpringBootApplication(scanBasePackages = arrayOf("rys"))
+
+class AjaxPetProjectApplication {
+
+}
 
 fun main(args: Array<String>) {
-    runApplication<AjaxPetProjectApplication>(*args)
+//    val app = runApplication<AjaxPetProjectApplication>(*args)
+    // https://stackoverflow.com/questions/8588984/java-awt-headlessexception-when-calling-joptionpane-showmessagedialog-in-backing
+    val builder = SpringApplicationBuilder(AjaxPetProjectApplication::class.java)
+    builder.headless(false)
+    builder.run(*args)
+
 }
