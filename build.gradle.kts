@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.ir.backend.js.compile
+
 
 plugins {
     id("org.springframework.boot") version "3.0.10"
@@ -35,12 +35,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
     // https://mvnrepository.com/artifact/log4j/log4j
     implementation("log4j:log4j:1.2.17")
-    compileOnly(project(":MyCoolStarter"))
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-logging
     implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+springBoot {
+    mainClass.set("rys.ajaxpetproject.AjaxPetProjectApplicationKt")
 }
 
 tasks.withType<KotlinCompile> {
