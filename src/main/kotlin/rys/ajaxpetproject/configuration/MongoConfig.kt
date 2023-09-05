@@ -6,25 +6,27 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 import rys.ajaxpetproject.model.User
 import rys.ajaxpetproject.repository.UserRepository
+import rys.ajaxpetproject.service.UserService
 
 
 @Configuration
 @EnableMongoRepositories(basePackageClasses = [UserRepository::class])
 class MongoConfig {
     @Bean
-    fun init(repository: UserRepository): CommandLineRunner {
+    fun init(userService: UserService): CommandLineRunner {
         return CommandLineRunner {
             // Удаление всех существующих пользователей (опционально)
-            repository.deleteAll()
+            userService.deleteUsers()
 
             // Заполнение базы данных тестовыми значениями
-            val john = User(userName = "John")
-            val jane = User(userName = "Jane")
-            val mike = User(userName = "Mike")
+            val john = User(userName = "John", password = "pass1")
+            val jane = User(userName = "Jane", password = "pass2")
+            val mike = User(userName = "Mike", password = "pass2")
 
-            repository.save(john)
-            repository.save(jane)
-            repository.save(mike)
+
+            userService.createUser(john)
+            userService.createUser(jane)
+            userService.createUser(mike)
         }
     }
 }
