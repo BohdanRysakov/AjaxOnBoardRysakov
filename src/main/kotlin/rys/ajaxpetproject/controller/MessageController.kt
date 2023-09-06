@@ -1,41 +1,39 @@
 package rys.ajaxpetproject.controller
 
-import org.springframework.beans.factory.annotation.Autowired
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.DeleteMapping
 import rys.ajaxpetproject.model.Message
 import rys.ajaxpetproject.service.MessageService
 import java.util.*
 
 @RestController
 @RequestMapping("/messages")
-class MessageController(@Autowired val messageService: MessageService) {
+class MessageController(val messageService: MessageService) {
 
     // Create a new Message
     @PostMapping("/")
-    fun createMessage(@RequestBody message: Message): ResponseEntity<Message> {
-        val newMessage = messageService.createMessage(message)
-        return ResponseEntity(newMessage, HttpStatus.CREATED)
-    }
+    fun createMessage(@Valid @RequestBody message: Message): ResponseEntity<Message> =
+         ResponseEntity(messageService.createMessage(message), HttpStatus.CREATED)
 
-    // Retrieve a single Message by its ID
     @GetMapping("/{id}")
-    fun getMessageById(@PathVariable id: UUID): ResponseEntity<Message> {
-        val message = messageService.getMessageById(id)
-        return message?.let { ResponseEntity(it, HttpStatus.OK) } ?: ResponseEntity(HttpStatus.NOT_FOUND)
-    }
+    fun getMessageById(@PathVariable id: UUID): ResponseEntity<Message> =
+         ResponseEntity(messageService.getMessageById(id), HttpStatus.OK)
 
-    // Retrieve all Messages for a specific Chat
     @GetMapping("/chat/{chatId}")
-    fun getAllMessagesByChatId(@PathVariable chatId: UUID): ResponseEntity<List<Message>> {
-        val messages = messageService.getAllMessagesByChatId(chatId)
-        return ResponseEntity(messages, HttpStatus.OK)
-    }
+    fun getAllMessagesByChatId(@PathVariable chatId: UUID): ResponseEntity<List<Message>> =
+        ResponseEntity(messageService.getAllMessagesByChatId(chatId), HttpStatus.OK)
 
-    // Update a Message by its ID
     @PutMapping("/{id}")
-    fun updateMessage(@PathVariable id: UUID, @RequestBody updatedMessage: Message): ResponseEntity<Message> {
+    fun updateMessage(@PathVariable id: UUID, @Valid @RequestBody updatedMessage: Message): ResponseEntity<Message> {
         val message = messageService.updateMessage(id, updatedMessage)
         return message?.let { ResponseEntity(it, HttpStatus.OK) } ?: ResponseEntity(HttpStatus.NOT_FOUND)
     }
@@ -46,7 +44,7 @@ class MessageController(@Autowired val messageService: MessageService) {
         return if (messageService.deleteMessage(id)) {
             ResponseEntity(true, HttpStatus.OK)
         } else {
-            ResponseEntity(HttpStatus.NOT_FOUND)
+            ResponseEntity(false,HttpStatus.NOT_FOUND)
         }
     }
 }

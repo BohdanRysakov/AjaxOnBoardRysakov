@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "3.0.10"
     id("io.spring.dependency-management") version "1.1.3"
+    id("io.gitlab.arturbosch.detekt") version("1.21.0")
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.spring") version "1.7.22"
     kotlin("plugin.jpa") version "1.7.22"
@@ -29,6 +30,7 @@ repositories {
 }
 
 dependencies {
+
     //implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
 // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
@@ -43,7 +45,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
-    implementation("log4j:log4j:1.2.17")
+    //implementation("log4j:log4j:1.2.17")
     implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
     implementation("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

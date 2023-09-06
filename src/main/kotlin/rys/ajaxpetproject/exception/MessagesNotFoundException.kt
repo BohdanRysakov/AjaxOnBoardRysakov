@@ -1,4 +1,3 @@
 package rys.ajaxpetproject.exception
 
-class MessagesNotFoundException : RuntimeException() {
-}
+class MessagesNotFoundException : RuntimeException()

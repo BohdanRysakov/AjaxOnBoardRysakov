@@ -12,9 +12,8 @@ interface MessageService {
     fun findMessageById(id:UUID):Message?
     @Throws(MessageNotFoundException::class)
     fun getAllMessagesByChatId(chatId: UUID): List<Message>
-
-
     fun findAllMessagesByChatId(chatId: UUID): List<Message>?
     fun updateMessage(id: UUID, updatedMessage: Message): Message?
     fun deleteMessage(id: UUID): Boolean
+    fun deleteMessages()
 }

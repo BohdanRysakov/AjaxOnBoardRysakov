@@ -1,4 +1,3 @@
 package rys.ajaxpetproject.exception
 
-class BadIdTypeException : RuntimeException() {
-}
+class BadIdTypeException : RuntimeException()

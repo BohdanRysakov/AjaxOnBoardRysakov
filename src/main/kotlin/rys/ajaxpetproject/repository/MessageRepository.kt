@@ -5,7 +5,6 @@ import rys.ajaxpetproject.model.Message
 import java.util.*
 
 interface MessageRepository : MongoRepository<Message, UUID> {
-    fun findByChatId(chatId: UUID): List<Message>
     fun getMessageById(id:UUID):Message?
 
     fun findMessageById(id:UUID) : Message?

@@ -10,10 +10,7 @@ interface UserRepository : MongoRepository<User, UUID> {
 
     fun findUserByUserName(userName: String): User?
     fun findUserById(id: UUID): User?
-    fun getUserById(id: UUID): User?
-
     fun deleteUserById(id: UUID): Boolean
-
     fun findAllBy() : List<User>?
 
 }

@@ -1,6 +1,5 @@
 package rys.ajaxpetproject.service.impl
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.UserNotFoundException
@@ -11,12 +10,13 @@ import rys.ajaxpetproject.service.UserService
 import java.util.*
 
 @Service
-class UserServiceImplementation(val userRepository: UserRepository, val passwordEncoder: PasswordEncoder) : UserService {
+class UserServiceImplementation(val userRepository: UserRepository,
+                                val passwordEncoder: PasswordEncoder) : UserService {
 
 
     override fun createUser(user: User): User {
         user.password = passwordEncoder.encode(user.password)
-        return userRepository.save(user);
+        return userRepository.save(user)
     }
 
     override fun getUserById(id: UUID): User = userRepository.findUserById(id) ?: throw UserNotFoundException()
@@ -34,7 +34,7 @@ class UserServiceImplementation(val userRepository: UserRepository, val password
     override fun deleteUser(id: UUID): Boolean {
         return userRepository.deleteUserById(id)
     }
-     override fun deleteUsers(): Unit {
+     override fun deleteUsers() {
         return userRepository.deleteAll()
     }
 }

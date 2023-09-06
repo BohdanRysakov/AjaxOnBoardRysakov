@@ -24,4 +24,7 @@ class ChatServiceImpl(val chatRepository: ChatRepository) : ChatService {
         chatRepository.deleteById(id)
         return true
     }
+
+    override fun deleteChats() = chatRepository.deleteAll()
+
 }

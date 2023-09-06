@@ -16,4 +16,7 @@ interface ChatService {
     fun findAllChats() : List<Chat>?
     fun updateChat(id: UUID, updatedChat: Chat): Chat?
     fun deleteChat(id: UUID): Boolean
+
+
+    fun deleteChats()
 }
