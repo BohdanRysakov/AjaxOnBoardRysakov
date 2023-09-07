@@ -1,28 +1,32 @@
 package rys.ajaxpetproject.service.impl
 
 
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.ChatNotFoundException
 import rys.ajaxpetproject.exception.ChatsNotFoundException
-import rys.ajaxpetproject.model.Chat
+import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.service.ChatService
-import java.util.*
 
 @Service
 class ChatServiceImpl(val chatRepository: ChatRepository) : ChatService {
-    override fun createChat(chat: Chat) = chatRepository.save(chat)
-    override fun getChatById(id: UUID) = chatRepository.getChatById(id) ?: throw ChatNotFoundException()
-    override fun findChatById(id: UUID): Chat? = chatRepository.findChatById(id)
+    override fun createChat(mongoChat: MongoChat) = chatRepository.save(mongoChat)
+    override fun findChatById(id: ObjectId): MongoChat? = chatRepository.findChatById(id)
 
-    override fun getAllChats(): List<Chat> = chatRepository.findAllBy() ?: throw ChatsNotFoundException()
-    override fun findAllChats(): List<Chat>?  = chatRepository.findAllBy() ?: emptyList()
+    fun getChatById(id: ObjectId) = chatRepository.findChatById(id) ?: throw ChatNotFoundException()
 
-    override fun updateChat(id: UUID, updatedChat: Chat) = getChatById(id).let { chatRepository.save(updatedChat) }
-    override fun deleteChat(id: UUID) : Boolean {
-        val chat = getChatById(id) // Checking that chat exists if not throws exception
-        chatRepository.deleteById(id)
-        return true
+
+    fun getAllChats(): List<MongoChat> = chatRepository.findAllBy() ?: throw ChatsNotFoundException()
+    override fun findAllChats(): List<MongoChat>?  = chatRepository.findAllBy() ?: emptyList()
+
+     override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat)
+    = getChatById(id).let { chatRepository.save(updatedMongoChat) }
+    override fun deleteChat(id: ObjectId) : Boolean {
+        findChatById(id)?.let {
+            chatRepository.deleteById(id)
+            return true
+        } ?: throw ChatNotFoundException()
     }
 
     override fun deleteChats() = chatRepository.deleteAll()

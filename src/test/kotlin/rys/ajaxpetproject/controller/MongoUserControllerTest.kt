@@ -1,7 +1,10 @@
 package rys.ajaxpetproject.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import lombok.AllArgsConstructor
+import lombok.NoArgsConstructor
 import lombok.RequiredArgsConstructor
+import org.bson.types.ObjectId
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.anyOf
 import org.junit.jupiter.api.Test
@@ -14,16 +17,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import rys.ajaxpetproject.model.User
+import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import java.util.UUID
 
-@WebMvcTest
-//@SpringBootTest
+@WebMvcTest(UserController::class)
 @RequiredArgsConstructor
-class UserControllerTest {
+@AllArgsConstructor
+@NoArgsConstructor
+class MongoUserControllerTest {
     @MockBean
     lateinit var userService: UserService
 
@@ -32,32 +35,31 @@ class UserControllerTest {
 
     @Test
     fun getUserSuccessfullyTest() {
-        val testUser = User(
-            UUID.randomUUID(), "testUser",
+        val testMongoUser = MongoUser(
+            userName = "testUser", password =
             BCryptPasswordEncoder().encode("testPassword")
         )
-
-        `when`(userService.getUserById(testUser.id)).thenReturn(testUser)
+        `when`(userService.findUserById(testMongoUser.id as ObjectId)).thenReturn(testMongoUser)
 
         mockMvc.perform(
-            get("/users/${testUser.id}")
+            get("/users/${testMongoUser.id}")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(testUser.id.toString()))
-            .andExpect(jsonPath("$.userName").value(testUser.userName))
-            .andExpect(jsonPath("$.password").value(testUser.password))
+            .andExpect(jsonPath("$.id").value(testMongoUser.id.toString()))
+            .andExpect(jsonPath("$.userName").value(testMongoUser.userName))
+            .andExpect(jsonPath("$.password").value(testMongoUser.password))
             .andReturn()
     }
 
     @Test
     fun getUserFailDueToBadRequestTest() {
-        val testUser = User(
-            UUID.randomUUID(), "testUser",
+        val testMongoUser = MongoUser(
+            userName = "testUser", password =
             BCryptPasswordEncoder().encode("testPassword")
         )
 
-        `when`(userService.getUserById(testUser.id)).thenReturn(testUser)
+        `when`(userService.findUserById(testMongoUser.id as ObjectId)).thenReturn(testMongoUser)
 
         mockMvc.perform(
             get("/users/SomeString")
@@ -68,16 +70,16 @@ class UserControllerTest {
 
     @Test
     fun createUserFailDueToValidationTest() {
-        val testUser = User(
-            UUID.randomUUID(), "12",
-            "www"
+        val testMongoUser = MongoUser(
+            userName =  "12",
+            password = "www"
         )
         val objectMapper = ObjectMapper()
 
         mockMvc.perform(
             post("/users/")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUser))
+                .content(objectMapper.writeValueAsString(testMongoUser))
         )
             .andExpectAll(
                 jsonPath(

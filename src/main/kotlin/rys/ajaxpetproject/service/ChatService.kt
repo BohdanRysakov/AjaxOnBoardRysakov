@@ -1,21 +1,14 @@
 package rys.ajaxpetproject.service
 
-import rys.ajaxpetproject.exception.ChatNotFoundException
-import rys.ajaxpetproject.model.Chat
-import java.util.*
-import kotlin.jvm.Throws
-
+import org.bson.types.ObjectId
+import rys.ajaxpetproject.model.MongoChat
 interface ChatService {
-    fun createChat(chat: Chat): Chat?
-    @Throws(ChatNotFoundException::class)
-    fun getChatById(id: UUID): Chat
+    fun createChat(mongoChat: MongoChat): MongoChat
 
-    fun findChatById(id: UUID): Chat?
-    @Throws(ChatNotFoundException::class)
-    fun getAllChats(): List<Chat>
-    fun findAllChats() : List<Chat>?
-    fun updateChat(id: UUID, updatedChat: Chat): Chat?
-    fun deleteChat(id: UUID): Boolean
+    fun findChatById(id: ObjectId): MongoChat?
+    fun findAllChats() : List<MongoChat>?
+    fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat?
+    fun deleteChat(id: ObjectId): Boolean
 
 
     fun deleteChats()

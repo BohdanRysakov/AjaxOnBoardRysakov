@@ -1,19 +1,18 @@
 package rys.ajaxpetproject.service
 
+import org.bson.types.ObjectId
 import rys.ajaxpetproject.exception.MessageNotFoundException
-import rys.ajaxpetproject.model.Message
-import java.util.*
-import kotlin.jvm.Throws
+import rys.ajaxpetproject.model.MongoMessage
 
 interface MessageService {
-    fun createMessage(message: Message): Message
+    fun createMessage(mongoMessage: MongoMessage): MongoMessage
     @Throws(MessageNotFoundException::class)
-    fun getMessageById(id: UUID): Message
-    fun findMessageById(id:UUID):Message?
+    fun getMessageById(id: ObjectId): MongoMessage
+    fun findMessageById(id:ObjectId):MongoMessage?
     @Throws(MessageNotFoundException::class)
-    fun getAllMessagesByChatId(chatId: UUID): List<Message>
-    fun findAllMessagesByChatId(chatId: UUID): List<Message>?
-    fun updateMessage(id: UUID, updatedMessage: Message): Message?
-    fun deleteMessage(id: UUID): Boolean
+    fun getAllMessagesByChatId(chatId: ObjectId): List<MongoMessage>
+    fun findAllMessagesByChatId(chatId: ObjectId): List<MongoMessage>?
+    fun updateMessage(id: ObjectId, updatedMongoMessage: MongoMessage): MongoMessage?
+    fun deleteMessage(id: ObjectId): Boolean
     fun deleteMessages()
 }

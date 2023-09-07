@@ -39,6 +39,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
 
+// https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa
+    implementation("org.springframework.data:spring-data-jpa:3.0.9")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
