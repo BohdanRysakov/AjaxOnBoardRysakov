@@ -18,11 +18,9 @@ class UserController(val userService: UserService) {
     fun getAllUsers(): ResponseEntity<List<MongoUser>> =
         ResponseEntity(userService.findAllUsers(), HttpStatus.OK)
 
-
     @GetMapping("/{id}")
     fun getUserById(@PathVariable id: ObjectId): ResponseEntity<MongoUser> =
         ResponseEntity(userService.findUserById(id), HttpStatus.OK)
-
 
     @PostMapping("/")
     @Validated
@@ -32,17 +30,15 @@ class UserController(val userService: UserService) {
         return ResponseEntity(user, HttpStatus.CREATED)
     }
 
-
     @PutMapping("/{id}")
     fun updateUser(@PathVariable id: ObjectId,
                    @Valid @RequestBody updatedMongoUser: MongoUser): ResponseEntity<MongoUser> =
         ResponseEntity(userService.updateUser(id, updatedMongoUser), HttpStatus.OK)
 
-
-
     @DeleteMapping("/{id}")
     fun deleteUser(@PathVariable id: ObjectId): ResponseEntity<Boolean> =
         ResponseEntity(userService.deleteUser(id), HttpStatus.OK)
+
     @DeleteMapping("/all/")
     fun deleteAllUsers(): ResponseEntity<Boolean> =
         ResponseEntity(userService.deleteUsers(), HttpStatus.OK)

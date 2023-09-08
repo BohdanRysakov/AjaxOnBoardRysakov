@@ -12,7 +12,6 @@ import rys.ajaxpetproject.service.MessageService
 @RequestMapping("/messages")
 class MessageController(val messageService: MessageService) {
 
-    // Create a new Message
     @PostMapping("/")
     fun createMessage(@Valid @RequestBody mongoMessage: MongoMessage): ResponseEntity<MongoMessage> =
          ResponseEntity(messageService.createMessage(mongoMessage), HttpStatus.CREATED)
@@ -32,13 +31,13 @@ class MessageController(val messageService: MessageService) {
         return message?.let { ResponseEntity(it, HttpStatus.OK) } ?: ResponseEntity(HttpStatus.NOT_FOUND)
     }
 
-    // Delete a Message by its ID
     @DeleteMapping("/{id}")
     fun deleteMessage(@PathVariable id: ObjectId): ResponseEntity<Boolean> {
         return if (messageService.deleteMessage(id)) {
             ResponseEntity(true, HttpStatus.OK)
         } else {
-            ResponseEntity(false,HttpStatus.NOT_FOUND)
+            ResponseEntity(false, HttpStatus.NOT_FOUND)
         }
     }
+
 }
