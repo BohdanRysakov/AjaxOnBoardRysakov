@@ -9,8 +9,11 @@ import rys.ajaxpetproject.model.MongoUser
 interface UserRepository : MongoRepository<MongoUser, String> {
 
     fun findUserByUserName(userName: String): MongoUser?
+
     fun findUserById(id: ObjectId): MongoUser?
+
     fun deleteUserById(id: ObjectId): Boolean
+
     fun findAllBy() : List<MongoUser>?
 
 }
