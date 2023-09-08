@@ -14,7 +14,6 @@ import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.UserService
 import java.util.*
 
-
 @Configuration
 @EnableMongoRepositories(basePackageClasses = [ChatRepository::class])
 @ComponentScan(basePackageClasses = [ChatRepository::class])
@@ -40,8 +39,10 @@ class MongoConfig {
                 chatService.createChat(
                 MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
             )
+
             val mongoChat2 = chatService.createChat(MongoChat(name = "Friends", users = mongoUsers.map { it.id }
                 .subList(0, USERS_NUMBER_IN_CHAT1)))
+
             val mongoChat3 = chatService.createChat(MongoChat(name = "Work", users = mongoUsers.map { it.id }
                 .subList(USERS_NUMBER_IN_CHAT1, USERS_NUMBER_IN_CHAT2)))
 
@@ -53,6 +54,7 @@ class MongoConfig {
                     val sender = chat.users[Random().nextInt(chat.users.size)]
                     val content = "Message $i from $sender in ${chat.name}"
                     messageService.createMessage(MongoMessage(chatId = chat.id, userId = sender, content = content))
+
                 }
             }
         }
@@ -64,4 +66,5 @@ class MongoConfig {
         const val USERS_NUMBER_IN_CHAT1 = 3
         const val USERS_NUMBER_IN_CHAT2 = 5
     }
+
 }
