@@ -24,6 +24,7 @@ class GlobalRestExceptionHandler {
         )
         return ResponseEntity(body, HttpStatus.NOT_FOUND)
     }
+
     @ExceptionHandler(BadIdTypeException::class)
     fun handleBadIdType(): ResponseEntity<Map<String, Any>> {
         val body = mapOf(
@@ -41,6 +42,7 @@ class GlobalRestExceptionHandler {
         )
         return ResponseEntity(body, HttpStatus.NOT_FOUND)
     }
+
     @ExceptionHandler(MessagesNotFoundException::class)
     fun handleMessagesNotFound(): ResponseEntity<Any> {
         val body = mapOf(
@@ -49,6 +51,7 @@ class GlobalRestExceptionHandler {
         )
         return ResponseEntity(body, HttpStatus.NOT_FOUND)
     }
+
     @ExceptionHandler(MessagesFromChatNotFoundException::class)
     fun handleMessagesFromChatNotFound(): ResponseEntity<Any> {
         val body = mapOf(
@@ -57,6 +60,7 @@ class GlobalRestExceptionHandler {
         )
         return ResponseEntity(body, HttpStatus.NOT_FOUND)
     }
+
     @ExceptionHandler(UserInChatNotFoundException::class)
     fun handleUserInChatNotFound(): ResponseEntity<Any> {
         val body = mapOf(
@@ -65,6 +69,7 @@ class GlobalRestExceptionHandler {
         )
         return ResponseEntity(body, HttpStatus.NOT_FOUND)
     }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun validationException(ex: MethodArgumentNotValidException): ResponseEntity<Any> {
         val body = mapOf(
@@ -74,4 +79,5 @@ class GlobalRestExceptionHandler {
         )
         return ResponseEntity(body, ex.statusCode)
     }
+
 }
