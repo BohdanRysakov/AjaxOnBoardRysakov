@@ -1,7 +1,6 @@
 package rys.ajaxpetproject.service.impl
 
 import org.bson.types.ObjectId
-import org.springframework.context.annotation.Lazy
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.UserNotFoundException
@@ -10,16 +9,16 @@ import rys.ajaxpetproject.repository.UserRepository
 import rys.ajaxpetproject.service.UserService
 
 @Service
-@Lazy
 class UserServiceImplementation(
     val userRepository: UserRepository,
-    val passwordEncoder: PasswordEncoder
-) : UserService {
+    val passwordEncoder: PasswordEncoder) : UserService {
+
     override fun createUser(mongoUser: MongoUser): MongoUser {
         return userRepository.save(mongoUser.copy(password = passwordEncoder.encode(mongoUser.password)))
     }
 
     fun getUserById(id: ObjectId): MongoUser = userRepository.findUserById(id) ?: throw UserNotFoundException()
+
     override fun findUserById(id: ObjectId): MongoUser? = userRepository.findUserById(id)
 
     override fun findAllUsers(): List<MongoUser>? = userRepository.findAllBy()

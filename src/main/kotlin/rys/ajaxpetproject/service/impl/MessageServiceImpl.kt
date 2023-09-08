@@ -11,10 +11,12 @@ import rys.ajaxpetproject.service.MessageService
 @Service
 class MessageServiceImpl(val messageRepository: MessageRepository, val chatService: ChatServiceImpl) : MessageService {
     override fun createMessage(mongoMessage: MongoMessage) = messageRepository.save(mongoMessage)
+
     override fun getMessageById(id: ObjectId) =
         messageRepository.getMessageById(id) ?: throw MessageNotFoundException()
 
     override fun findMessageById(id: ObjectId): MongoMessage? = messageRepository.findMessageById(id)
+
     override fun getAllMessagesByChatId(chatId: ObjectId) = messageRepository.getMessagesByChatId(chatId)
         ?: throw MessagesFromChatNotFoundException()
 
