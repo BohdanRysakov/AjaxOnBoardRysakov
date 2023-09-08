@@ -7,7 +7,7 @@ interface ChatService {
 
     fun findChatById(id: ObjectId): MongoChat?
 
-    fun findAllChats() : List<MongoChat>?
+    fun findAllChats() : List<MongoChat>
 
     fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat?
 

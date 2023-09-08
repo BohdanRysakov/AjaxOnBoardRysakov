@@ -21,7 +21,7 @@ class UserServiceImplementation(
 
     override fun findUserById(id: ObjectId): MongoUser? = userRepository.findUserById(id)
 
-    override fun findAllUsers(): List<MongoUser>? = userRepository.findAllBy()
+    override fun findAllUsers(): List<MongoUser> = userRepository.getAllBy()
 
     override fun updateUser(id: ObjectId, updatedMongoUser: MongoUser): MongoUser? =
         findUserById(id)?.let {

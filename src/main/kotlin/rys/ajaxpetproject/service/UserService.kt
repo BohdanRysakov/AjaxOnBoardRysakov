@@ -10,7 +10,7 @@ interface UserService {
 
     fun getUserById(id: ObjectId): MongoUser
 
-    fun findAllUsers(): List<MongoUser>?
+    fun findAllUsers(): List<MongoUser>
 
     fun updateUser(id: ObjectId, updatedMongoUser: MongoUser): MongoUser?
 
