@@ -12,17 +12,17 @@ import rys.ajaxpetproject.service.ChatService
 @Service
 class ChatServiceImpl(val chatRepository: ChatRepository) : ChatService {
 
-    override fun createChat(mongoChat: MongoChat) = chatRepository.save(mongoChat)
+    override fun createChat(mongoChat: MongoChat): MongoChat? = chatRepository.save(mongoChat)
 
     override fun findChatById(id: ObjectId): MongoChat? = chatRepository.findChatById(id)
 
-    fun getChatById(id: ObjectId) = chatRepository.findChatById(id) ?: throw ChatNotFoundException()
+    fun getChatById(id: ObjectId): MongoChat = chatRepository.findChatById(id) ?: throw ChatNotFoundException()
 
     fun getAllChats(): List<MongoChat> = chatRepository.findAllBy() ?: throw ChatsNotFoundException()
 
     override fun findAllChats(): List<MongoChat>? = chatRepository.findAllBy() ?: emptyList()
 
-    override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat) =
+    override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat) : MongoChat =
         findChatById(id)
             .let { chatRepository.save(updatedMongoChat) } ?: throw ChatNotFoundException()
 
@@ -34,5 +34,4 @@ class ChatServiceImpl(val chatRepository: ChatRepository) : ChatService {
     }
 
     override fun deleteChats() = chatRepository.deleteAll()
-
 }

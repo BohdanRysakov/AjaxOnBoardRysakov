@@ -14,5 +14,4 @@ interface ChatService {
     fun deleteChat(id: ObjectId): Boolean
 
     fun deleteChats()
-
 }

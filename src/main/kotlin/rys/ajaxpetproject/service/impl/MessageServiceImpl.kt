@@ -6,18 +6,20 @@ import rys.ajaxpetproject.exception.MessageNotFoundException
 import rys.ajaxpetproject.exception.MessagesFromChatNotFoundException
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
+import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 
 @Service
-class MessageServiceImpl(val messageRepository: MessageRepository, val chatService: ChatServiceImpl) : MessageService {
+class MessageServiceImpl(val messageRepository: MessageRepository, val chatService: ChatService) : MessageService {
     override fun createMessage(mongoMessage: MongoMessage) = messageRepository.save(mongoMessage)
 
-    override fun getMessageById(id: ObjectId) =
+    override fun getMessageById(id: ObjectId) : MongoMessage =
         messageRepository.getMessageById(id) ?: throw MessageNotFoundException()
 
     override fun findMessageById(id: ObjectId): MongoMessage? = messageRepository.findMessageById(id)
 
-    override fun getAllMessagesByChatId(chatId: ObjectId) = messageRepository.getMessagesByChatId(chatId)
+    override fun getAllMessagesByChatId(chatId: ObjectId) : List<MongoMessage> =
+        messageRepository.getMessagesByChatId(chatId)
         ?: throw MessagesFromChatNotFoundException()
 
     override fun findAllMessagesByChatId(chatId: ObjectId): List<MongoMessage>? {
@@ -25,7 +27,7 @@ class MessageServiceImpl(val messageRepository: MessageRepository, val chatServi
         return messageRepository.findMessagesByChatId(chatId)
     }
 
-    override fun updateMessage(id: ObjectId, updatedMongoMessage: MongoMessage) =
+    override fun updateMessage(id: ObjectId, updatedMongoMessage: MongoMessage) : MongoMessage =
         findMessageById(id)
             ?.let { messageRepository.save(updatedMongoMessage) }
             ?: throw MessageNotFoundException()
@@ -35,7 +37,5 @@ class MessageServiceImpl(val messageRepository: MessageRepository, val chatServi
             ?.let { messageRepository.deleteMessageById(id) }
             ?: throw MessageNotFoundException()
 
-    override fun deleteMessages() = messageRepository.deleteAll()
-
+    override fun deleteMessages() : Boolean = messageRepository.deleteAll()
 }
-

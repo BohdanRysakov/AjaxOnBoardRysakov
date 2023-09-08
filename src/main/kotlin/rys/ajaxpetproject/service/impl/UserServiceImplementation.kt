@@ -17,7 +17,7 @@ class UserServiceImplementation(
         return userRepository.save(mongoUser.copy(password = passwordEncoder.encode(mongoUser.password)))
     }
 
-    fun getUserById(id: ObjectId): MongoUser = userRepository.findUserById(id) ?: throw UserNotFoundException()
+    override fun getUserById(id: ObjectId): MongoUser = userRepository.findUserById(id) ?: throw UserNotFoundException()
 
     override fun findUserById(id: ObjectId): MongoUser? = userRepository.findUserById(id)
 

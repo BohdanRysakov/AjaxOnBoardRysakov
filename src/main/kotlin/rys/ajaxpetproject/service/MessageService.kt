@@ -10,6 +10,7 @@ interface MessageService {
 
     @Throws(MessageNotFoundException::class)
     fun getMessageById(id: ObjectId): MongoMessage
+
     fun findMessageById(id: ObjectId): MongoMessage?
 
     @Throws(MessageNotFoundException::class)
@@ -21,5 +22,5 @@ interface MessageService {
 
     fun deleteMessage(id: ObjectId): Boolean
 
-    fun deleteMessages()
+    fun deleteMessages() : Boolean
 }
