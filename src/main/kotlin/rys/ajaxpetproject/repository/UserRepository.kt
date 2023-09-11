@@ -14,6 +14,5 @@ interface UserRepository : MongoRepository<MongoUser, String> {
 
     fun deleteUserById(id: ObjectId): Boolean
 
-    fun findAllBy() : List<MongoUser>?
-
+    fun findAllBy(): List<MongoUser>
 }

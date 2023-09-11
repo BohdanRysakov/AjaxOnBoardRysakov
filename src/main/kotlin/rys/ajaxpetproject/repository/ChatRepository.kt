@@ -7,7 +7,6 @@ import rys.ajaxpetproject.model.MongoChat
 
 @Repository
 interface ChatRepository : MongoRepository<MongoChat, ObjectId> {
-     fun findChatById(id:ObjectId) : MongoChat?
-     fun findAllBy() : List<MongoChat>?
-
+    fun findChatById(id: ObjectId): MongoChat?
+    fun findAllBy(): List<MongoChat>
 }
