@@ -20,7 +20,7 @@ import java.util.*
 class MongoConfig {
 
     @Bean
-    fun init( userService: UserService,  chatService: ChatService,  messageService: MessageService): CommandLineRunner {
+    fun init(userService: UserService, chatService: ChatService, messageService: MessageService): CommandLineRunner {
         return CommandLineRunner {
             userService.deleteUsers()
             chatService.deleteChats()
@@ -35,10 +35,9 @@ class MongoConfig {
             ).map { userService.createUser(it) }
             println(mongoUsers)
 
-            val mongoChat1 =
-                chatService.createChat(
-                MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
-            )
+            val mongoChat1 = chatService.createChat(
+                    MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
+                )
 
             val mongoChat2 = chatService.createChat(MongoChat(name = "Friends", users = mongoUsers.map { it.id }
                 .subList(0, USERS_NUMBER_IN_CHAT1)))
@@ -54,7 +53,6 @@ class MongoConfig {
                     val sender = chat.users[Random().nextInt(chat.users.size)]
                     val content = "Message $i from $sender in ${chat.name}"
                     messageService.createMessage(MongoMessage(chatId = chat.id, userId = sender, content = content))
-
                 }
             }
         }
@@ -66,5 +64,4 @@ class MongoConfig {
         const val USERS_NUMBER_IN_CHAT1 = 3
         const val USERS_NUMBER_IN_CHAT2 = 5
     }
-
 }

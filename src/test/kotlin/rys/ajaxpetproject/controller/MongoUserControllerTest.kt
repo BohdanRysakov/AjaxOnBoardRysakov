@@ -36,9 +36,10 @@ class MongoUserControllerTest {
 
     @Test
     fun getUserSuccessfullyTest() {
-        val testMongoUser = MongoUser( id = ObjectId(Date(1694093823L * 1000)),
-            userName = "testUser", password =
-            BCryptPasswordEncoder().encode("testPassword")
+        val testMongoUser = MongoUser(
+            id = ObjectId(Date(1694093823L * 1000)),
+            userName = "testUser",
+            password = BCryptPasswordEncoder().encode("testPassword")
         )
         `when`(userService
             .findUserById(testMongoUser.id!!))
