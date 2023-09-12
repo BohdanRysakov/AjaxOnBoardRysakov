@@ -38,7 +38,7 @@ dependencies {
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
-
+    implementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 // https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa
     implementation("org.springframework.data:spring-data-jpa:3.0.9")
 

@@ -1,0 +1,21 @@
+Example 1:
+~~~~~~~~~~~~~~~~~~~~~`
+Classes:
+    -Chicken
+    -Egg
+Chicken creates first result:
+        Меня отложили! // Eggs init
+        Отложу-ка я яйцо // Chicken Action ( from eggs init called)
+        Я вылупился! // Chicken init
+        Сейчас вылуплюсь! // Egg action ( from chicken init called)
+
+Which means : Spring try to build chicken bean -> chicken have lazy egg bean
+                -> builds egg bean where @PostConstruct works -> After @PostConstruct eggs build is done
+                -> build chicken bean and invoke @PostConstruct
+
+Works exactly opposite if we rename "Egg" as "AEgg" ( A comes before C, so aegg creates before chicken)
+
+Conclusion: Chicken was before Egg, because C comes Before E.
+~~~~~~~~~~~~~~~~~~~~~~
+Example 2:
+So All will be ok if @PostConstruct is independent but if PC1 needs variable that sets in PC2 we got problems

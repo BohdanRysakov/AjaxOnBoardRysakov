@@ -9,4 +9,5 @@ class AjaxPetProjectApplication
 @Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     runApplication<AjaxPetProjectApplication>(*args)
+    println("abra-kadabra")
 }

@@ -5,7 +5,6 @@ import jakarta.validation.Valid
 import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.DeleteMapping
+import rys.ajaxpetproject.annotation.Background
 import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.service.UserService
 
@@ -21,16 +21,21 @@ import rys.ajaxpetproject.service.UserService
 @RequestMapping("/users")
 class UserController(val userService: UserService) {
 
+
+    @Background()
     @GetMapping("/")
-    fun getAllUsers(): ResponseEntity<List<MongoUser>> =
-        ResponseEntity(userService.findAllUsers(), HttpStatus.OK)
+    fun getAllUsers(): ResponseEntity<List<MongoUser>>  {
+        val list: List<MongoUser> = userService.findAllUsers()
+        println(list)
+        return ResponseEntity(list, HttpStatus.OK)
+    }
+
 
     @GetMapping("/{id}")
     fun getUserById(@PathVariable id: ObjectId): ResponseEntity<MongoUser> =
         ResponseEntity(userService.findUserById(id), HttpStatus.OK)
 
     @PostMapping("/")
-    @Validated
     fun createUser(@Valid @RequestBody mongoUser: MongoUser): ResponseEntity<MongoUser> {
         val user = userService.createUser(mongoUser)
         println(user)
