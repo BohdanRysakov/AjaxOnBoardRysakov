@@ -5,12 +5,14 @@ import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import rys.ajaxpetproject.annotation.Logging
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.service.ChatService
 
 
 @RestController
 @RequestMapping("/chats")
+@Logging
 class ChatController(val chatService: ChatService) {
 
     @PostMapping("/")

@@ -24,17 +24,18 @@ class LoggingBeanPostProcessor : BeanPostProcessor {
             val factory: Enhancer = Enhancer()
             factory.setSuperclass(bean.javaClass)
             bean.javaClass.declaredMethods.forEach { method ->
+                val logger = LoggerFactory.getLogger(map[beanName])
+                logger.info("forEach loop - {}", method.name)
                 if (method.isAnnotationPresent(GetMapping::class.java)) {
                     method.getAnnotation(GetMapping::class.java)?.let {
-                        val logger = LoggerFactory.getLogger(map[beanName])
-                        logger.error("Method touched : {}", method.name)
+                        logger.info("Method touched : {}", method.name)
                         factory.setCallback(MethodInterceptor { obj, method, args, proxy ->
                             logger.error(
                                 "Executing {} method from {}",
                                 method.name, beanName
                             )
                             val result = proxy.invokeSuper(obj, args)
-                            logger.error(
+                            logger.info(
                                 "Business logic have worked {} in {}",
                                 method.name, beanName
                             )
