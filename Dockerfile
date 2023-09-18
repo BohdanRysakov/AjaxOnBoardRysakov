@@ -13,7 +13,7 @@ COPY . .
 RUN gradle bootJar
 
 # Start a new stage with only JDK 17 (without Gradle) for the runtime environment.
-FROM openjdk:17
+FROM openjdk:17-slim
 
 # Set the working directory in the container.
 WORKDIR /app
