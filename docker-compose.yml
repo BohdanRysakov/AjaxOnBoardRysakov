@@ -7,8 +7,10 @@ services:
     container_name: "app"
     ports:
       - "8080:8080"
+    depends_on:
+      - mongo
   mongo:
-    image: mongo:latest
+    image: mongo:6.0
     container_name: "mongodb"
     ports:
-      - 27070:27017
+      - "27070:27017"
