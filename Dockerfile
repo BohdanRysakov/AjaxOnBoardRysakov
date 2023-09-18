@@ -11,7 +11,6 @@ COPY . /usr/src/java-code/
 WORKDIR /usr/src/java-code
 RUN gradle bootJar -i --stacktrace
 
-
 FROM openjdk:17-slim
 EXPOSE 8080
 WORKDIR /usr/src/java-app
