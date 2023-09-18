@@ -70,7 +70,7 @@ class LoggerControllerBeanPostProcessor2 : BeanPostProcessor {
         logger.info("BPP2 - ${originClass.java} going to invoke ${method.name}")
         val t1: Long = System.currentTimeMillis()
         try {
-            proxy.invoke(bean, args)
+            method.invoke(bean)
         } finally {
             logger.info("BPP2 - ${originClass.java} completed ${method.name} in ${System.currentTimeMillis() - t1}ms")
         }

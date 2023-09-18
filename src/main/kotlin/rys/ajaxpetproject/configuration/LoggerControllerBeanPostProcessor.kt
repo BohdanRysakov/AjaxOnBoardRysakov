@@ -7,6 +7,7 @@ import org.springframework.cglib.proxy.MethodInterceptor
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.GetMapping
 import rys.ajaxpetproject.annotation.Logging
+import rys.ajaxpetproject.controller.ChatController
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
@@ -48,12 +49,11 @@ class LoggerControllerBeanPostProcessor : BeanPostProcessor {
             factory.setCallback(
                 map[beanName]?.let { it1 -> interceptor(it1, bean) }
             )
-            factory.create()
-
+            return factory.create()
         }
         if(something != null){
             println("... am i getting closer? ...")
-            return something
+            return something as ChatController
         }
 
 
@@ -64,13 +64,13 @@ class LoggerControllerBeanPostProcessor : BeanPostProcessor {
     private fun interceptor(
         originClass: KClass<*>,
         bean: Any
-    ): MethodInterceptor = MethodInterceptor { _, method, args, proxy ->
+    ): MethodInterceptor = MethodInterceptor { obj, method, args, proxy ->
         val logger = LoggerFactory.getLogger(originClass.java)
 
         logger.info("${originClass.java} going to invoke ${method.name}")
         val t1: Long = System.currentTimeMillis()
         try {
-            proxy.invoke(bean, args)
+            method.invoke(bean)
         } finally {
             logger.info("${originClass.java} completed ${method.name} in ${System.currentTimeMillis() - t1}ms")
         }
