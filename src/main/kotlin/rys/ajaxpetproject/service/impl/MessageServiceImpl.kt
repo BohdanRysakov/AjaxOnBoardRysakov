@@ -4,13 +4,13 @@ import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.MessageNotFoundException
 import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.MessageDAO
+import rys.ajaxpetproject.repository.MessageDao
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 
 @Service
 class MessageServiceImpl(
-    private val messageRepository: MessageDAO,
+    private val messageRepository: MessageDao,
     private val chatService: ChatService
 ) : MessageService {
     override fun createMessage(mongoMessage: MongoMessage) = messageRepository.save(mongoMessage)
@@ -19,7 +19,7 @@ class MessageServiceImpl(
 
     override fun findAllMessagesByChatId(chatId: ObjectId): List<MongoMessage> {
         chatService.findChatById(chatId)
-        return messageRepository.getMessagesByChatId(chatId)
+        return messageRepository.findMessagesByChatId(chatId)
     }
 
     override fun updateMessage(id: ObjectId, updatedMongoMessage: MongoMessage): MongoMessage =

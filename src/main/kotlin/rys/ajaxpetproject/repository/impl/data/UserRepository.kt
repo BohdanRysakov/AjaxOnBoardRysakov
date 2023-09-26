@@ -3,14 +3,11 @@ package rys.ajaxpetproject.repository.impl.data
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.repository.MongoRepository
 import rys.ajaxpetproject.model.MongoUser
-import rys.ajaxpetproject.repository.UserDAO
+import rys.ajaxpetproject.repository.UserDao
 
-//@Repository
-interface UserRepository : MongoRepository<MongoUser, String>, UserDAO {
+interface UserRepository : MongoRepository<MongoUser, String>, UserDao {
 
-    fun findUserByUserName(userName: String): MongoUser?
-
-    override fun getUserById(id: ObjectId): MongoUser?
+    override fun findUserById(id: ObjectId): MongoUser?
 
     override fun deleteUserById(id: ObjectId): Boolean
 

@@ -6,16 +6,16 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Repository
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.repository.ChatDAO
+import rys.ajaxpetproject.repository.ChatDao
 
 @Repository
-class ChatMongoTemplate(private val mongoTemplate: MongoTemplate) : ChatDAO {
+class ChatRepository(private val mongoTemplate: MongoTemplate) : ChatDao {
 
     private val clazz = MongoChat::class.java
 
     override fun save(mongoChat: MongoChat): MongoChat = mongoTemplate.save(mongoChat)
 
-    override fun getChatById(id: ObjectId): MongoChat? = mongoTemplate.findById(id, clazz)
+    override fun findChatById(id: ObjectId): MongoChat? = mongoTemplate.findById(id, clazz)
 
     override fun findAllChats(): List<MongoChat> = mongoTemplate.findAll(clazz)
 
@@ -25,7 +25,7 @@ class ChatMongoTemplate(private val mongoTemplate: MongoTemplate) : ChatDAO {
     }
 
     override fun deleteAllChats(): Boolean {
-        mongoTemplate.dropCollection(clazz)
+        mongoTemplate.remove(Query(), clazz)
         return true
     }
 }

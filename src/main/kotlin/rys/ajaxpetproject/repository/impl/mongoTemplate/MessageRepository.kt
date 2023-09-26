@@ -6,10 +6,10 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Repository
 import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.MessageDAO
+import rys.ajaxpetproject.repository.MessageDao
 
 @Repository
-class MessageMongoTemplate(private val mongoTemplate: MongoTemplate) : MessageDAO {
+class MessageRepository(private val mongoTemplate: MongoTemplate) : MessageDao {
 
     private val clazz = MongoMessage::class.java
 
@@ -17,7 +17,7 @@ class MessageMongoTemplate(private val mongoTemplate: MongoTemplate) : MessageDA
 
     override fun findMessageById(id: ObjectId): MongoMessage? = mongoTemplate.findById(id, clazz)
 
-    override fun getMessagesByChatId(chatId: ObjectId): List<MongoMessage> =
+    override fun findMessagesByChatId(chatId: ObjectId): List<MongoMessage> =
         mongoTemplate.find(Query(Criteria.where("chatId").`is`(chatId)), clazz)
 
     override fun deleteMessageById(id: ObjectId): Boolean {

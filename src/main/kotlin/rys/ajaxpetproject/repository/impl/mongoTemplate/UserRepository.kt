@@ -6,16 +6,16 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Repository
 import rys.ajaxpetproject.model.MongoUser
-import rys.ajaxpetproject.repository.UserDAO
+import rys.ajaxpetproject.repository.UserDao
 
 @Repository
-class UserMongoTemplate(private val mongoTemplate: MongoTemplate) : UserDAO {
+class UserRepository(private val mongoTemplate: MongoTemplate) : UserDao {
 
     private val clazz = MongoUser::class.java
 
     override fun save(mongoUser: MongoUser): MongoUser = mongoTemplate.save(mongoUser)
 
-    override fun getUserById(id: ObjectId): MongoUser? = mongoTemplate.findById(id, clazz)
+    override fun findUserById(id: ObjectId): MongoUser? = mongoTemplate.findById(id, clazz)
 
     override fun findAllUsers(): List<MongoUser> = mongoTemplate.findAll(clazz)
 

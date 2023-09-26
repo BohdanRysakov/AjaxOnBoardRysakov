@@ -3,10 +3,10 @@ package rys.ajaxpetproject.repository
 import org.bson.types.ObjectId
 import rys.ajaxpetproject.model.MongoUser
 
-interface UserDAO {
+interface UserDao {
     fun save(mongoUser: MongoUser): MongoUser
 
-    fun getUserById(id: ObjectId): MongoUser?
+    fun findUserById(id: ObjectId): MongoUser?
 
     fun findAllUsers(): List<MongoUser>
 

@@ -5,21 +5,21 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.UserNotFoundException
 import rys.ajaxpetproject.model.MongoUser
-import rys.ajaxpetproject.repository.UserDAO
+import rys.ajaxpetproject.repository.UserDao
 import rys.ajaxpetproject.service.UserService
 
 @Service
-class UserServiceImplementation(
-    private val userRepository: UserDAO, private val passwordEncoder: PasswordEncoder
+class UserServiceImpl(
+    private val userRepository: UserDao, private val passwordEncoder: PasswordEncoder
 ) : UserService {
 
     override fun createUser(mongoUser: MongoUser): MongoUser {
         return userRepository.save(mongoUser.copy(password = passwordEncoder.encode(mongoUser.password)))
     }
 
-    override fun getUserById(id: ObjectId): MongoUser = userRepository.getUserById(id) ?: throw UserNotFoundException()
+    override fun getUserById(id: ObjectId): MongoUser = userRepository.findUserById(id) ?: throw UserNotFoundException()
 
-    override fun findUserById(id: ObjectId): MongoUser? = userRepository.getUserById(id)
+    override fun findUserById(id: ObjectId): MongoUser? = userRepository.findUserById(id)
 
     override fun findAllUsers(): List<MongoUser> = userRepository.findAllUsers()
 

@@ -5,15 +5,15 @@ import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.ChatNotFoundException
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.repository.ChatDAO
+import rys.ajaxpetproject.repository.ChatDao
 import rys.ajaxpetproject.service.ChatService
 
 @Service
-class ChatServiceImpl(private val chatRepository: ChatDAO) : ChatService {
+class ChatServiceImpl(private val chatRepository: ChatDao) : ChatService {
 
     override fun createChat(mongoChat: MongoChat): MongoChat = chatRepository.save(mongoChat)
 
-    override fun findChatById(id: ObjectId): MongoChat? = chatRepository.getChatById(id)
+    override fun findChatById(id: ObjectId): MongoChat? = chatRepository.findChatById(id)
 
     override fun findAllChats(): List<MongoChat> = chatRepository.findAllChats()
 
