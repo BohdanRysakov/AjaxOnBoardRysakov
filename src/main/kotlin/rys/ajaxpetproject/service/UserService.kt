@@ -16,5 +16,5 @@ interface UserService {
 
     fun deleteUser(id: ObjectId): Boolean
 
-    fun deleteUsers(): Boolean
+    fun deleteAllUsers(): Boolean
 }

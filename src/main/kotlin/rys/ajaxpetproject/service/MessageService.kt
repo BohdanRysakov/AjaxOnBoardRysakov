@@ -15,5 +15,5 @@ interface MessageService {
 
     fun deleteMessage(id: ObjectId): Boolean
 
-    fun deleteMessages()
+    fun deleteAllMessages(): Boolean
 }

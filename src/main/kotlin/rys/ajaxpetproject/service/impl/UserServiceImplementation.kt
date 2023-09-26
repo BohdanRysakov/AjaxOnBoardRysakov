@@ -5,23 +5,23 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import rys.ajaxpetproject.exception.UserNotFoundException
 import rys.ajaxpetproject.model.MongoUser
-import rys.ajaxpetproject.repository.UserRepository
+import rys.ajaxpetproject.repository.UserDAO
 import rys.ajaxpetproject.service.UserService
 
 @Service
 class UserServiceImplementation(
-    val userRepository: UserRepository,
-    val passwordEncoder: PasswordEncoder) : UserService {
+    private val userRepository: UserDAO, private val passwordEncoder: PasswordEncoder
+) : UserService {
 
     override fun createUser(mongoUser: MongoUser): MongoUser {
         return userRepository.save(mongoUser.copy(password = passwordEncoder.encode(mongoUser.password)))
     }
 
-    override fun getUserById(id: ObjectId): MongoUser = userRepository.findUserById(id) ?: throw UserNotFoundException()
+    override fun getUserById(id: ObjectId): MongoUser = userRepository.getUserById(id) ?: throw UserNotFoundException()
 
-    override fun findUserById(id: ObjectId): MongoUser? = userRepository.findUserById(id)
+    override fun findUserById(id: ObjectId): MongoUser? = userRepository.getUserById(id)
 
-    override fun findAllUsers(): List<MongoUser> = userRepository.findAllBy()
+    override fun findAllUsers(): List<MongoUser> = userRepository.findAllUsers()
 
     override fun updateUser(id: ObjectId, updatedMongoUser: MongoUser): MongoUser? =
         findUserById(id)?.let {
@@ -32,8 +32,8 @@ class UserServiceImplementation(
         return userRepository.deleteUserById(id)
     }
 
-    override fun deleteUsers(): Boolean {
-        userRepository.deleteAll()
+    override fun deleteAllUsers(): Boolean {
+        userRepository.deleteAllUsers()
         return true
     }
 }

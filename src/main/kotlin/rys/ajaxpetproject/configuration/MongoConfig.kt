@@ -8,23 +8,23 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.model.MongoUser
-import rys.ajaxpetproject.repository.ChatRepository
+import rys.ajaxpetproject.repository.impl.data.ChatRepository
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.UserService
 import java.util.*
 
 @Configuration
-@EnableMongoRepositories(basePackageClasses = [ChatRepository::class])
+@EnableMongoRepositories
 @ComponentScan(basePackageClasses = [ChatRepository::class])
 class MongoConfig {
 
     @Bean
     fun init(userService: UserService, chatService: ChatService, messageService: MessageService): CommandLineRunner {
         return CommandLineRunner {
-            userService.deleteUsers()
-            chatService.deleteChats()
-            messageService.deleteMessages()
+            userService.deleteAllUsers()
+            chatService.deleteAllChats()
+            messageService.deleteAllMessages()
 
             val mongoUsers = listOf(
                 MongoUser(userName = "Alice", password = "pass1"),
@@ -36,8 +36,8 @@ class MongoConfig {
             println(mongoUsers)
 
             val mongoChat1 = chatService.createChat(
-                    MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
-                )
+                MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
+            )
 
             val mongoChat2 = chatService.createChat(MongoChat(name = "Friends", users = mongoUsers.map { it.id }
                 .subList(0, USERS_NUMBER_IN_CHAT1)))
@@ -47,7 +47,7 @@ class MongoConfig {
 
             for (chat in listOf(mongoChat1, mongoChat2, mongoChat3)) {
                 val messageCount = Random().nextInt(MESSAGES_NUMBER_ADD) +
-                        MESSAGES_NUMBER_MIN  // 10 to 30 messages
+                        MESSAGES_NUMBER_MIN
 
                 for (i in 1..messageCount) {
                     val sender = chat.users[Random().nextInt(chat.users.size)]
