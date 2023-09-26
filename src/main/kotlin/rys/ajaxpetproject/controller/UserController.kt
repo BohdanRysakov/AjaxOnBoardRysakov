@@ -19,7 +19,7 @@ import rys.ajaxpetproject.service.UserService
 
 @RestController
 @RequestMapping("/users")
-class UserController(val userService: UserService) {
+class UserController(private val userService: UserService) {
 
     @GetMapping("/")
     fun getAllUsers(): ResponseEntity<List<MongoUser>> =
@@ -38,8 +38,10 @@ class UserController(val userService: UserService) {
     }
 
     @PutMapping("/{id}")
-    fun updateUser(@PathVariable id: ObjectId,
-                   @Valid @RequestBody updatedMongoUser: MongoUser): ResponseEntity<MongoUser> =
+    fun updateUser(
+        @PathVariable id: ObjectId,
+        @Valid @RequestBody updatedMongoUser: MongoUser
+    ): ResponseEntity<MongoUser> =
         ResponseEntity(userService.updateUser(id, updatedMongoUser), HttpStatus.OK)
 
     @DeleteMapping("/{id}")
@@ -48,6 +50,6 @@ class UserController(val userService: UserService) {
 
     @DeleteMapping("/all/")
     fun deleteAllUsers(): ResponseEntity<Boolean> =
-        ResponseEntity(userService.deleteUsers(), HttpStatus.OK)
+        ResponseEntity(userService.deleteAllUsers(), HttpStatus.OK)
 
 }

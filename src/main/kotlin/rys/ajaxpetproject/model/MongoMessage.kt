@@ -11,10 +11,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
 @Document(collection = "MESSAGES")
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
 data class MongoMessage(
     @Id
     val id: ObjectId? = null,
@@ -24,4 +20,5 @@ data class MongoMessage(
     val userId: ObjectId?,
     @field:NotNull(message = "message MUST have content")
     val content: String?,
-    val sentAt: LocalDateTime = LocalDateTime.now())
+    val sentAt: LocalDateTime = LocalDateTime.now()
+)

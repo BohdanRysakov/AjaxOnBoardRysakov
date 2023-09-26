@@ -5,6 +5,7 @@ services:
     build:
       dockerfile: Dockerfile
     container_name: "app"
+    image: "rysakovb/test:latest"
     ports:
       - "8080:8080"
     depends_on:
@@ -12,6 +13,6 @@ services:
 
   mongo:
     image: mongo:6.0
-    container_name: "mongodb"
+    container_name: "mongo"
     ports:
       - "27070:27017"

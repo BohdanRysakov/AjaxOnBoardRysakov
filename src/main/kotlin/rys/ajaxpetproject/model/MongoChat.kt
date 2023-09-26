@@ -12,10 +12,6 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "CHATS")
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
 data class MongoChat(
     @Id
     val id: ObjectId? = null,
@@ -23,4 +19,5 @@ data class MongoChat(
     @field:NotBlank(message = "Chat name cannot be blank")
     @field:Size(min = 3, max = 20, message = "Chat name must be between 3 and 20 characters")
     val name: String?,
-    val users: List<ObjectId?>)
+    val users: List<ObjectId?>
+)

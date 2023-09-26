@@ -14,10 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 
 @Document(collection = "USERS")
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
 data class MongoUser(
     @Id
     val id: ObjectId? = null,
@@ -28,20 +24,5 @@ data class MongoUser(
     @field:NotNull(message = "Password cannot be null")
     @field:NotBlank(message = "Password cannot be blank")
     @field:Size(min = 3, message = "Password must be between 3 and 100 characters")
-    val password: String?, )
-
-//{
-//    fun toResponse(): MongoUserResponse {
-//        return MongoUserResponse(
-//            id = id?.toHexString(),
-//            userName = userName,
-//            password = password
-//        )
-//    }
-//}
-//
-//data class MongoUserResponse(
-//    val id: String?,
-//    val userName: String?,
-//    val password: String?
-//)
+    val password: String?,
+)

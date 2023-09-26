@@ -17,7 +17,7 @@ import rys.ajaxpetproject.service.ChatService
 
 @RestController
 @RequestMapping("/chats")
-class ChatController(val chatService: ChatService) {
+class ChatController(private val chatService: ChatService) {
 
     @PostMapping("/")
     fun createChat(@RequestBody mongoChat: MongoChat): ResponseEntity<MongoChat> =
@@ -33,9 +33,9 @@ class ChatController(val chatService: ChatService) {
     @PutMapping("/{id}")
     fun updateChat(@PathVariable id: ObjectId, @Valid @RequestBody updatedMongoChat: MongoChat):
             ResponseEntity<MongoChat> =
-        ResponseEntity(chatService.updateChat(id, updatedMongoChat),HttpStatus.OK)
+        ResponseEntity(chatService.updateChat(id, updatedMongoChat), HttpStatus.OK)
 
     @DeleteMapping("/{id}")
     fun deleteChat(@PathVariable id: ObjectId): ResponseEntity<Boolean> =
-        ResponseEntity(chatService.deleteChat(id), HttpStatus.OK)
+        ResponseEntity(chatService.deleteChatById(id), HttpStatus.OK)
 }

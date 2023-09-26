@@ -17,15 +17,15 @@ import rys.ajaxpetproject.service.MessageService
 
 @RestController
 @RequestMapping("/messages")
-class MessageController(val messageService: MessageService) {
+class MessageController(private val messageService: MessageService) {
 
     @PostMapping("/")
     fun createMessage(@Valid @RequestBody mongoMessage: MongoMessage): ResponseEntity<MongoMessage> =
-         ResponseEntity(messageService.createMessage(mongoMessage), HttpStatus.CREATED)
+        ResponseEntity(messageService.createMessage(mongoMessage), HttpStatus.CREATED)
 
     @GetMapping("/{id}")
     fun getMessageById(@PathVariable id: ObjectId): ResponseEntity<MongoMessage> =
-         ResponseEntity(messageService.findMessageById(id), HttpStatus.OK)
+        ResponseEntity(messageService.findMessageById(id), HttpStatus.OK)
 
     @GetMapping("/chat/{chatId}")
     fun getAllMessagesByChatId(@PathVariable chatId: ObjectId): ResponseEntity<List<MongoMessage>> =
