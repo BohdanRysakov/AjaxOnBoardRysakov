@@ -31,24 +31,18 @@ repositories {
 }
 
 dependencies {
-
-    //implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation(project(":rest"))
+    implementation(project(":nats"))
     implementation("org.springframework.boot:spring-boot-starter-web")
-// https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
     implementation("org.springframework.security:spring-security-crypto:6.1.2")
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
-
-// https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa
     implementation("org.springframework.data:spring-data-jpa:3.0.9")
-
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
-    //implementation("log4j:log4j:1.2.17")
     implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
     implementation("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -72,4 +66,71 @@ tasks.withType<Test> {
 
 noArg {
     annotation("org.springframework.web.bind.annotation.RestController")
+}
+
+subprojects {
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
+    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+    apply(plugin = "org.jetbrains.kotlin.plugin.noarg")
+    apply(plugin = "application")
+    apply(plugin = "java")
+
+
+    group = "rys"
+    version = "0.0.1-SNAPSHOT"
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
+
+    configurations {
+        compileOnly {
+            extendsFrom(configurations.annotationProcessor.get())
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation("org.springframework.boot:spring-boot-starter-web")
+        implementation("org.springframework.security:spring-security-crypto:6.1.2")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
+        implementation("jakarta.validation:jakarta.validation-api:3.0.2")
+        implementation("org.springframework.data:spring-data-jpa:3.0.9")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+        implementation("org.jetbrains.kotlin:kotlin-reflect")
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+        implementation("io.nats:jnats:1.0")
+        implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
+        implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
+        implementation("org.projectlombok:lombok")
+        annotationProcessor("org.projectlombok:lombok")
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+    }
+
+    springBoot {
+        mainClass.set("rys.ajaxpetproject.AjaxPetProjectApplicationKt")
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs += "-Xjsr305=strict"
+            jvmTarget = "17"
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
+    noArg {
+        annotation("org.springframework.web.bind.annotation.RestController")
+    }
 }
