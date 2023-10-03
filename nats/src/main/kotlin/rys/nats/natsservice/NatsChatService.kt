@@ -2,41 +2,39 @@ package rys.nats.natsservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.nats.client.Connection
-import io.nats.client.Subscription
 import org.bson.types.ObjectId
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import rys.nats.utils.NatsMongoChatParser
 import rys.rest.model.MongoChat
-import rys.rest.repository.ChatRepository
-
 @Service
+class NatsChatService(private val natsConnection: Connection) {
 
-class NatsChatService(private val natsConnection: Connection, private val chatRepository: ChatRepository) {
+    fun createChat(mongoChat: MongoChat): MongoChat? {
+        val reply = natsConnection.request("chat.create", mongoChat.toString().toByteArray(), 20000)
+        return reply?.let { NatsMongoChatParser.parse(String(it.data)) }
+    }
 
-    private val objectMapper = ObjectMapper()
+    fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat? {
+        val message = "id:$id;data:${updatedMongoChat}"
+        val reply = natsConnection.request("chat.update", message.toByteArray())
+        return reply?.let { NatsMongoChatParser.parse(String(it.data)) }
+    }
 
+    fun deleteChat(id: ObjectId): Boolean {
+        val reply = natsConnection.request("chat.delete", id.toString().toByteArray())
+        return reply?.let { String(it.data) == "true" } ?: false
+    }
 
-    private val subscription: Subscription = natsConnection.subscribe("chat") { msg ->
-        val idRegex = "MongoChat\\(id=(\\w+),".toRegex()
-        val idMatch = idRegex.find(String(msg.data))
-        val nameRegex = "name=(\\w+),".toRegex()
-        val nameMatch = nameRegex.find(String(msg.data))
+    fun findChatById(id: ObjectId): MongoChat? {
+        val reply = natsConnection.request("chat.findById", id.toString().toByteArray())
+        return reply?.let { NatsMongoChatParser.parse(String(it.data)) }
+    }
 
-//        val id = ObjectId(idMatch?.groups?.get(1)?.value)
-        val name = nameMatch?.groups?.get(1)?.value
-        val usersRegex = "users=\\[([^]]+)\\]".toRegex()
-        val usersMatch = usersRegex.find(String(msg.data))
-        val users: List<ObjectId> = usersMatch?.groups?.get(1)?.value?.split(", ")
-            ?.map { ObjectId(it.trim()) } ?: listOf()
-
-
-
-        val chat =  chatRepository.save(MongoChat(name = name, users = users))
-
-
-            println(chat.name)
-            println(chat.users)
-            println("I got message")
-        }
-
-
+//    fun findAllChats(): List<MongoChat> {
+//        val reply = natsConnection.request("chat.findAll", "", Duration.ofSeconds(2))
+//        // Assuming reply data is a JSON list of MongoChat
+//        val typeRef = object : TypeReference<List<MongoChat>>() {}
+//        return ObjectMapper().readValue(reply.data, typeRef)
+//    }
 }

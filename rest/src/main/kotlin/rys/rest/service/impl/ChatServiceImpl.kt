@@ -15,10 +15,6 @@ class ChatServiceImpl(val chatRepository: ChatRepository): ChatService {
 
     override fun findChatById(id: ObjectId): MongoChat? = chatRepository.findChatById(id)
 
-    fun getChatById(id: ObjectId): MongoChat = chatRepository.findChatById(id) ?: throw ChatNotFoundException()
-
-    fun getAllChats(): List<MongoChat> = chatRepository.findAllBy()
-
     override fun findAllChats(): List<MongoChat> = chatRepository.findAllBy()
 
     override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat =

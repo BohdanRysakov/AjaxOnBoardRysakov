@@ -12,7 +12,9 @@ import rys.rest.repository.ChatRepository
 import rys.rest.service.ChatService
 import rys.rest.service.MessageService
 import rys.rest.service.UserService
+import java.time.LocalTime
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Configuration
 @EnableMongoRepositories(basePackageClasses = [ChatRepository::class])
@@ -38,14 +40,11 @@ class MongoConfig {
             val mongoChat1 = chatService.createChat(
                     MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
                 )
-            println("Byte Chat Representation: ${mongoChat1}")
 
             val mongoChat2 = chatService.createChat(MongoChat(name = "Friends", users = mongoUsers.map { it.id }
                 .subList(0, USERS_NUMBER_IN_CHAT1)))
-
             val mongoChat3 = chatService.createChat(MongoChat(name = "Work", users = mongoUsers.map { it.id }
                 .subList(USERS_NUMBER_IN_CHAT1, USERS_NUMBER_IN_CHAT2)))
-
             for (chat in listOf(mongoChat1, mongoChat2, mongoChat3)) {
                 val messageCount = Random().nextInt(MESSAGES_NUMBER_ADD) +
                         MESSAGES_NUMBER_MIN  // 10 to 30 messages
