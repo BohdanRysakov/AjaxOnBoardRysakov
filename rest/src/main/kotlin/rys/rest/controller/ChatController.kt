@@ -20,11 +20,6 @@ import rys.rest.service.ChatService
 @RequestMapping("/chats")
 class ChatController(val chatService: ChatService) {
 
-    @PostConstruct
-    fun init() {
-        println("I AM ALIVEEE!")
-    }
-
     @PostMapping("/")
     fun createChat(@RequestBody mongoChat: MongoChat): ResponseEntity<MongoChat> =
         ResponseEntity(chatService.createChat(mongoChat), HttpStatus.CREATED)

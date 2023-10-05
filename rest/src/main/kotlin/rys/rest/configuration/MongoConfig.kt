@@ -12,9 +12,7 @@ import rys.rest.repository.ChatRepository
 import rys.rest.service.ChatService
 import rys.rest.service.MessageService
 import rys.rest.service.UserService
-import java.time.LocalTime
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 @Configuration
 @EnableMongoRepositories(basePackageClasses = [ChatRepository::class])

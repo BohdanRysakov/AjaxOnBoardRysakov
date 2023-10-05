@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package rys.nats.protostest;
+
+message testRequest {
+  string id = 1;
+}
+message testResponse {
+  string id = 1;
+}

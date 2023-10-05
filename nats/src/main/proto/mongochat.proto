@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package rys.nats.protostest;
+
+message ChatCreateRequest {
+  string id = 1;
+  string name = 2;
+  repeated string users = 3;
+}
+
+message ChatUpdateRequest {
+  string requestId = 1;
+  string actualId = 2;
+  string name = 3;
+  repeated string users = 4;
+}
+
+message ChatFindByIdRequest {
+  string id = 1;
+}

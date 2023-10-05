@@ -1,6 +1,8 @@
 package rys.nats.utils
 
 import org.bson.types.ObjectId
+import rys.nats.protostest.Mongochat
+
 import rys.rest.model.MongoChat
 
 object NatsMongoChatParser {
