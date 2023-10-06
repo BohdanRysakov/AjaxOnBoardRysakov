@@ -25,7 +25,7 @@ class ChatServiceImpl(val chatRepository: ChatRepository): ChatService {
         findChatById(id)?.let {
             chatRepository.deleteById(id)
             return true
-        } ?: throw ChatNotFoundException()
+        } ?: throw ChatNotFoundException("Chat not found")
     }
 
     override fun deleteChats() = chatRepository.deleteAll()

@@ -2,51 +2,129 @@ package rys.nats.utils
 
 import org.bson.types.ObjectId
 import rys.nats.protostest.Mongochat
-
+import rys.nats.protostest.Mongochat.ChatDeleteResponse
 import rys.rest.model.MongoChat
 
+
 object NatsMongoChatParser {
-    fun parse(message: String): MongoChat? {
-        val id = extractId(message)
-        val name = extractName(message) ?: return null
-        val users = extractUsers(message) ?: return null
-        return MongoChat(id = id, name = name, users = users)
+
+    fun deserializeChat(serialisedChat: ByteArray): MongoChat {
+        val createdChat = Mongochat.Chat.parser()
+            .parseFrom(serialisedChat)
+
+        return MongoChat(
+            id = if (createdChat.id != "null") ObjectId(createdChat.id) else null,
+            name = createdChat.name,
+            users = createdChat.usersList.map { ObjectId(it) })
     }
 
-    private fun extractId(message: String) : ObjectId? {
-        val idRegex = "MongoChat\\(id=([^,]+),".toRegex()
-        val idMatch = idRegex.find(message) ?: return null
-        val idString = if (idMatch.groupValues[1]!="null") idMatch.groupValues[1] else return null
-        return ObjectId(idString)
-    }
-
-    private fun extractName(message: String): String? {
-        val idRegex = "MongoChat\\(id=([^,]+),".toRegex()
-        val idMatch = idRegex.find(message) ?: return null
-
-        val usersStartIndex = message.indexOf("users=[")
-        val nameStartIndex = idMatch.range.last + 7
-        val nameEndIndex = usersStartIndex - 2
-
-        return if (nameStartIndex < nameEndIndex && nameStartIndex >= 0) {
-            message.substring(nameStartIndex, nameEndIndex)
-        } else {
-            null
+    fun serializeChat(chat: MongoChat?): ByteArray {
+        if (chat == null) {
+            return Mongochat.Chat
+                .newBuilder()
+                .setId("null")
+                .setName("null")
+                .build().toByteArray()
         }
+
+        return Mongochat.Chat
+            .newBuilder()
+            .setId(chat.id.toString())
+            .setName(chat.name)
+            .addAllUsers(chat.users.map { it.toString() }).build().toByteArray()
     }
 
-    private fun extractUsers(message: String): List<ObjectId>? {
-        val usersStartIndex = message.indexOf("users=[")
-        if (usersStartIndex == -1) return null
+    fun deserializeChatList(serialisedChats: ByteArray): List<MongoChat> =
+        Mongochat.ChatList
+            .parser()
+            .parseFrom(serialisedChats)
+            .chatsList
+            .map {
+                MongoChat(
+                    id = if (it.id != "null") ObjectId(it.id) else null,
+                    name = it.name,
+                    users = it.usersList.map { ObjectId(it) })
+            }
 
-        val afterIdString = message.substring(usersStartIndex + 7)
-        val usersEndIndex = afterIdString.lastIndexOf("]")
-        if (usersEndIndex == -1) return null
+    fun serializeMongoChats(chat: List<MongoChat>): ByteArray =
+        Mongochat.ChatList.newBuilder()
+            .addAllChats(chat.map {
+                Mongochat.Chat.newBuilder()
+                    .setId(it.id.toString())
+                    .setName(it.name)
+                    .addAllUsers(it.users.map { it.toString() })
+                    .build()
+            })
+            .build().toByteArray()
 
-        val usersString = afterIdString.substring(0, usersEndIndex)
-        val users = usersString.split(", ").mapNotNull { it.trim().takeIf { it.isNotEmpty() }?.let { ObjectId(it) } }
+    fun serializeDeleteRequest(chatId: String): ByteArray {
+        return Mongochat.ChatDeleteRequest
+            .newBuilder()
+            .setRequestId(chatId)
+            .build()
+            .toByteArray()
+    }
 
-        return if (users.isNotEmpty()) users else null
+    fun deserializeDeleteRequest(serializedRequest: ByteArray): String {
+        return Mongochat.ChatDeleteRequest
+            .parser()
+            .parseFrom(serializedRequest)
+            .requestId
+    }
+
+    fun serializeDeleteResponse(result: Boolean): ByteArray {
+        return ChatDeleteResponse
+            .newBuilder()
+            .setResult(result)
+            .build()
+            .toByteArray()
+    }
+
+    fun deserializeDeleteResponse(serialisedDeleteResponse: ByteArray): Boolean =
+        ChatDeleteResponse.parser()
+            .parseFrom(serialisedDeleteResponse).result
+
+    fun serializeFindChatRequest(chatId: String): ByteArray {
+        return Mongochat.ChatFindRequest
+            .newBuilder()
+            .setId(chatId)
+            .build()
+            .toByteArray()
+    }
+
+    fun deserializeFindChatRequest(serializedChatFindRequest: ByteArray): String =
+        Mongochat.ChatFindRequest
+            .parser()
+            .parseFrom(serializedChatFindRequest)
+            .id
+
+    fun serializeUpdateRequest(id: String, chat: MongoChat): ByteArray {
+        return Mongochat.ChatUpdateRequest
+            .newBuilder()
+            .setRequestId(id)
+            .setChat(
+                Mongochat.Chat.newBuilder()
+                    .setId(chat.id.toString())
+                    .setName(chat.name)
+                    .addAllUsers(chat.users.map { it.toString() })
+                    .build()
+            )
+            .build()
+            .toByteArray()
+    }
+
+    fun deserializeUpdateRequest(serializedRequest: ByteArray): Pair<String,MongoChat> {
+        val request = Mongochat.ChatUpdateRequest
+            .parser()
+            .parseFrom(serializedRequest)
+
+        return Pair(
+            request.requestId,
+            MongoChat(
+                id = if (request.chat.id != "null") ObjectId(request.chat.id) else null,
+                name = request.chat.name,
+                users = request.chat.usersList.map { ObjectId(it) })
+        )
     }
 
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package rys.nats.protostest;
 
-message ChatCreateRequest {
+message Chat {
   string id = 1;
   string name = 2;
   repeated string users = 3;
@@ -10,11 +10,21 @@ message ChatCreateRequest {
 
 message ChatUpdateRequest {
   string requestId = 1;
-  string actualId = 2;
-  string name = 3;
-  repeated string users = 4;
+  Chat chat = 2;
 }
 
-message ChatFindByIdRequest {
+message ChatList {
+  repeated Chat chats = 1;
+}
+
+message ChatDeleteRequest {
+  string requestId = 1;
+}
+
+message ChatDeleteResponse {
+  bool result = 1;
+}
+
+message ChatFindRequest {
   string id = 1;
 }

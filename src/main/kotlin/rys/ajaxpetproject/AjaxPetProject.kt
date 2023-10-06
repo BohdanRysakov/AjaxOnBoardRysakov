@@ -4,6 +4,8 @@ import io.nats.client.Connection
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import rys.nats.protostest.Test
+import rys.nats.utils.NatsMongoChatParser.serializeMongoChats
+import rys.rest.repository.ChatRepository
 import kotlin.concurrent.thread
 
 @SpringBootApplication(scanBasePackages = ["rys"])
@@ -13,15 +15,15 @@ class AjaxPetProject
 fun main(args: Array<String>) {
     val context =  runApplication<AjaxPetProject>(*args)
 
+    val repository = context.getBean(ChatRepository::class.java)
+    val natsConnection = context.getBean(Connection::class.java)
 
-//    val natsConnection : Connection = context.getBean("connection") as Connection
-//    val FUCKINGSHIT = Test.testRequest.newBuilder().setId("1")
-//    val byteArr = FUCKINGSHIT.build().toByteArray()
-//    println("Start")
-//    val test1 = Test.testRequest.parseFrom(byteArr)
-//    println("Tsting : $test1 ")
-//    val reply = natsConnection.publish("chat.create", byteArr)
-//    println("Reply:$reply")
-//
-//    println("End")
+    val list = repository.findAllBy()
+
+    val resppnse = natsConnection.request(
+        "chat.WriteAll", serializeMongoChats(list))
+
+    println(resppnse)
+
+
 }
