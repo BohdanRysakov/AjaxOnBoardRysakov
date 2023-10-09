@@ -5,7 +5,6 @@ import rys.nats.protostest.Mongochat.ChatCreateRequest
 import rys.nats.protostest.Mongochat.ChatCreateResponse
 import rys.nats.protostest.Mongochat.ChatDeleteRequest
 import rys.nats.protostest.Mongochat.ChatDeleteResponse
-import rys.nats.protostest.Mongochat.ChatFindAllRequest
 import rys.nats.protostest.Mongochat.ChatFindAllResponse
 import rys.nats.protostest.Mongochat.ChatFindOneRequest
 import rys.nats.protostest.Mongochat.ChatFindOneResponse
@@ -134,13 +133,11 @@ object NatsValidMongoChatParser {
 
     fun serializeCreateChatRequest(request : ChatCreateRequest) : ByteArray {
         return ChatCreateRequest.newBuilder().apply {
-            chat = Mongochat.Chat.newBuilder().apply {
-                id = request.chat.id
-                name = request.chat.name
-                request.chat.usersList.forEach {
-                    usersList.add(it)
-                }
-            }.build()
+            chatBuilder.id = request.chat.id
+            chatBuilder.name = request.chat.name
+            request.chat.usersList.forEach {
+                chatBuilder.addUsers(it)
+            }
         }.build().toByteArray()
     }
 
@@ -170,7 +167,7 @@ object NatsValidMongoChatParser {
     }
 
 
-    fun serializeFindChatsRequest(request : ChatFindAllRequest): ByteArray {
+    fun serializeFindChatsRequest(): ByteArray {
         return ChatFindOneRequest.newBuilder().build().toByteArray()
     }
 

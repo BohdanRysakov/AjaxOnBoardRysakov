@@ -3,34 +3,58 @@ package rys.nats.controller
 import io.nats.client.Connection
 import jakarta.annotation.PostConstruct
 import org.bson.types.ObjectId
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import rys.nats.natsservice.ProtobufService
+import rys.nats.protostest.Mongochat
+import rys.nats.protostest.Mongochat.ChatDeleteResponse
+import rys.nats.utils.NatsValidMongoChatParser
 import rys.nats.utils.NatsValidMongoChatParser.deserializeDeleteRequest
 import rys.rest.service.ChatService
 
 @Component
 class NatsChatDeleteController(
     private val natsConnection: Connection,
-    private val chatService: ChatService,
-    private val protoService : ProtobufService
+    private val chatService: ChatService
 ) {
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     @PostConstruct
     fun init() {
         natsConnection.createDispatcher().subscribe("chat.delete") { message ->
-
-            var idToDelete: String? = null
             try {
-                idToDelete = deserializeDeleteRequest(message.data)
-            } catch (e: Exception) {
+
+                val requestBody : String = deserializeDeleteRequest(message.data).requestId
+
+                chatService.deleteChat(ObjectId(requestBody))
+
+                val response = ChatDeleteResponse.newBuilder().apply {
+                    successBuilder.apply {
+                        this.result = true
+                    }
+                }.build()
+
                 message.replyTo?.let { replySubject ->
-                    natsConnection.publish(replySubject, protoService.serializeDeleteResponse(false))
+                    natsConnection.publish(replySubject,
+                        NatsValidMongoChatParser.serializeDeleteChatResponse(response))
                 }
-            }
 
-            chatService.deleteChat(ObjectId(idToDelete))
 
-            message.replyTo?.let { replySubject ->
-                natsConnection.publish(replySubject, protoService.serializeDeleteResponse(true))
+
+            } catch (e: Exception) {
+
+                logger.error("Error while deleting chat: ${e.message}", e)
+
+                val response = ChatDeleteResponse.newBuilder().setFailure(
+                    ChatDeleteResponse.Failure.newBuilder().apply {
+                        this.message = e.message
+                        this.internalErrorBuilder
+                    }.build()
+                ).build()
+
+                message.replyTo?.let { replySubject ->
+                    natsConnection.publish(replySubject, NatsValidMongoChatParser.serializeDeleteChatResponse(response))
+                }
             }
         }
     }

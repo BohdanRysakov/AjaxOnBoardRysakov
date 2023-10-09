@@ -11,7 +11,9 @@ import rys.rest.service.ChatService
 @Service
 class ChatServiceImpl(val chatRepository: ChatRepository): ChatService {
 
-    override fun createChat(mongoChat: MongoChat): MongoChat = chatRepository.save(mongoChat)
+    override fun createChat(mongoChat: MongoChat): MongoChat {
+        return chatRepository.save(mongoChat)
+    }
 
     override fun findChatById(id: ObjectId): MongoChat? = chatRepository.findChatById(id)
 

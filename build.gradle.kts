@@ -102,6 +102,7 @@ subprojects {
     }
 
     dependencies {
+        testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
         implementation("com.google.protobuf:protobuf-java:3.24.3")
         implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("org.springframework.security:spring-security-crypto:6.1.2")
