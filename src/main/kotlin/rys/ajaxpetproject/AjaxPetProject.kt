@@ -3,10 +3,8 @@ package rys.ajaxpetproject
 import io.nats.client.Connection
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import rys.nats.protostest.Test
-import rys.nats.utils.NatsMongoChatParser.serializeMongoChats
+import rys.nats.utils.NatsValidMongoChatParser.serializeMongoChatList
 import rys.rest.repository.ChatRepository
-import kotlin.concurrent.thread
 
 @SpringBootApplication(scanBasePackages = ["rys"])
 class AjaxPetProject
@@ -21,7 +19,7 @@ fun main(args: Array<String>) {
     val list = repository.findAllBy()
 
     val resppnse = natsConnection.request(
-        "chat.WriteAll", serializeMongoChats(list))
+        "chat.WriteAll", serializeMongoChatList(list))
 
     println(resppnse)
 
