@@ -1,6 +1,5 @@
 package rys.nats.utils
 
-import rys.nats.protostest.Mongochat
 import rys.nats.protostest.Mongochat.ChatCreateRequest
 import rys.nats.protostest.Mongochat.ChatCreateResponse
 import rys.nats.protostest.Mongochat.ChatDeleteRequest
@@ -51,9 +50,7 @@ object NatsValidMongoChatParser {
     }
 
     fun deserializeUpdateRequest(serializedRequest: ByteArray): ChatUpdateRequest {
-        return ChatUpdateRequest
-            .parser()
-            .parseFrom(serializedRequest)
+        return ChatUpdateRequest.parser().parseFrom(serializedRequest)
     }
 
     fun serializeUpdateResponse(response: ChatUpdateResponse): ByteArray {
@@ -61,9 +58,7 @@ object NatsValidMongoChatParser {
     }
 
     fun deserializeUpdateResponse(response: ByteArray): ChatUpdateResponse {
-        return ChatUpdateResponse
-            .parseFrom(response)
-
+        return ChatUpdateResponse.parseFrom(response)
     }
 
     fun serializeCreateChatRequest(request: ChatCreateRequest): ByteArray {
@@ -97,5 +92,4 @@ object NatsValidMongoChatParser {
     fun deserializeFindChatsResponse(response: ByteArray): ChatFindAllResponse {
         return ChatFindAllResponse.parseFrom(response)
     }
-
 }

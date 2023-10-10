@@ -19,9 +19,15 @@ class ChatServiceImpl(val chatRepository: ChatRepository): ChatService {
 
     override fun findAllChats(): List<MongoChat> = chatRepository.findAllBy()
 
-    override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat =
+    override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat {
         findChatById(id)
-            .let { chatRepository.save(updatedMongoChat.copy(id = id)) }
+            .let {
+                val newChat = updatedMongoChat.copy(id = id)
+                chatRepository.save(newChat)
+            }
+        return  findChatById(id)!!
+    }
+
 
     override fun deleteChat(id: ObjectId): Boolean {
         findChatById(id)?.let {

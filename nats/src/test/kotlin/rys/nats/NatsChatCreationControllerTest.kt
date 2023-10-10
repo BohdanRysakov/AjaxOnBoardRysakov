@@ -2,14 +2,19 @@ package rys.nats
 
 import io.nats.client.Connection
 import org.bson.types.ObjectId
-import org.junit.jupiter.api.*
-import org.mockito.kotlin.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import rys.nats.controller.*
+import rys.nats.controller.NatsChatCreationController
+import rys.nats.controller.NatsChatDeleteController
+import rys.nats.controller.NatsChatFindAllController
+import rys.nats.controller.NatsChatUpdateController
+import rys.nats.controller.NatsChatFindOneController
 import rys.nats.exception.InternalException
 import rys.nats.protostest.Mongochat
 import rys.nats.protostest.Mongochat.ChatCreateResponse
@@ -20,18 +25,18 @@ import rys.rest.service.ChatService
 import rys.rest.service.impl.ChatServiceImpl
 import java.time.Duration
 
-
 @SpringBootTest(classes = [NatsTestConfiguration::class])
 @ContextConfiguration(
-    classes = arrayOf(
+    classes = [
         ChatRepository::class, ChatServiceImpl::class,
-        NatsChatCreationController::class, NatsChatDeleteController::class, NatsChatFindAllController::class,
-        NatsChatFindOneController::class, NatsChatUpdateController::class
-    )
+        NatsChatCreationController::class,
+        NatsChatDeleteController::class,
+        NatsChatFindAllController::class,
+        NatsChatFindOneController::class,
+        NatsChatUpdateController::class]
 )
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@ActiveProfiles("testing")
 class NatsChatCreationControllerTest {
-
     @SpyBean
     private lateinit var chatService: ChatService
 
@@ -45,7 +50,6 @@ class NatsChatCreationControllerTest {
     fun clearTestDB() {
         chatRepository.deleteAll()
     }
-
 
     @Test
     fun `Nats chat creation success scenario`() {
@@ -74,6 +78,7 @@ class NatsChatCreationControllerTest {
                 Duration.ofSeconds(3)
             ).data
         )
+
         assert(response.hasSuccess())
 
         val successfulChat: MongoChat = response.success.result.let {
@@ -96,8 +101,8 @@ class NatsChatCreationControllerTest {
             name = "test chat failure",
             users = listOf(ObjectId(), ObjectId())
         )
-        whenever(chatService.createChat(initialChat)).thenThrow(InternalException("Test exception"))
 
+        whenever(chatService.createChat(initialChat)).thenThrow(InternalException("Test exception"))
 
         val request = Mongochat.ChatCreateRequest.newBuilder()
             .apply {
@@ -137,6 +142,7 @@ class NatsChatCreationControllerTest {
             name = "test chat success",
             users = listOf(ObjectId(), ObjectId())
         )
+
         chatRepository.save(chatToDelete)
 
         val request = Mongochat.ChatDeleteRequest.newBuilder()
@@ -154,13 +160,12 @@ class NatsChatCreationControllerTest {
         )
 
         assert(response.hasSuccess())
-        assert(response.success.result)
 
+        assert(response.success.result)
     }
 
     @Test
     fun `Nats chat delete failure scenario`() {
-
         val request = Mongochat.ChatDeleteRequest.newBuilder()
             .apply {
                 this.requestId = ObjectId().toString()
@@ -171,11 +176,11 @@ class NatsChatCreationControllerTest {
                 "chat.delete",
                 NatsValidMongoChatParser.serializeDeleteChatRequest(request),
                 Duration.ofSeconds(10)
-            )
-                .data
+            ).data
         )
 
         assert(response.hasFailure())
+
         assert(response.failure.message == "Chat not found")
     }
 
@@ -188,7 +193,9 @@ class NatsChatCreationControllerTest {
                 name = "test chat success $i",
                 users = listOf(ObjectId(), ObjectId())
             )
+
             chatRepository.save(chat)
+
             listOfUsers.add(chatRepository.findChatById(chat.id!!)!!)
         }
 
@@ -197,8 +204,7 @@ class NatsChatCreationControllerTest {
                 "chat.findAll",
                 NatsValidMongoChatParser.serializeFindChatsRequest(),
                 Duration.ofSeconds(10)
-            )
-                .data
+            ).data
         )
 
         assert(response.hasSuccess())
@@ -210,9 +216,8 @@ class NatsChatCreationControllerTest {
                 users = it.usersList.map { ObjectId(it) }
             )
         }
+
         assert(listFromResponse == listOfUsers)
-
-
     }
 
     @Test
@@ -225,13 +230,13 @@ class NatsChatCreationControllerTest {
                 "chat.findAll",
                 NatsValidMongoChatParser.serializeFindChatsRequest(),
                 Duration.ofSeconds(10)
-            )
-                .data
+            ).data
         )
 
         assert(response.hasFailure())
 
         assert(response.failure.message == "Test exception")
+
         assert(response.failure.internalError.isInitialized)
     }
 
@@ -255,8 +260,7 @@ class NatsChatCreationControllerTest {
                 "chat.findOne",
                 NatsValidMongoChatParser.serializeFindChatRequest(request),
                 Duration.ofSeconds(10)
-            )
-                .data
+            ).data
         )
 
         assert(response.hasSuccess())
@@ -270,13 +274,10 @@ class NatsChatCreationControllerTest {
         }
 
         assert(chatFromResponse == chatToFind)
-
-
     }
 
     @Test
     fun `Nats chat find one failure scenario`() {
-
         val chatToFind = MongoChat(
             id = ObjectId(),
             name = "test chat success",
@@ -294,19 +295,18 @@ class NatsChatCreationControllerTest {
 
         whenever(chatService.findChatById(idToFind)).thenThrow(InternalException("Test exception"))
 
-
         val response = NatsValidMongoChatParser.deserializeDeleteChatResponse(
             natsConnection.request(
                 "chat.findOne",
                 NatsValidMongoChatParser.serializeFindChatRequest(request),
                 Duration.ofSeconds(10)
-            )
-                .data
+            ).data
         )
 
         assert(response.hasFailure())
 
         assert(response.failure.message == "Test exception")
+
         assert(response.failure.internalError.isInitialized)
     }
 
@@ -326,14 +326,14 @@ class NatsChatCreationControllerTest {
 
         chatRepository.save(chatToUpdate)
 
-        val idOfChatToUpdate = chatUpdatedVersion.id!!
+        val idOfChatToUpdate = chatToUpdate.id!!
 
         val request = Mongochat.ChatUpdateRequest.newBuilder()
             .apply {
                 this.requestId = idOfChatToUpdate.toString()
                 this.chat = Mongochat.Chat.newBuilder()
                     .apply {
-                        this.id = chatUpdatedVersion.toString()
+                        this.id = chatUpdatedVersion.id.toString()
                         this.name = chatUpdatedVersion.name
                         chatUpdatedVersion.users.forEach {
                             this.addUsers(it.toString())
@@ -346,8 +346,7 @@ class NatsChatCreationControllerTest {
                 "chat.update",
                 NatsValidMongoChatParser.serializeUpdateRequest(request),
                 Duration.ofSeconds(10)
-            )
-                .data
+            ).data
         )
 
         assert(response.hasSuccess())
@@ -360,8 +359,7 @@ class NatsChatCreationControllerTest {
             )
         }
 
-        assert(chatFromResponse == chatUpdatedVersion)
-
+        assert(chatFromResponse == chatUpdatedVersion.copy(id = chatToUpdate.id))
     }
 
     @Test
@@ -380,8 +378,6 @@ class NatsChatCreationControllerTest {
         )
 
         chatRepository.save(chatToUpdate)
-
-
 
         val idOfChatToUpdate = chatUpdatedVersion.id!!
 
@@ -415,9 +411,9 @@ class NatsChatCreationControllerTest {
         )
 
         assert(response.hasFailure())
+
         assert(response.failure.message == "Test Exception")
+
         assert(response.failure.internalError.isInitialized)
-
     }
-
 }

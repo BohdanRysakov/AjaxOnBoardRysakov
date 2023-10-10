@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 import rys.nats.protostest.Mongochat
 import rys.nats.utils.NatsValidMongoChatParser
 import rys.nats.utils.NatsValidMongoChatParser.deserializeFindChatRequest
-import rys.rest.model.MongoChat
 import rys.rest.service.ChatService
 
 @Component
@@ -17,7 +16,6 @@ class NatsChatFindOneController(
     private val natsConnection: Connection,
     private val chatService: ChatService
 ) {
-
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
@@ -41,14 +39,9 @@ class NatsChatFindOneController(
                     }
                 }.build()
 
-                message.replyTo?.let { replySubject ->
-                    natsConnection.publish(replySubject,
-                        NatsValidMongoChatParser.serializeFindChatResponse(response))
+                message.replyTo?.let {
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeFindChatResponse(response))
                 }
-
-
-
-
             } catch (e: Exception) {
                 logger.error("Error while finding chat: ${e.message}", e)
 
@@ -57,14 +50,10 @@ class NatsChatFindOneController(
                     failureBuilder.internalErrorBuilder
                 }.build()
 
-                message.replyTo?.let { replySubject ->
-                    natsConnection.publish(replySubject,
-                        NatsValidMongoChatParser.serializeFindChatResponse(response))
+                message.replyTo?.let {
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeFindChatResponse(response))
                 }
-
             }
-
-
         }
     }
 }

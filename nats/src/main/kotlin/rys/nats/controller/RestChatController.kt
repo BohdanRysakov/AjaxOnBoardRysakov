@@ -5,8 +5,14 @@ import jakarta.validation.Valid
 import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import rys.nats.exception.InternalException
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PutMapping
 import rys.nats.protostest.Mongochat
 import rys.nats.utils.NatsValidMongoChatParser
 import rys.rest.model.MongoChat
@@ -17,56 +23,44 @@ class RestChatController(private val natsConnection: Connection) {
 
     @PostMapping("")
     fun createChat(@Valid @RequestBody mongoChat: MongoChat): ResponseEntity<Any>? {
-        val request = Mongochat.ChatCreateRequest.newBuilder()
-            .apply {
-                this.chat = Mongochat.Chat.newBuilder()
-                    .apply {
-                        this.id = mongoChat.id.toString()
-                        this.name = mongoChat.name
-                        mongoChat.users.forEach {
-                            this.addUsers(it.toString())
-                        }
-                    }.build()
+        val request = Mongochat.ChatCreateRequest.newBuilder().apply {
+            this.chat = Mongochat.Chat.newBuilder().apply {
+                this.id = mongoChat.id.toString()
+                this.name = mongoChat.name
+                mongoChat.users.forEach {
+                    this.addUsers(it.toString())
+                }
             }.build()
+        }.build()
 
         val response = NatsValidMongoChatParser.deserializeCreateChatResponse(
             natsConnection.request(
                 "chat.create",
                 NatsValidMongoChatParser.serializeCreateChatRequest(request)
-            )
-                .get()
-                .data
+            ).get().data
         )
 
         when (response.responseCase) {
             Mongochat.ChatCreateResponse.ResponseCase.SUCCESS -> {
+
                 val success = response.success.result
+
                 val newChat = MongoChat(
                     id = ObjectId(success.id),
                     name = success.name,
                     users = success.usersList.map { ObjectId(it) })
-                return ResponseEntity(
-                    newChat,
-                    HttpStatus.CREATED
-                )
+
+                return ResponseEntity(newChat, HttpStatus.CREATED)
             }
 
             Mongochat.ChatCreateResponse.ResponseCase.FAILURE -> {
-                return ResponseEntity(
-                    response.failure.message.toString(),
-                    HttpStatus.BAD_REQUEST
-                )
+                return ResponseEntity(response.failure.message.toString(), HttpStatus.BAD_REQUEST)
             }
 
             Mongochat.ChatCreateResponse.ResponseCase.RESPONSE_NOT_SET -> {
-                return ResponseEntity(
-                    "Unexpected internal error",
-                    HttpStatus.BAD_REQUEST
-                )
+                return ResponseEntity("Unexpected internal error. See logs for details", HttpStatus.BAD_REQUEST)
             }
-
         }
-
     }
 
     @GetMapping("")
@@ -106,10 +100,9 @@ class RestChatController(private val natsConnection: Connection) {
     @GetMapping("/{id}")
     fun findChat(@PathVariable id: String): ResponseEntity<Any> {
 
-        val request = Mongochat.ChatFindOneRequest.newBuilder()
-            .apply {
-                this.id = id
-            }.build()
+        val request = Mongochat.ChatFindOneRequest.newBuilder().apply {
+            this.id = id
+        }.build()
 
         val response = NatsValidMongoChatParser.deserializeFindChatResponse(
             natsConnection.request(
@@ -121,15 +114,14 @@ class RestChatController(private val natsConnection: Connection) {
         when (response.responseCase) {
             Mongochat.ChatFindOneResponse.ResponseCase.SUCCESS -> {
                 val success = response.success.result
+
                 val chat = MongoChat(
                     id = ObjectId(success.id),
                     name = success.name,
                     users = success.usersList.map { ObjectId(it) }
                 )
-                return ResponseEntity(
-                    chat,
-                    HttpStatus.OK
-                )
+
+                return ResponseEntity(chat, HttpStatus.OK)
             }
 
             Mongochat.ChatFindOneResponse.ResponseCase.FAILURE -> {
@@ -141,21 +133,17 @@ class RestChatController(private val natsConnection: Connection) {
 
             Mongochat.ChatFindOneResponse.ResponseCase.RESPONSE_NOT_SET -> {
                 return ResponseEntity(
-                    "Unexpected internal error",
-                    HttpStatus.BAD_REQUEST
+                    "Unexpected internal error. See logs for details", HttpStatus.BAD_REQUEST
                 )
             }
-
         }
-
     }
 
     @DeleteMapping("/{id}")
     fun deleteChat(@PathVariable id: String): ResponseEntity<Any> {
-        val request = Mongochat.ChatDeleteRequest.newBuilder()
-            .apply {
-                this.requestId = id
-            }.build()
+        val request = Mongochat.ChatDeleteRequest.newBuilder().apply {
+            this.requestId = id
+        }.build()
 
         val response = NatsValidMongoChatParser.deserializeDeleteChatResponse(
             natsConnection.request(
@@ -167,48 +155,43 @@ class RestChatController(private val natsConnection: Connection) {
         when (response.responseCase) {
             Mongochat.ChatDeleteResponse.ResponseCase.SUCCESS -> {
                 return ResponseEntity(
-                    response.success.result,
-                    HttpStatus.OK
+                    response.success.result, HttpStatus.OK
                 )
             }
 
             Mongochat.ChatDeleteResponse.ResponseCase.FAILURE -> {
                 return ResponseEntity(
-                    response.failure.message.toString(),
-                    HttpStatus.BAD_REQUEST
+                    response.failure.message.toString(), HttpStatus.BAD_REQUEST
                 )
             }
 
             Mongochat.ChatDeleteResponse.ResponseCase.RESPONSE_NOT_SET -> {
                 return ResponseEntity(
-                    "Unexpected internal error",
-                    HttpStatus.BAD_REQUEST
+                    "Unexpected internal error. See logs for details", HttpStatus.BAD_REQUEST
                 )
             }
-
         }
     }
 
     @PutMapping("/{id}")
     fun updateChat(@PathVariable id: String, @RequestBody chat: MongoChat): ResponseEntity<Any> {
 
-        val request = Mongochat.ChatUpdateRequest.newBuilder()
-            .apply {
-                this.requestId = id
-                this.chat = Mongochat.Chat.newBuilder()
-                    .apply {
-                        this.id = chat.id.toString()
-                        this.name = chat.name
-                        chat.users.forEach {
-                            this.addUsers(it.toString())
-                        }
-                    }.build()
+        val request = Mongochat.ChatUpdateRequest.newBuilder().apply {
+            this.requestId = id
+            this.chat = Mongochat.Chat.newBuilder().apply {
+                this.id = chat.id.toString()
+
+                this.name = chat.name
+
+                chat.users.forEach {
+                    this.addUsers(it.toString())
+                }
             }.build()
+        }.build()
 
         val response = NatsValidMongoChatParser.deserializeUpdateResponse(
             natsConnection.request(
-                "chat.update",
-                NatsValidMongoChatParser.serializeUpdateRequest(request)
+                "chat.update", NatsValidMongoChatParser.serializeUpdateRequest(request)
             ).get().data
         )
 
@@ -222,26 +205,21 @@ class RestChatController(private val natsConnection: Connection) {
                     name = success.name,
                     users = success.usersList.map { ObjectId(it) }
                 )
-                return ResponseEntity(
-                    updatedChat,
-                    HttpStatus.OK
-                )
+
+                return ResponseEntity(updatedChat, HttpStatus.OK)
             }
 
             Mongochat.ChatUpdateResponse.ResponseCase.FAILURE -> {
                 return ResponseEntity(
-                    response.failure.message.toString(),
-                    HttpStatus.BAD_REQUEST
+                    response.failure.message.toString(), HttpStatus.BAD_REQUEST
                 )
             }
 
             Mongochat.ChatUpdateResponse.ResponseCase.RESPONSE_NOT_SET -> {
                 return ResponseEntity(
-                    "Unexpected internal error",
-                    HttpStatus.BAD_REQUEST
+                    "Unexpected internal error. See logs for details", HttpStatus.BAD_REQUEST
                 )
             }
-
         }
     }
 }

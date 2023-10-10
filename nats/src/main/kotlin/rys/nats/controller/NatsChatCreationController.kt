@@ -1,17 +1,14 @@
 package rys.nats.controller
 
-import com.google.protobuf.ProtocolStringList
 import io.nats.client.Connection
 import jakarta.annotation.PostConstruct
 import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import rys.nats.exception.InternalException
 import rys.nats.protostest.Mongochat
 import rys.nats.protostest.Mongochat.ChatCreateResponse
 import rys.nats.utils.NatsValidMongoChatParser
 import rys.rest.model.MongoChat
-import rys.rest.model.MongoUser
 import rys.rest.service.ChatService
 
 @Service
@@ -19,14 +16,12 @@ class NatsChatCreationController(
     private val natsConnection: Connection,
     private val chatService: ChatService
 ) {
-
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
     fun init() {
         natsConnection.createDispatcher().subscribe("chat.create") { message ->
             try {
-
                 val requestBody: Mongochat.Chat = NatsValidMongoChatParser
                     .deserializeCreateChatRequest(message.data).chat
 
@@ -48,15 +43,11 @@ class NatsChatCreationController(
                     }
                 }.build()
 
-                message.replyTo?.let { replySubject ->
-                    natsConnection.publish(
-                        replySubject,
-                        NatsValidMongoChatParser.serializeCreateChatResponse(response)
-                    )
+                message.replyTo?.let {
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeCreateChatResponse(response))
                 }
 
             } catch (e: Exception) {
-
                 logger.error("Error while creating chat: ${e.message}", e)
 
                 val response = ChatCreateResponse.newBuilder().apply {
@@ -65,14 +56,11 @@ class NatsChatCreationController(
                         this.internalErrorBuilder
                     }
                 }.build()
-                message.replyTo?.let { replySubject ->
-                    natsConnection.publish(
-                        replySubject,
-                        NatsValidMongoChatParser.serializeCreateChatResponse(response)
-                    )
+
+                message.replyTo?.let {
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeCreateChatResponse(response))
                 }
             }
         }
     }
-
 }

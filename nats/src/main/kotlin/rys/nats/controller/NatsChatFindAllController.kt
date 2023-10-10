@@ -15,19 +15,18 @@ class NatsChatFindAllController(
     private val natsConnection: Connection,
     private val chatService: ChatService
 ) {
-
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
     fun init() {
-        val dispatcher: Dispatcher = natsConnection.createDispatcher()
-        dispatcher.subscribe("chat.findAll") { message ->
+        natsConnection.createDispatcher().subscribe("chat.findAll") { message ->
             try {
                 val chats: List<MongoChat> = chatService.findAllChats()
 
                 val response = Mongochat.ChatFindAllResponse.newBuilder().apply {
                     successBuilder.apply {
                         chats.forEach { chat ->
+
                             this.addResult(
                                 Mongochat.Chat.newBuilder().apply {
                                     id = chat.id.toString()
@@ -41,12 +40,9 @@ class NatsChatFindAllController(
                     }
                 }.build()
 
-                message.replyTo?.let { replaySubject ->
-                    natsConnection.publish(
-                        replaySubject, NatsValidMongoChatParser.serializeFindChatsResponse(response)
-                    )
+                message.replyTo?.let {
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeFindChatsResponse(response))
                 }
-
             } catch (e: Exception) {
                 logger.error("Error while finding all chats: ${e.message}", e)
 
@@ -57,12 +53,9 @@ class NatsChatFindAllController(
                     }
                 }.build()
 
-                message.replyTo?.let { replaySubject ->
-                    natsConnection.publish(
-                        replaySubject, NatsValidMongoChatParser.serializeFindChatsResponse(response)
-                    )
+                message.replyTo?.let {
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeFindChatsResponse(response))
                 }
-
             }
         }
     }

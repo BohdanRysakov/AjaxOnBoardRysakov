@@ -10,31 +10,27 @@ import rys.nats.utils.NatsValidMongoChatParser
 import rys.rest.model.MongoChat
 import rys.rest.service.ChatService
 
-
 @Component
 class NatsChatUpdateController(
     private val natsConnection: Connection,
     private val chatService: ChatService
 ) {
-
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
     fun init() {
         natsConnection.createDispatcher().subscribe("chat.update") { message ->
-
             try {
-
                 val requestBody = NatsValidMongoChatParser.deserializeUpdateRequest(message.data)
 
-                val targetId = ObjectId(requestBody.chat.id.toString())
+                val targetId = ObjectId(requestBody.requestId.toString())
 
                 val newChat = MongoChat(
                     id = ObjectId(requestBody.chat.id.toString()),
                     name = requestBody.chat.name,
                     users = requestBody.chat.usersList.map { ObjectId(it) })
 
-                val updatedChat = chatService.updateChat(targetId, newChat)!!
+                val updatedChat: MongoChat = chatService.updateChat(targetId, newChat)!!
 
                 val response = Mongochat.ChatUpdateResponse.newBuilder().apply {
                     successBuilder.apply {
@@ -49,10 +45,7 @@ class NatsChatUpdateController(
                 }.build()
 
                 message.replyTo?.let {
-                    natsConnection.publish(
-                        it,
-                        NatsValidMongoChatParser.serializeUpdateResponse(response)
-                    )
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeUpdateResponse(response))
                 }
 
             } catch (e: Exception) {
@@ -66,10 +59,7 @@ class NatsChatUpdateController(
                 }.build()
 
                 message.replyTo?.let {
-                    natsConnection.publish(
-                        it,
-                        NatsValidMongoChatParser.serializeUpdateResponse(response)
-                    )
+                    natsConnection.publish(it, NatsValidMongoChatParser.serializeUpdateResponse(response))
                 }
             }
         }
