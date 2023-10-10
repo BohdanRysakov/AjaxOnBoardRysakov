@@ -27,15 +27,16 @@ class NatsChatFindAllController(
 
                 val response = Mongochat.ChatFindAllResponse.newBuilder().apply {
                     successBuilder.apply {
-                        chats.forEach {
-                            Mongochat.Chat.newBuilder().apply {
-                                id = it.id.toString()
-                                name = it.name
-                                it.users.forEach {
-                                    this.addUsers(it.toString())
-                                }
-
-                            }
+                        chats.forEach { chat ->
+                            this.addResult(
+                                Mongochat.Chat.newBuilder().apply {
+                                    id = chat.id.toString()
+                                    name = chat.name
+                                    chat.users.forEach {
+                                        this.addUsers(it.toString())
+                                    }
+                                }.build()
+                            )
                         }
                     }
                 }.build()

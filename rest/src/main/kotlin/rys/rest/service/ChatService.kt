@@ -2,6 +2,7 @@ package rys.rest.service
 
 import org.bson.types.ObjectId
 import rys.rest.model.MongoChat
+
 interface ChatService {
     fun createChat(mongoChat: MongoChat): MongoChat
 

@@ -15,7 +15,6 @@ import rys.rest.service.ChatService
 class NatsChatUpdateController(
     private val natsConnection: Connection,
     private val chatService: ChatService
-
 ) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -28,21 +27,24 @@ class NatsChatUpdateController(
 
                 val requestBody = NatsValidMongoChatParser.deserializeUpdateRequest(message.data)
 
-                val targetId = ObjectId(requestBody.requestId)
+                val targetId = ObjectId(requestBody.chat.id.toString())
 
-                val newChat = MongoChat(id = null,
+                val newChat = MongoChat(
+                    id = ObjectId(requestBody.chat.id.toString()),
                     name = requestBody.chat.name,
                     users = requestBody.chat.usersList.map { ObjectId(it) })
 
-                val chat = chatService.updateChat(targetId, newChat)
+                val updatedChat = chatService.updateChat(targetId, newChat)!!
 
                 val response = Mongochat.ChatUpdateResponse.newBuilder().apply {
                     successBuilder.apply {
-                        Mongochat.Chat.newBuilder().apply {
-                            id = chat!!.id.toString()
-                            name = chat.name
-                            usersList.addAll(chat.users.map { it.toString() })
-                        }
+                        this.result = Mongochat.Chat.newBuilder().apply {
+                            id = updatedChat.id.toString()
+                            name = updatedChat.name
+                            updatedChat.users.forEach {
+                                this.addUsers(it.toString())
+                            }
+                        }.build()
                     }
                 }.build()
 
