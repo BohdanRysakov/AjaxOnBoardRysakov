@@ -36,8 +36,7 @@ import java.time.Duration
         NatsChatUpdateController::class]
 )
 @ActiveProfiles("testing")
-class NatsChatCreationControllerTest {
-
+class NatsControllersTests {
     @SpyBean
     private lateinit var chatService: ChatService
 
