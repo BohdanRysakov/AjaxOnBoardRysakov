@@ -30,20 +30,16 @@ class NatsChatDeleteController(
 
     private fun buildSuccessResponse(): ChatDeleteResponse =
         ChatDeleteResponse.newBuilder().apply {
-            successBuilder.apply {
-                this.result = true
-            }
+            successBuilder.result = true
         }.build()
 
     private fun buildFailureResponse(e: Throwable): ChatDeleteResponse {
         logger.error("Error while deleting chat: ${e.message}", e)
-
-        return ChatDeleteResponse.newBuilder().setFailure(
-            ChatDeleteResponse.Failure.newBuilder().apply {
-                this.message = e.message
-                this.internalErrorBuilder
-            }.build()
-        ).build()
+        return ChatDeleteResponse.newBuilder().apply {
+            failureBuilder
+                .setMessage(e.message)
+                .internalErrorBuilder
+        }.build()
     }
 
     companion object {

@@ -24,8 +24,7 @@ class NatsChatCreationController(
     override val parser: Parser<ChatCreateRequest> = ChatCreateRequest.parser()
     override fun handle(request: ChatCreateRequest): ChatCreateResponse = runCatching {
 
-
-        val chat  = request.chat
+        val chat = request.chat
 
         val newChat: MongoChat = chatService.createChat(MongoChat(
             id = ObjectId(chat.id),
@@ -53,7 +52,7 @@ class NatsChatCreationController(
             }
         }.build()
 
-    private fun buildFailureResponse(e:Throwable): ChatCreateResponse {
+    private fun buildFailureResponse(e: Throwable): ChatCreateResponse {
         logger.error("Error while creating chat: ${e.message}", e)
 
         return ChatCreateResponse.newBuilder().apply {

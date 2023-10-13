@@ -17,6 +17,9 @@ plugins {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
+noArg {
+    annotation("rys.ajaxpetproject.commonmodels.annotations.NoArg")
+}
 
 configurations {
     compileOnly {

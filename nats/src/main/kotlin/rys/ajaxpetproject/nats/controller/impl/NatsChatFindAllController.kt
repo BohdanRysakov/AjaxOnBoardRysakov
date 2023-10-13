@@ -30,17 +30,15 @@ class NatsChatFindAllController(
 
     private fun buildSuccessResponse(chats: List<MongoChat>): ChatFindAllResponse =
         ChatFindAllResponse.newBuilder().apply {
-            successBuilder.apply {
-                chats.forEach { chat ->
-                    this.addResult(
-                        Chat.newBuilder().apply {
-                            id = chat.id.toString()
-                            name = chat.name
-                            chat.users.forEach {
-                                this.addUsers(it.toString())
-                            }
-                        }.build()
-                    )
+            successBuilder.also { success ->
+                chats.map { chat ->
+                    Chat.newBuilder().apply {
+                        id = chat.id.toString()
+                        name = chat.name
+                        addAllUsers(chat.users.map { it.toString() })
+                    }
+                }.fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
+                    result.addResult(chat)
                 }
             }
         }.build()
@@ -48,10 +46,8 @@ class NatsChatFindAllController(
     private fun buildFailureResponse(e:Throwable): ChatFindAllResponse {
         logger.error("Error while creating chat: ${e.message}", e)
         return ChatFindAllResponse.newBuilder().apply {
-            failureBuilder.apply {
-                this.message = e.message
-                this.internalErrorBuilder
-            }
+            failureBuilder.message = e.message
+            failureBuilder.internalErrorBuilder
         }.build()
     }
 

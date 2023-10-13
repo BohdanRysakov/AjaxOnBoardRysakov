@@ -1,0 +1,6 @@
+nats:
+  uri: nats://localhost:4222
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/main

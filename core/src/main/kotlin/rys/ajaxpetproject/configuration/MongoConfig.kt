@@ -26,7 +26,7 @@ class MongoConfig {
             chatService.deleteChats()
             messageService.deleteMessages()
 
-            val mongoUsers : List<MongoUser> = listOf(
+            val mongoUsers: List<MongoUser> = listOf(
                 MongoUser(userName = "Alice", password = "pass1"),
                 MongoUser(userName = "Bob", password = "pass2"),
                 MongoUser(userName = "Carol", password = "pass3"),
@@ -36,9 +36,9 @@ class MongoConfig {
 
             println(mongoUsers)
 
-            val mongoChat1 : MongoChat= chatService.createChat(
-                    MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
-                )
+            val mongoChat1: MongoChat = chatService.createChat(
+                MongoChat(name = "Lviv", users = mongoUsers.map { it.id })
+            )
 
             val mongoChat2 = chatService.createChat(MongoChat(name = "Friends", users = mongoUsers.map { it.id }
                 .subList(0, USERS_NUMBER_IN_CHAT1)))
