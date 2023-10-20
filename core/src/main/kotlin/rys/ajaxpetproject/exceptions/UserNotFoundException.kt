@@ -1,3 +1,3 @@
 package rys.ajaxpetproject.exceptions
 
-class UserNotFoundException : RuntimeException()
+class UserNotFoundException(msg : String?) : RuntimeException(msg)
