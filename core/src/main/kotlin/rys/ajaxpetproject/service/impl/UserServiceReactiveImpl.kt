@@ -13,23 +13,29 @@ import rys.ajaxpetproject.service.UserService
 @Service
 @Suppress("MagicNumber")
 class UserServiceReactiveImpl(
-  //  private val encoder: PasswordEncoder,
+    private val encoder: PasswordEncoder,
     private val userRepository: UserRepository
 ) : UserService {
     override fun createUser(mongoUser: MongoUser): Mono<MongoUser> {
         return userRepository.findByName(mongoUser.userName!!)
             .flatMap {
                 Mono.error<MongoUser>(
-                    UserAlreadyExistsException("A user with the username ${mongoUser.userName} already exists!"))
+                    UserAlreadyExistsException("A user with the username ${mongoUser.userName} already exists!")
+                )
             }
             .switchIfEmpty(
                 (mongoUser.password!!.length > 8)
-                    .let { userRepository.save(
-                        mongoUser.copy()
-                    ) }
+                    .let {
+                        val mongoUser2 = mongoUser.copy(password = encoder.encode(mongoUser.password))
+                        userRepository.save(
+                          mongoUser2
+                        )
+                    }
                     .switchIfEmpty(
                         Mono.error(
-                            IllegalArgumentException("Password must be at least 8 characters long!")))
+                            IllegalArgumentException("Password must be at least 8 characters long!")
+                        )
+                    )
             )
     }
 
