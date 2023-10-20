@@ -1,20 +1,26 @@
 package rys.ajaxpetproject.service
 
 import org.bson.types.ObjectId
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoUser
 
 interface UserService {
-    fun createUser(mongoUser: MongoUser): MongoUser
+    fun createUser(mongoUser: MongoUser): Mono<MongoUser>
 
-    fun findUserById(id: ObjectId): MongoUser?
+    fun findUserById(id: ObjectId): Mono<MongoUser>
 
-    fun getUserById(id: ObjectId): MongoUser
+    fun findUserByName(name: String): Mono<MongoUser>
 
-    fun findAllUsers(): List<MongoUser>
+    fun getUserById(id: ObjectId): Mono<MongoUser>
 
-    fun updateUser(id: ObjectId, updatedMongoUser: MongoUser): MongoUser?
+    fun getUserByName(name: String): Mono<MongoUser>
 
-    fun deleteUser(id: ObjectId): Boolean
+    fun findAllUsers(): Flux<MongoUser>
 
-    fun deleteUsers(): Boolean
+    fun updateUser(id: ObjectId, updatedUser: MongoUser): Mono<MongoUser>
+
+    fun deleteUser(id: ObjectId): Mono<Boolean>
+
+    fun deleteUsers(): Mono<Boolean>
 }
