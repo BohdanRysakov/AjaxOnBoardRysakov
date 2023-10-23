@@ -57,7 +57,7 @@ class ChatReactiveRepositoryImpl(
         )
     }
 
-    override fun delete(id: ObjectId): Mono<Boolean> {
+    override fun delete(id: ObjectId): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.remove<MongoChat>(query)
             .map { it.wasAcknowledged() && it.deletedCount == 1L }
