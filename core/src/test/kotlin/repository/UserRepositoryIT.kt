@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import reactor.test.StepVerifier
 import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
+import java.util.concurrent.atomic.AtomicInteger
 
 @DbIntegrationTest
 class UserRepositoryIT {
+
     @Autowired
     private lateinit var userRepository: UserRepository
 
@@ -20,154 +22,171 @@ class UserRepositoryIT {
     }
 
     @Test
-    fun `should return user when findById() success`() {
-        //GIVEN
-        val id = ObjectId("652f9203deb9044f309a7dd9")
-        val user = MongoUser(
-            id = id, userName = "Successful_findUserById - ${System.nanoTime()}",
-            password = "password"
-        )
-        userRepository.save(user).block()
+    fun `should return user by id when user with provided id exists`() {
+        // Given
+        val expectedName = "SUCESSFUL_findUserById - ${System.nanoTime()}"
+        val expectedPassword = "SUCESSFUL_findUserById - ${System.nanoTime()}"
+        val user = MongoUser(userName = expectedName, password = expectedPassword)
+        val id = userRepository.save(user).block()!!.id!!
 
-        //WHEN //THEN
+        // When & Then
         StepVerifier.create(userRepository.findById(id))
             .expectSubscription()
-            .expectNext(user)
+            .assertNext { actualUser ->
+                Assertions.assertEquals(expectedName, actualUser.userName)
+                Assertions.assertEquals(expectedPassword, actualUser.password)
+            }
             .verifyComplete()
     }
 
     @Test
-    fun `should return user when findByName() success`() {
-        //GIVEN
-        val givenName = "Successful_findUserById - ${System.nanoTime()}"
-        val user = MongoUser(
-            id = ObjectId("652f9203deb9044f309a7dd9"),
-            userName = givenName,
-            password = "password"
-        )
+    fun `should return user by name when user with provided name exists`() {
+        // Given
+        val expectedName = "Successful_findUserByName - ${System.nanoTime()}"
+        val expectedPassword = "Successful_findUserByName - ${System.nanoTime()}"
+        val user = MongoUser(userName = expectedName, password = expectedPassword)
         userRepository.save(user).block()
 
-        //WHEN //THEN
-        StepVerifier.create(userRepository.findByName(givenName))
+        // When & Then
+        StepVerifier.create(userRepository.findByName(expectedName))
             .expectSubscription()
-            .expectNext(user)
+            .assertNext { actualUser ->
+                Assertions.assertEquals(expectedName, actualUser.userName)
+                Assertions.assertEquals(expectedPassword, actualUser.password)
+            }
             .verifyComplete()
     }
 
     @Test
-    fun `should not return anything when findById() fails`() {
-        //GIVEN
-        val id = ObjectId("652f9203deb9044f309a7dd9")
+    fun `should return nothing when no user with provided id exists`() {
+        // Given
+        val nonExistentId = ObjectId()
 
-        //WHEN //THEN
-        StepVerifier.create(userRepository.findById(id))
+        // When & Then
+        StepVerifier.create(userRepository.findById(nonExistentId))
             .expectSubscription()
             .expectNextCount(0)
             .verifyComplete()
     }
 
     @Test
-    fun `should return user when save() success`() {
-        //GIVEN
-        val user = MongoUser(
-            userName = "Successful_save - ${System.nanoTime()}",
-            password = "password"
+    fun `should return user when save method invoked`() {
+        // Given
+        val exptectedUser = MongoUser(
+            userName = "SUCESSFULL_save - ${System.nanoTime()}",
+            password = "SUCESSFULL_password - ${System.nanoTime()}"
         )
 
-        //WHEN //THEN
-        StepVerifier.create(userRepository.save(user))
+        // When & Then
+        StepVerifier.create(userRepository.save(exptectedUser))
             .expectSubscription()
-            .expectNextMatches { u ->
-                u.id != null && u.userName == user.userName && u.password == user.password
+            .assertNext { actualUser ->
+                Assertions.assertNotNull(actualUser.id)
+                Assertions.assertEquals(exptectedUser.userName, actualUser.userName)
+                Assertions.assertEquals(exptectedUser.password, actualUser.password)
             }
             .verifyComplete()
     }
 
     @Test
-    fun `should return user when update() success`() {
-        //GIVEN
-        val id = ObjectId("652f9203deb9044f309a7dd9")
+    fun `should return user when update is successful`() {
+        // Given
+
+        val expectedName = "SUCESSFULL_update - ${System.nanoTime()}"
+        val expectedPassword = "SUCESSFULL_password - ${System.nanoTime()}"
+
         val oldUser = MongoUser(
-            id = id,
             userName = "OLD_USER_successful_update - ${System.nanoTime()}",
-            password = "OLD_password"
+            password = "OLD_password - ${System.nanoTime()}"
         )
-        userRepository.save(oldUser).block()
-
-        val newUser = MongoUser(
-            userName = "NEW_USER_successful_update - ${System.nanoTime()}",
-            password = "NEW_password"
+        val oldUserId = userRepository.save(oldUser).block()!!.id!!
+        val expectedUser = MongoUser(
+            userName = expectedName,
+            password = expectedPassword
         )
 
-        //WHEN //THEN
-        StepVerifier.create(userRepository.update(id, newUser))
+        // When & Then
+        StepVerifier.create(userRepository.update(oldUserId, expectedUser))
             .expectSubscription()
-            .expectNext(newUser.copy(id = id))
+            .assertNext { actualUser ->
+                Assertions.assertEquals(oldUserId, actualUser.id)
+                Assertions.assertEquals(expectedName, actualUser.userName)
+                Assertions.assertEquals(expectedPassword, actualUser.password)
+            }
             .verifyComplete()
 
         //AND //THEN
-        val actualUser = userRepository.findById(oldUser.id!!).block()
-        Assertions.assertEquals(newUser.copy(id = oldUser.id), actualUser)
+        StepVerifier.create(userRepository.findById(oldUserId))
+            .expectSubscription()
+            .assertNext { actualUser ->
+                Assertions.assertEquals(oldUserId, actualUser.id)
+                Assertions.assertEquals(expectedName, actualUser.userName)
+                Assertions.assertEquals(expectedPassword, actualUser.password)
+            }
+            .verifyComplete()
     }
 
     @Test
-    fun `should return Mono of TRUE when delete() invoked`() {
+    fun `should return true when user is deleted`() {
         //GIVEN
-        val id = ObjectId("652f9203deb9044f309a7dd9")
         val user = MongoUser(
-            id = id,
             userName = "Successful_delete - ${System.nanoTime()}",
             password = "password"
         )
-        userRepository.save(user).block()
+        val userToDeleteId = userRepository.save(user).block()!!.id!!
 
-        //WHEN //THEN
-        StepVerifier.create(userRepository.delete(id))
+        //WHEN // THEN
+        StepVerifier.create(userRepository.delete(userToDeleteId))
             .expectSubscription()
             .expectNext(true)
             .verifyComplete()
 
         //AND //THEN
-        val actualUser = userRepository.findById(id).block()
-        Assertions.assertNull(actualUser)
+        StepVerifier.create(userRepository.findById(userToDeleteId))
+            .expectSubscription()
+            .expectNextCount(0)
+            .verifyComplete()
     }
 
     @Test
-    fun `should return Flux with All users in collection when findAll() is invoked`() {
+    fun `should return all users in the collection`() {
         //GIVEN
-        val id1 = ObjectId("652f9203deb9044f309a7dd7")
-        val id2 = ObjectId("652f9203deb9044f309a7dd8")
-        val id3 = ObjectId("652f9203deb9044f309a7dd9")
-
+        val counter = AtomicInteger(0)
 
         val user1 = MongoUser(
-            id = id1,
-            userName = "Successful_findAll - ${System.nanoTime()}",
-            password = "password"
+            userName = "SUCESSFULL_findAll1 - ${System.nanoTime()}",
+            password = "SUCESSFULL_password - ${System.nanoTime()}"
         )
         val user2 = MongoUser(
-            id = id2,
-            userName = "Successful_findAll - ${System.nanoTime()}",
-            password = "password"
+            userName = "SUCESSFULL_findAll2 - ${System.nanoTime()}",
+            password = "SUCESSFULL_password - ${System.nanoTime()}"
         )
         val user3 = MongoUser(
-            id = id3,
-            userName = "Successful_findAll - ${System.nanoTime()}",
-            password = "password"
+            userName = "SUCESSFULL_findAll3 - ${System.nanoTime()}",
+            password = "SUCESSFULL_password3 - ${System.nanoTime()}"
         )
-        userRepository.save(user1).block()
-        userRepository.save(user2).block()
-        userRepository.save(user3).block()
+        val expectedUsersList: MutableList<MongoUser> = mutableListOf()
+        expectedUsersList.add(userRepository.save(user1).block()!!)
+        expectedUsersList.add(userRepository.save(user2).block()!!)
+        expectedUsersList.add(userRepository.save(user3).block()!!)
 
         //WHEN //THEN
         StepVerifier.create(userRepository.findAll())
             .expectSubscription()
-            .expectNext(user1, user2, user3)
+            .recordWith { ArrayList<MongoUser>() }
+            .thenConsumeWhile(
+                {counter.get() <  expectedUsersList.size},
+                { actualUser ->
+                    Assertions.assertTrue(expectedUsersList.contains(actualUser))
+                    counter.incrementAndGet()
+                })
             .verifyComplete()
+
     }
+
     @Test
-    fun `should not return anything when findAll() is invoked in empty collection`() {
-        //WHEN //THEN
+    fun `should not return any users when collection is empty`() {
+        // WHEN //THEN
         StepVerifier.create(userRepository.findAll())
             .expectSubscription()
             .expectNextCount(0)
