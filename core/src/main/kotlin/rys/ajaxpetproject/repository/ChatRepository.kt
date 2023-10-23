@@ -15,6 +15,10 @@ interface ChatRepository {
 
     fun update(id: ObjectId, chat: MongoChat): Mono<MongoChat>
 
+    fun addUser(userId: ObjectId, chatId: ObjectId): Mono<Unit>
+
+    fun removeUser(userId: ObjectId, chatId: ObjectId): Mono<Unit>
+
     fun delete(id: ObjectId): Mono<Unit>
 
     fun findAll(): Flux<MongoChat>
@@ -22,4 +26,9 @@ interface ChatRepository {
     fun findChatsByUserId(userId: ObjectId): Flux<MongoChat>
 
     fun findMessagesByUserIdAndChatId(userId: ObjectId, chatId: ObjectId): Flux<MongoMessage>
+
+    fun findMessagesFromChat(chatId: ObjectId) : Flux<MongoMessage>
+
+    fun deleteMessagesFromUser(userId: ObjectId, chatId: ObjectId): Mono<Unit>
+
 }

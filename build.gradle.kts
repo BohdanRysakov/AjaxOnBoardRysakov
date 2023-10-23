@@ -77,7 +77,7 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
+        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.1.4")
         implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")

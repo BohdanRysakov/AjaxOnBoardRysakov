@@ -12,15 +12,13 @@ interface MessageService {
 
     fun create(message: MongoMessage): Mono<MongoMessage>
 
-    fun deleteAll(): Mono<Boolean>
-
-    fun deleteAllFromUser(userId: ObjectId, chatId : ObjectId): Mono<Boolean>
+    fun deleteAll(): Mono<Unit>
 
     fun update(id: ObjectId, message: MongoMessage): Mono<MongoMessage>
 
-    fun delete(id: ObjectId): Mono<Boolean>
+    fun delete(id: ObjectId): Mono<Unit>
 
-    fun findMessagesFromUser(userId: ObjectId): Flux<MongoMessage>
+    fun findMessagesByIds(ids: List<ObjectId>): Flux<MongoMessage>
 
-    fun getMessagesFromUser(userId: ObjectId): Flux<MongoMessage>
+    fun deleteMessagesByIds(ids: List<ObjectId>): Mono<Unit>
 }

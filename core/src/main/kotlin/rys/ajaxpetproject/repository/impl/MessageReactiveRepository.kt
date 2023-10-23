@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.findAndModify
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.remove
-import org.springframework.data.mongodb.core.findAll
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -63,5 +62,10 @@ class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplat
         return mongoTemplate.find<MongoMessage>(query)
     }
 
-    private fun findAll(): Flux<MongoMessage> = mongoTemplate.findAll<MongoMessage>()
+    override fun deleteMessagesByIds(ids: List<ObjectId>): Mono<Unit> {
+        val query = Query.query(Criteria.where("id").`in`(ids))
+        return mongoTemplate.remove<MongoMessage>(query)
+            .doOnSuccess {  }
+            .thenReturn(Unit)
+    }
 }

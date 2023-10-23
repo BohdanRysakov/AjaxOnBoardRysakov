@@ -53,6 +53,30 @@ class ChatReactiveRepositoryImpl(
         )
     }
 
+    override fun addUser(userId: ObjectId, chatId: ObjectId): Mono<Unit> {
+        val query = Query.query(Criteria.where("id").`is`(chatId))
+        val updateDef = Update().addToSet("users", userId)
+        return mongoTemplate.findAndModify<MongoChat>(
+            query,
+            updateDef,
+            FindAndModifyOptions.options().returnNew(true)
+        )
+            .doOnSuccess { }
+            .thenReturn(Unit)
+    }
+
+    override fun removeUser(userId: ObjectId, chatId: ObjectId): Mono<Unit> {
+        val query = Query.query(Criteria.where("id").`is`(chatId))
+        val updateDef = Update().pull("users", userId)
+        return mongoTemplate.findAndModify<MongoChat>(
+            query,
+            updateDef,
+            FindAndModifyOptions.options().returnNew(true)
+        )
+            .doOnSuccess { }
+            .thenReturn(Unit)
+    }
+
     override fun delete(id: ObjectId): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.remove<MongoChat>(query)
@@ -77,4 +101,24 @@ class ChatReactiveRepositoryImpl(
             }
             .filter { it.userId == userId }
     }
+
+    override fun findMessagesFromChat(chatId: ObjectId): Flux<MongoMessage> {
+        val query = Query.query(Criteria.where("id").`is`(chatId))
+        return mongoTemplate.findOne<MongoChat>(query)
+            .flatMapMany { chat ->
+                messageRepository.findMessagesByIds(chat.messages)
+            }
+    }
+
+    override fun deleteMessagesFromUser(userId: ObjectId, chatId: ObjectId): Mono<Unit> {
+        val query = Query.query(Criteria.where("id").`is`(chatId))
+        return mongoTemplate.findOne<MongoChat>(query)
+            .flatMap { chat ->
+                messageRepository.deleteMessagesByIds(chat.messages.filter { it == userId })
+            }
+            .doOnSuccess { }
+            .thenReturn(Unit)
+    }
+
+
 }

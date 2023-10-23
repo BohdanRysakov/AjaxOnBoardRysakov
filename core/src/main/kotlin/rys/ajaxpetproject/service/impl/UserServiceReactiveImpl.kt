@@ -83,7 +83,7 @@ class UserServiceReactiveImpl(
             }
     }
 
-    override fun deleteUser(id: ObjectId): Mono<Boolean> {
+    override fun deleteUser(id: ObjectId): Mono<Unit> {
         return getUserById(id)
             .onErrorComplete()
             .flatMap {
@@ -91,7 +91,7 @@ class UserServiceReactiveImpl(
             }
     }
 
-    override fun deleteAll(): Mono<Boolean> {
+    override fun deleteAll(): Mono<Unit> {
         return userRepository.deleteAll()
     }
 }

@@ -20,7 +20,7 @@ interface UserService {
 
     fun updateUser(id: ObjectId, updatedUser: MongoUser): Mono<MongoUser>
 
-    fun deleteUser(id: ObjectId): Mono<Boolean>
+    fun deleteUser(id: ObjectId): Mono<Unit>
 
-    fun deleteAll(): Mono<Boolean>
+    fun deleteAll(): Mono<Unit>
 }
