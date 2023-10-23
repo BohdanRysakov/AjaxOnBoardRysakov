@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.MessageRepository
@@ -29,14 +30,9 @@ class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplat
         return mongoTemplate.save(message)
     }
 
-    override fun deleteAll(): Mono<Boolean> {
+    override fun deleteAll(): Mono<Unit> {
         return mongoTemplate.remove<MongoUser>(Query())
-            .flatMap { deleteResult ->
-                if (deleteResult.wasAcknowledged()) {
-                    findAll().count().map { count -> count == 0L }
-                } else {
-                    Mono.just(false)
-                }
+            .flatMap { Unit.toMono()
             }
     }
 
@@ -55,10 +51,11 @@ class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplat
         )
     }
 
-    override fun delete(id: ObjectId): Mono<Boolean> {
+    override fun delete(id: ObjectId): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.remove<MongoMessage>(query)
-            .map { it.wasAcknowledged() && it.deletedCount == 1L }
+            .doOnSuccess {  }
+            .thenReturn(Unit)
     }
 
     override fun findMessagesByIds(ids: List<ObjectId>): Flux<MongoMessage> {

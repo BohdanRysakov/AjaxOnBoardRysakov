@@ -2,12 +2,13 @@ package rys.ajaxpetproject.repository.impl
 
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.FindAndModifyOptions
 import org.springframework.data.mongodb.core.findAndModify
+import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.remove
 import org.springframework.data.mongodb.core.findAll
+import org.springframework.data.mongodb.core.findOne
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -32,15 +33,10 @@ class ChatReactiveRepositoryImpl(
         return mongoTemplate.save(chat)
     }
 
-    override fun deleteAll(): Mono<Boolean> {
+    override fun deleteAll(): Mono<Unit> {
         return mongoTemplate.remove<MongoChat>(Query())
-            .flatMap { deleteResult ->
-                if (deleteResult.wasAcknowledged()) {
-                    findAll().count().map { count -> count == 0L }
-                } else {
-                    Mono.just(false)
-                }
-            }
+            .doOnSuccess { }
+            .thenReturn(Unit)
     }
 
     override fun update(id: ObjectId, chat: MongoChat): Mono<MongoChat> {
@@ -60,7 +56,8 @@ class ChatReactiveRepositoryImpl(
     override fun delete(id: ObjectId): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.remove<MongoChat>(query)
-            .map { it.wasAcknowledged() && it.deletedCount == 1L }
+            .doOnSuccess { }
+            .thenReturn(Unit)
     }
 
     override fun findAll(): Flux<MongoChat> {
@@ -73,14 +70,11 @@ class ChatReactiveRepositoryImpl(
     }
 
     override fun findMessagesByUserIdAndChatId(userId: ObjectId, chatId: ObjectId): Flux<MongoMessage> {
-        val query = Query.query(Criteria.where("users").`is`(userId))
-
-        return mongoTemplate.find<MongoChat>(query)
-            .flatMap {
-                Flux.fromIterable(it.messages)
+        val query = Query.query(Criteria.where("users").`is`(userId).and("id").`is`(chatId))
+        return mongoTemplate.findOne<MongoChat>(query)
+            .flatMapMany { chat ->
+                messageRepository.findMessagesByIds(chat.messages)
             }
-            .switchIfEmpty(Flux.empty())
-            .flatMap { messageRepository.findMessageById(it!!) }
-            .switchIfEmpty(Flux.empty())
+            .filter { it.userId == userId }
     }
 }
