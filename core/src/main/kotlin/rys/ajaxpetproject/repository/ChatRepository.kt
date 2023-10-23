@@ -11,11 +11,11 @@ interface ChatRepository {
 
     fun save(chat: MongoChat): Mono<MongoChat>
 
-    fun deleteAll(): Mono<Boolean>
+    fun deleteAll(): Mono<Unit>
 
     fun update(id: ObjectId, chat: MongoChat): Mono<MongoChat>
 
-    fun delete(id: ObjectId): Mono<Boolean>
+    fun delete(id: ObjectId): Mono<Unit>
 
     fun findAll(): Flux<MongoChat>
 

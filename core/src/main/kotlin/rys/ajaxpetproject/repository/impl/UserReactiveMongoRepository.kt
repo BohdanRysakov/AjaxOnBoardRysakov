@@ -31,15 +31,10 @@ class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTempla
 
     override fun save(user: MongoUser): Mono<MongoUser> = mongoTemplate.save(user)
 
-    override fun deleteAll(): Mono<Boolean> {
+    override fun deleteAll(): Mono<Unit> {
         return mongoTemplate.remove<MongoUser>(Query())
-            .flatMap { deleteResult ->
-                if (deleteResult.wasAcknowledged()) {
-                    findAll().count().map { count -> count == 0L }
-                } else {
-                    Mono.just(false)
-                }
-            }
+            .doOnSuccess {  }
+            .thenReturn(Unit)
     }
 
     override fun update(id: ObjectId, user: MongoUser): Mono<MongoUser> {
@@ -57,10 +52,11 @@ class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTempla
         )
     }
 
-    override fun delete(id: ObjectId): Mono<Boolean> {
+    override fun delete(id: ObjectId): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.remove<MongoUser>(query)
-            .map { it.wasAcknowledged() && it.deletedCount == 1L }
+            .doOnSuccess {  }
+            .thenReturn(Unit)
     }
 
     override fun findAll(): Flux<MongoUser> = mongoTemplate.findAll<MongoUser>()

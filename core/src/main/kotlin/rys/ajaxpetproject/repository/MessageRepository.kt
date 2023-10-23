@@ -10,11 +10,11 @@ interface MessageRepository {
 
     fun save(message: MongoMessage): Mono<MongoMessage>
 
-    fun deleteAll(): Mono<Boolean>
+    fun deleteAll(): Mono<Unit>
 
     fun update(id: ObjectId, message: MongoMessage): Mono<MongoMessage>
 
-    fun delete(id: ObjectId): Mono<Boolean>
+    fun delete(id: ObjectId): Mono<Unit>
 
     fun findMessagesByIds(ids: List<ObjectId>): Flux<MongoMessage>
 }

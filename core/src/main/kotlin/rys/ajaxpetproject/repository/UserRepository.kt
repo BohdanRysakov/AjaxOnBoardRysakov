@@ -12,11 +12,11 @@ interface UserRepository {
 
     fun save(user: MongoUser): Mono<MongoUser>
 
-    fun deleteAll() : Mono<Boolean>
+    fun deleteAll() : Mono<Unit>
 
     fun update(id: ObjectId, user: MongoUser): Mono<MongoUser>
 
-    fun delete(id: ObjectId): Mono<Boolean>
+    fun delete(id: ObjectId): Mono<Unit>
 
     fun findAll(): Flux<MongoUser>
 }
