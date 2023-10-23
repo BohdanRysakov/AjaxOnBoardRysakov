@@ -11,9 +11,8 @@ data class MongoMessage(
     @Id
     val id: ObjectId? = null,
     @field:NotNull(message = "message MUST be in chat")
-    val chatId: ObjectId?,
-    @field:NotNull(message = "message MUST have sender")
-    val userId: ObjectId?,
+    val userId: ObjectId,
     @field:NotNull(message = "message MUST have content")
-    val content: String?,
-    val sentAt: LocalDateTime = LocalDateTime.now())
+    val content: String,
+    val sentAt: LocalDateTime = LocalDateTime.now()
+)

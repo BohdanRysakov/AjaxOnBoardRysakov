@@ -15,4 +15,6 @@ data class MongoChat(
     @field:NotBlank(message = "Chat name cannot be blank")
     @field:Size(min = 3, max = 20, message = "Chat name must be between 3 and 20 characters")
     val name: String?,
-    val users: List<ObjectId?>)
+    val users: List<ObjectId?>,
+    val messages: List<ObjectId?>
+)
