@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.findOne
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoChat
@@ -19,6 +20,8 @@ import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.MessageRepository
 
+@Repository
+@Suppress("TooManyFunctions")
 class ChatReactiveRepositoryImpl(
     private val mongoTemplate: ReactiveMongoTemplate,
     private val messageRepository: MessageRepository

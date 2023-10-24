@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
 
+@Suppress("TooManyFunctions")
 interface ChatRepository {
     fun findChatById(id: ObjectId): Mono<MongoChat>
 

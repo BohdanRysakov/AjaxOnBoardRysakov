@@ -1,6 +1,7 @@
 package rys.ajaxpetproject.service.impl
 
 import org.bson.types.ObjectId
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -14,6 +15,8 @@ import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.UserService
 
+@Service
+@Suppress("TooManyFunctions")
 class ChatServiceImpl(
     private val chatRepository: ChatRepository,
     private val userService: UserService,

@@ -1,3 +1,3 @@
 package rys.ajaxpetproject.exceptions
 
-class ChatNotFoundException(msg: String?) : RuntimeException(msg)
+class ChatNotFoundException(msg: String) : RuntimeException(msg)

@@ -1,6 +1,7 @@
 package rys.ajaxpetproject.service.impl
 
 import org.bson.types.ObjectId
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
@@ -10,6 +11,7 @@ import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
 import rys.ajaxpetproject.service.MessageService
 
+@Service
 class MessageServiceImpl(private val messageRepository: MessageRepository) : MessageService {
     override fun findMessageById(id: ObjectId): Mono<MongoMessage> {
         return messageRepository.findMessageById(id)
