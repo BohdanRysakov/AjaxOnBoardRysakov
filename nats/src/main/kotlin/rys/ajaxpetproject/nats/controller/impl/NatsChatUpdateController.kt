@@ -12,6 +12,8 @@ import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.nats.exception.InternalException
+import rys.ajaxpetproject.nats.utils.toModel
+import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.update.create.proto.ChatUpdateRequest
 import rys.ajaxpetproject.request.update.create.proto.ChatUpdateResponse
 import rys.ajaxpetproject.service.ChatService
@@ -28,12 +30,8 @@ class NatsChatUpdateController(
     override val parser: Parser<ChatUpdateRequest> = ChatUpdateRequest.parser()
 
     override fun reply(request: ChatUpdateRequest): Mono<ChatUpdateResponse> {
-        val targetId = ObjectId(request.requestId)
-        val newChat = MongoChat(
-            id = ObjectId(request.chat.id.toString()),
-            name = request.chat.name,
-            users = request.chat.usersList.map { ObjectId(it) },
-            messages = request.chat.messagesList.map { ObjectId(it) })
+        val targetId = request.requestId
+        val newChat = request.chat.toModel()
 
         return chatService
             .update(targetId, newChat)
@@ -43,15 +41,7 @@ class NatsChatUpdateController(
 
     private fun buildSuccessResponse(updatedChat: MongoChat): ChatUpdateResponse =
         ChatUpdateResponse.newBuilder().apply {
-            successBuilder.apply {
-                this.result = Chat.newBuilder().apply {
-                    id = updatedChat.id.toString()
-                    name = updatedChat.name
-                    updatedChat.users.forEach {
-                        this.addUsers(it.toString())
-                    }
-                }.build()
-            }
+            successBuilder.result = updatedChat.toProto()
         }.build()
 
     private fun buildFailureResponse(e: Throwable): ChatUpdateResponse {

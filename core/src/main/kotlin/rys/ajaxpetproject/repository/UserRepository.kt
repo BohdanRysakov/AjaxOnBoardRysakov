@@ -1,13 +1,12 @@
 package rys.ajaxpetproject.repository
 
-import org.bson.types.ObjectId
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoUser
 
 @Suppress("TooManyFunctions")
 interface UserRepository {
-    fun findById(id: ObjectId): Mono<MongoUser>
+    fun findById(id: String): Mono<MongoUser>
 
     fun findByName(name: String): Mono<MongoUser>
 
@@ -15,9 +14,9 @@ interface UserRepository {
 
     fun deleteAll(): Mono<Unit>
 
-    fun update(id: ObjectId, user: MongoUser): Mono<MongoUser>
+    fun update(id: String, user: MongoUser): Mono<MongoUser>
 
-    fun delete(id: ObjectId): Mono<Unit>
+    fun delete(id: String): Mono<Unit>
 
     fun findAll(): Flux<MongoUser>
 }

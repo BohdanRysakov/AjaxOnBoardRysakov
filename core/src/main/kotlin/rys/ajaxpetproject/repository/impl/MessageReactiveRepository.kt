@@ -20,7 +20,7 @@ import rys.ajaxpetproject.repository.MessageRepository
 
 @Repository
 class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplate) : MessageRepository {
-    override fun findMessageById(id: ObjectId): Mono<MongoMessage> {
+    override fun findMessageById(id: String): Mono<MongoMessage> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.findById<MongoMessage>(query)
     }
@@ -35,7 +35,7 @@ class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplat
             }
     }
 
-    override fun update(id: ObjectId, message: MongoMessage): Mono<MongoMessage> {
+    override fun update(id: String, message: MongoMessage): Mono<MongoMessage> {
         val query = Query.query(Criteria.where("id").`is`(id))
         val updatedMessage = message.copy(id = id)
         val findAndModifyOptions = FindAndModifyOptions.options().returnNew(true)
@@ -50,19 +50,19 @@ class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplat
         )
     }
 
-    override fun delete(id: ObjectId): Mono<Unit> {
+    override fun delete(id: String): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`is`(id))
         return mongoTemplate.remove<MongoMessage>(query)
             .doOnSuccess {  }
             .thenReturn(Unit)
     }
 
-    override fun findMessagesByIds(ids: List<ObjectId>): Flux<MongoMessage> {
+    override fun findMessagesByIds(ids: List<String>): Flux<MongoMessage> {
         val query = Query.query(Criteria.where("id").`in`(ids))
         return mongoTemplate.find<MongoMessage>(query)
     }
 
-    override fun deleteMessagesByIds(ids: List<ObjectId>): Mono<Unit> {
+    override fun deleteMessagesByIds(ids: List<String>): Mono<Unit> {
         val query = Query.query(Criteria.where("id").`in`(ids))
         return mongoTemplate.remove<MongoMessage>(query)
             .doOnSuccess {  }

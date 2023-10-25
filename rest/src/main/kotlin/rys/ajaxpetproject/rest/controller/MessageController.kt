@@ -1,17 +1,9 @@
 package rys.ajaxpetproject.rest.controller
 
 import jakarta.validation.Valid
-import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.service.MessageService
@@ -20,27 +12,27 @@ import rys.ajaxpetproject.service.MessageService
 @RequestMapping("/messages")
 class MessageController(val messageService: MessageService) {
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/")
-    fun createMessage(@Valid @RequestBody mongoMessage: MongoMessage): Mono<ResponseEntity<MongoMessage>> =
+    fun createMessage(@Valid @RequestBody mongoMessage: MongoMessage):
+            Mono<MongoMessage> =
         messageService.create(mongoMessage)
-            .map { message -> ResponseEntity(message, HttpStatus.CREATED) }
 
+    @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/{id}")
-    fun findMessageById(@PathVariable id: ObjectId): Mono<ResponseEntity<MongoMessage>> =
+    fun findMessageById(@PathVariable id: String): Mono<MongoMessage> =
         messageService.findMessageById(id)
-            .map { message -> ResponseEntity(message, HttpStatus.OK) }
-            .defaultIfEmpty(ResponseEntity.notFound().build())
 
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
     fun updateMessage(
-        @PathVariable id: ObjectId,
+        @PathVariable id: String,
         @Valid @RequestBody updatedMongoMessage: MongoMessage
-    ): Mono<ResponseEntity<MongoMessage>> =
+    ): Mono<MongoMessage> =
         messageService.update(id, updatedMongoMessage)
-            .map { message -> ResponseEntity(message, HttpStatus.OK) }
 
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
-    fun deleteMessage(@PathVariable id: ObjectId): Mono<ResponseEntity<Void>> =
+    fun deleteMessage(@PathVariable id: String): Mono<Unit> =
         messageService.delete(id)
-            .thenReturn(ResponseEntity<Void>(HttpStatus.OK))
 }

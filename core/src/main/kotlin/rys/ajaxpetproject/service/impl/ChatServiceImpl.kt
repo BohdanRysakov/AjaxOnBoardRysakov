@@ -1,10 +1,8 @@
 package rys.ajaxpetproject.service.impl
 
-import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
@@ -22,7 +20,7 @@ class ChatServiceImpl(
     private val userService: UserService,
     private val messageService: MessageService
 ) : ChatService {
-    override fun findChatById(id: ObjectId): Mono<MongoChat> {
+    override fun findChatById(id: String): Mono<MongoChat> {
         return chatRepository.findChatById(id)
     }
 
@@ -34,13 +32,13 @@ class ChatServiceImpl(
         return chatRepository.deleteAll()
     }
 
-    override fun update(id: ObjectId, chat: MongoChat): Mono<MongoChat> {
+    override fun update(id: String, chat: MongoChat): Mono<MongoChat> {
         return findChatById(id)
             .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $id not found")))
             .flatMap { chatRepository.update(id, chat) }
     }
 
-    override fun addUser(userId: ObjectId, chatId: ObjectId): Mono<Unit> {
+    override fun addUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
             userService.findUserById(userId)
                 .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
@@ -50,7 +48,7 @@ class ChatServiceImpl(
             .then(chatRepository.addUser(userId, chatId))
     }
 
-    override fun removeUser(userId: ObjectId, chatId: ObjectId): Mono<Unit> {
+    override fun removeUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
             userService.findUserById(userId)
                 .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
@@ -60,7 +58,7 @@ class ChatServiceImpl(
             .then(chatRepository.removeUser(userId, chatId))
     }
 
-    override fun delete(id: ObjectId): Mono<Unit> {
+    override fun delete(id: String): Mono<Unit> {
         return Mono.`when`(
             findChatById(id)
                 .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $id not found")))
@@ -72,7 +70,7 @@ class ChatServiceImpl(
         return chatRepository.findAll()
     }
 
-    override fun findChatsByUserId(userId: ObjectId): Flux<MongoChat> {
+    override fun findChatsByUserId(userId: String): Flux<MongoChat> {
         return Mono.`when`(
             userService.findUserById(userId)
                 .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found")))
@@ -80,7 +78,7 @@ class ChatServiceImpl(
             .thenMany(chatRepository.findChatsByUserId(userId))
     }
 
-    override fun findMessagesFromUser(userId: ObjectId, chatId: ObjectId): Flux<MongoMessage> {
+    override fun findMessagesFromUser(userId: String, chatId: String): Flux<MongoMessage> {
         return Mono.`when`(
             userService.findUserById(userId)
                 .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
@@ -92,7 +90,7 @@ class ChatServiceImpl(
             )
     }
 
-    override fun findMessagesInChat(chatId: ObjectId): Flux<MongoMessage> {
+    override fun findMessagesInChat(chatId: String): Flux<MongoMessage> {
         return Mono.`when`(
             findChatById(chatId)
                 .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $chatId not found")))
@@ -100,7 +98,7 @@ class ChatServiceImpl(
             .thenMany(chatRepository.findMessagesFromChat(chatId))
     }
 
-    override fun deleteAllFromUser(userId: ObjectId, chatId: ObjectId): Mono<Unit> {
+    override fun deleteAllFromUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
             userService.findUserById(userId)
                 .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
@@ -111,7 +109,7 @@ class ChatServiceImpl(
                 findMessagesInChat(chatId)
                     .filter { it.userId == userId }
                     .mapNotNull { it.id }
-                    .flatMap { messageService.delete(it!!)}
+                    .flatMap { messageService.delete(it.toString())}
                     .then(Unit.toMono())
             )
     }

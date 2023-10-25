@@ -34,8 +34,6 @@ class GlobalRestExceptionHandler {
         val body = mapOf(
             "message" to  ex.bindingResult.allErrors.map { it.defaultMessage }
                 .toString().let{it.substring(1,it.lastIndex)}.toString(),
-            // Assuming that `MethodArgumentNotValidException` has a method `statusCode` for fetching HTTP status.
-            // Adjust as per your exact implementation.
             "status" to ex.statusCode.value()
         )
         return Mono.just(ResponseEntity(body, ex.statusCode))

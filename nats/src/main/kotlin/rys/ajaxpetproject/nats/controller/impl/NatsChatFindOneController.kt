@@ -12,6 +12,7 @@ import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.nats.exception.InternalException
+import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneResponse
 import rys.ajaxpetproject.subjects.ChatSubjectsV1
@@ -27,28 +28,18 @@ class NatsChatFindOneController(
     override val parser: Parser<ChatFindOneRequest> = ChatFindOneRequest.parser()
 
     override fun reply(request: ChatFindOneRequest): Mono<ChatFindOneResponse> {
-        val chatId  = request.id
         return chatService
-            .findChatById(ObjectId(chatId))
+            .findChatById(request.id)
             .flatMap { buildSuccessResponse(it).toMono() }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
-
     }
 
     private fun buildSuccessResponse(chat: MongoChat): ChatFindOneResponse =
-         ChatFindOneResponse.newBuilder().apply {
-            successBuilder.apply {
-                this.result = Chat.newBuilder().apply {
-                    id = chat.id.toString()
-                    name = chat.name
-                    chat.users.forEach {
-                        this.addUsers(it.toString())
-                    }
-                }.build()
-            }
+        ChatFindOneResponse.newBuilder().apply {
+            successBuilder.result = chat.toProto()
         }.build()
 
-    private fun buildFailureResponse(e:Throwable): ChatFindOneResponse {
+    private fun buildFailureResponse(e: Throwable): ChatFindOneResponse {
         logger.error("Error while creating chat: ${e.message}", e)
         return ChatFindOneResponse.newBuilder().apply {
             failureBuilder.message = e.message

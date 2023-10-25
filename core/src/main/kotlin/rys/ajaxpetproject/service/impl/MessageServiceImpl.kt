@@ -1,6 +1,5 @@
 package rys.ajaxpetproject.service.impl
 
-import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -13,11 +12,11 @@ import rys.ajaxpetproject.service.MessageService
 
 @Service
 class MessageServiceImpl(private val messageRepository: MessageRepository) : MessageService {
-    override fun findMessageById(id: ObjectId): Mono<MongoMessage> {
+    override fun findMessageById(id: String): Mono<MongoMessage> {
         return messageRepository.findMessageById(id)
     }
 
-    override fun getMessageById(id: ObjectId): Mono<MongoMessage> {
+    override fun getMessageById(id: String): Mono<MongoMessage> {
         return messageRepository.findMessageById(id)
             .switchIfEmpty(MessageNotFoundException("Message with id $id not found").toMono())
     }
@@ -30,23 +29,23 @@ class MessageServiceImpl(private val messageRepository: MessageRepository) : Mes
         return messageRepository.deleteAll()
     }
 
-    override fun update(id: ObjectId, message: MongoMessage): Mono<MongoMessage> {
+    override fun update(id: String, message: MongoMessage): Mono<MongoMessage> {
         return findMessageById(id).switchIfEmpty {
             MessageNotFoundException("Message with id $id not found").toMono() }
             .flatMap { messageRepository.update(id, message) }
     }
 
-    override fun delete(id: ObjectId): Mono<Unit> {
+    override fun delete(id: String): Mono<Unit> {
         return findMessageById(id).switchIfEmpty {
             MessageNotFoundException("Message with id $id not found").toMono() }
             .flatMap { messageRepository.delete(id) }
     }
 
-    override fun findMessagesByIds(ids: List<ObjectId>): Flux<MongoMessage> {
+    override fun findMessagesByIds(ids: List<String>): Flux<MongoMessage> {
         return messageRepository.findMessagesByIds(ids)
     }
 
-    override fun deleteMessagesByIds(ids: List<ObjectId>): Mono<Unit>{
+    override fun deleteMessagesByIds(ids: List<String>): Mono<Unit>{
         return messageRepository.deleteMessagesByIds(ids)
     }
 }

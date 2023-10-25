@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.MongoId
 
 @Document(collection = "USERS")
 data class MongoUser(

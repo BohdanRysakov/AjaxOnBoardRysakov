@@ -1,6 +1,5 @@
 package rys.ajaxpetproject.service
 
-import org.bson.types.ObjectId
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoChat
@@ -8,27 +7,27 @@ import rys.ajaxpetproject.model.MongoMessage
 
 @Suppress("TooManyFunctions")
 interface ChatService {
-    fun findChatById(id: ObjectId): Mono<MongoChat>
+    fun findChatById(id: String): Mono<MongoChat>
 
     fun save(chat: MongoChat): Mono<MongoChat>
 
     fun deleteAll(): Mono<Unit>
 
-    fun update(id: ObjectId, chat: MongoChat): Mono<MongoChat>
+    fun update(id: String, chat: MongoChat): Mono<MongoChat>
 
-    fun addUser(userId: ObjectId, chatId: ObjectId): Mono<Unit>
+    fun addUser(userId: String, chatId: String): Mono<Unit>
 
-    fun removeUser(userId: ObjectId, chatId: ObjectId): Mono<Unit>
+    fun removeUser(userId: String, chatId: String): Mono<Unit>
 
-    fun delete(id: ObjectId): Mono<Unit>
+    fun delete(id: String): Mono<Unit>
 
     fun findAll(): Flux<MongoChat>
 
-    fun findChatsByUserId(userId: ObjectId): Flux<MongoChat>
+    fun findChatsByUserId(userId: String): Flux<MongoChat>
 
-    fun findMessagesFromUser(userId: ObjectId, chatId: ObjectId): Flux<MongoMessage>
+    fun findMessagesFromUser(userId: String, chatId: String): Flux<MongoMessage>
 
-    fun findMessagesInChat(chatId: ObjectId) : Flux<MongoMessage>
+    fun findMessagesInChat(chatId: String) : Flux<MongoMessage>
 
-    fun deleteAllFromUser(userId: ObjectId, chatId : ObjectId): Mono<Unit>
+    fun deleteAllFromUser(userId: String, chatId : String): Mono<Unit>
 }

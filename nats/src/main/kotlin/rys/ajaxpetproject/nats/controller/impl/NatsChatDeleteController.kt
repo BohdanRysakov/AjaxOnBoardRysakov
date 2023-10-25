@@ -25,7 +25,7 @@ class NatsChatDeleteController(
     override fun reply(request: ChatDeleteRequest): Mono<ChatDeleteResponse> {
         val idToDelete = request.requestId
         return chatService
-            .delete(ObjectId(idToDelete))
+            .delete(idToDelete)
             .flatMap { buildSuccessResponse().toMono() }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
     }
@@ -37,6 +37,7 @@ class NatsChatDeleteController(
 
     private fun buildFailureResponse(e: Throwable): ChatDeleteResponse {
         logger.error("Error while deleting chat: ${e.message}", e)
+
         return ChatDeleteResponse.newBuilder().apply {
             failureBuilder
                 .setMessage(e.message)

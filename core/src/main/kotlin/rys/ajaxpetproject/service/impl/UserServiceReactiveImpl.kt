@@ -1,6 +1,5 @@
 package rys.ajaxpetproject.service.impl
 
-import org.bson.types.ObjectId
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -40,7 +39,7 @@ class UserServiceReactiveImpl(
             )
     }
 
-    override fun findUserById(id: ObjectId): Mono<MongoUser> {
+    override fun findUserById(id: String): Mono<MongoUser> {
         return userRepository.findById(id)
     }
 
@@ -48,7 +47,7 @@ class UserServiceReactiveImpl(
         return userRepository.findByName(name)
     }
 
-    override fun getUserById(id: ObjectId): Mono<MongoUser> {
+    override fun getUserById(id: String): Mono<MongoUser> {
         return userRepository.findById(id).switchIfEmpty(
             Mono.error(
                 UserNotFoundException("User with id $id does not exist!")
@@ -68,7 +67,7 @@ class UserServiceReactiveImpl(
         return userRepository.findAll()
     }
 
-    override fun updateUser(id: ObjectId, updatedUser: MongoUser): Mono<MongoUser> {
+    override fun updateUser(id: String, updatedUser: MongoUser): Mono<MongoUser> {
         return getUserById(id)
             .onErrorComplete()
             .flatMap {
@@ -83,7 +82,7 @@ class UserServiceReactiveImpl(
             }
     }
 
-    override fun deleteUser(id: ObjectId): Mono<Unit> {
+    override fun deleteUser(id: String): Mono<Unit> {
         return getUserById(id)
             .onErrorComplete()
             .flatMap {

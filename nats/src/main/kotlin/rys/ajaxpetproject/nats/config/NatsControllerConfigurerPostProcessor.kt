@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.nats.controller.ReactiveNatsHandler
 
-
 @Component
 class NatsControllerConfigurerPostProcessor : BeanPostProcessor {
 
@@ -19,7 +18,10 @@ class NatsControllerConfigurerPostProcessor : BeanPostProcessor {
     }
 
     private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3>
-            initializeNatsController(controller: NatsController<RequestT, ResponseT>, connection: Connection) {
+            initializeNatsController(
+        controller: NatsController<RequestT, ResponseT>,
+        connection: Connection
+    ) {
         connection.createDispatcher { message ->
             ReactiveNatsHandler(controller).onMessage(message)
         }.apply { subscribe(controller.subject) }
