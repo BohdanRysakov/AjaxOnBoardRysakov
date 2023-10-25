@@ -5,7 +5,7 @@ import io.nats.client.Connection
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.stereotype.Component
 import rys.ajaxpetproject.nats.controller.NatsController
-
+import rys.ajaxpetproject.nats.controller.ReactiveNatsHandler
 
 @Component
 class NatsControllerConfigurerPostProcessor : BeanPostProcessor {
@@ -18,11 +18,12 @@ class NatsControllerConfigurerPostProcessor : BeanPostProcessor {
     }
 
     private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3>
-            initializeNatsController(controller: NatsController<RequestT, ResponseT>, connection: Connection) {
+            initializeNatsController(
+        controller: NatsController<RequestT, ResponseT>,
+        connection: Connection
+    ) {
         connection.createDispatcher { message ->
-            val parsedData = controller.parser.parseFrom(message.data)
-            val response = controller.handle(parsedData)
-            connection.publish(message.replyTo, response.toByteArray())
+            ReactiveNatsHandler(controller).onMessage(message)
         }.apply { subscribe(controller.subject) }
     }
 }

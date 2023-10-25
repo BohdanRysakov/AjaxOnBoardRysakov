@@ -5,6 +5,8 @@ import io.nats.client.Connection
 import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteRequest
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteResponse
@@ -20,12 +22,12 @@ class NatsChatDeleteController(
     override val subject = ChatSubjectsV1.ChatRequest.DELETE
     override val parser: Parser<ChatDeleteRequest> = ChatDeleteRequest.parser()
 
-    override fun handle(request: ChatDeleteRequest): ChatDeleteResponse = runCatching {
+    override fun reply(request: ChatDeleteRequest): Mono<ChatDeleteResponse> {
         val idToDelete = request.requestId
-        chatService.deleteChat(ObjectId(idToDelete))
-        buildSuccessResponse()
-    }.getOrElse {
-        buildFailureResponse(it)
+        return chatService
+            .delete(idToDelete)
+            .flatMap { buildSuccessResponse().toMono() }
+            .onErrorResume { e -> buildFailureResponse(e).toMono() }
     }
 
     private fun buildSuccessResponse(): ChatDeleteResponse =
@@ -35,6 +37,7 @@ class NatsChatDeleteController(
 
     private fun buildFailureResponse(e: Throwable): ChatDeleteResponse {
         logger.error("Error while deleting chat: ${e.message}", e)
+
         return ChatDeleteResponse.newBuilder().apply {
             failureBuilder
                 .setMessage(e.message)

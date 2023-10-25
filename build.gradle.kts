@@ -52,15 +52,12 @@ tasks.withType<Test> {
 }
 
 subprojects {
-    apply(plugin = "org.springframework.boot")
-    apply(plugin = "io.spring.dependency-management")
-    apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
-    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
-    apply(plugin = "org.jetbrains.kotlin.plugin.noarg")
-    apply(plugin = "java")
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
     apply(plugin = "com.google.protobuf")
+    apply(plugin = "io.gitlab.arturbosch.detekt")
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -77,8 +74,8 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
-        implementation("org.springframework.boot:spring-boot-starter-web")
+        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.1.4")
+        implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.5")
         implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("org.springframework.data:spring-data-jpa:3.0.9")

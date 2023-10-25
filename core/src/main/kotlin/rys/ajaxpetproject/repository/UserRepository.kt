@@ -1,18 +1,22 @@
 package rys.ajaxpetproject.repository
 
-import org.bson.types.ObjectId
-import org.springframework.data.mongodb.repository.MongoRepository
-import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoUser
 
-@Component
-interface UserRepository : MongoRepository<MongoUser, String> {
+@Suppress("TooManyFunctions")
+interface UserRepository {
+    fun findById(id: String): Mono<MongoUser>
 
-    fun findUserByUserName(userName: String): MongoUser?
+    fun findByName(name: String): Mono<MongoUser>
 
-    fun findUserById(id: ObjectId): MongoUser?
+    fun save(user: MongoUser): Mono<MongoUser>
 
-    fun deleteUserById(id: ObjectId): Boolean
+    fun deleteAll(): Mono<Unit>
 
-    fun findAllBy(): List<MongoUser>
+    fun update(id: String, user: MongoUser): Mono<MongoUser>
+
+    fun delete(id: String): Mono<Unit>
+
+    fun findAll(): Flux<MongoUser>
 }

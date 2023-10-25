@@ -1,19 +1,23 @@
 package rys.ajaxpetproject.service
 
-import org.bson.types.ObjectId
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoMessage
 
 interface MessageService {
+    fun findMessageById(id: String): Mono<MongoMessage>
 
-    fun createMessage(mongoMessage: MongoMessage): MongoMessage
+    fun getMessageById(id: String): Mono<MongoMessage>
 
-    fun findMessageById(id: ObjectId): MongoMessage?
+    fun create(message: MongoMessage): Mono<MongoMessage>
 
-    fun findAllMessagesByChatId(chatId: ObjectId): List<MongoMessage>
+    fun deleteAll(): Mono<Unit>
 
-    fun updateMessage(id: ObjectId, updatedMongoMessage: MongoMessage): MongoMessage?
+    fun update(id: String, message: MongoMessage): Mono<MongoMessage>
 
-    fun deleteMessage(id: ObjectId): Boolean
+    fun delete(id: String): Mono<Unit>
 
-    fun deleteMessages()
+    fun findMessagesByIds(ids: List<String>): Flux<MongoMessage>
+
+    fun deleteMessagesByIds(ids: List<String>): Mono<Unit>
 }

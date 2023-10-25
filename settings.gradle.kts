@@ -1,2 +1,7 @@
 rootProject.name = "AjaxPetProject"
-include(":rest", ":nats", ":core",":api")
+include(
+    "rest",
+    "nats",
+    "core",
+    "api"
+)

@@ -8,4 +8,5 @@ message Chat {
   string id = 1;
   string name = 2;
   repeated string users = 3;
+  repeated string messages = 4;
 }
