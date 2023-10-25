@@ -6,7 +6,7 @@ import rys.ajaxpetproject.model.MongoChat
 
 fun Chat.toModel() : MongoChat {
     return MongoChat(
-        id = ObjectId(this.id),
+        id = this.id,
         name = this.name,
         users = this.usersList,
         messages = this.messagesList

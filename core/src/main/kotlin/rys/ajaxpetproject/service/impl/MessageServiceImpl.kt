@@ -30,14 +30,16 @@ class MessageServiceImpl(private val messageRepository: MessageRepository) : Mes
     }
 
     override fun update(id: String, message: MongoMessage): Mono<MongoMessage> {
-        return findMessageById(id).switchIfEmpty {
-            MessageNotFoundException("Message with id $id not found").toMono() }
+        return findMessageById(id)
+            .switchIfEmpty { MessageNotFoundException("Message with id $id not found").toMono()
+        }
             .flatMap { messageRepository.update(id, message) }
     }
 
     override fun delete(id: String): Mono<Unit> {
         return findMessageById(id).switchIfEmpty {
-            MessageNotFoundException("Message with id $id not found").toMono() }
+            MessageNotFoundException("Message with id $id not found").toMono()
+        }
             .flatMap { messageRepository.delete(id) }
     }
 
@@ -45,7 +47,7 @@ class MessageServiceImpl(private val messageRepository: MessageRepository) : Mes
         return messageRepository.findMessagesByIds(ids)
     }
 
-    override fun deleteMessagesByIds(ids: List<String>): Mono<Unit>{
+    override fun deleteMessagesByIds(ids: List<String>): Mono<Unit> {
         return messageRepository.deleteMessagesByIds(ids)
     }
 }

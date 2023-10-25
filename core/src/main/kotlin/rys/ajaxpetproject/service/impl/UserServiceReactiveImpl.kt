@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import rys.ajaxpetproject.exceptions.UserAlreadyExistsException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
 import rys.ajaxpetproject.model.MongoUser
@@ -23,7 +24,7 @@ class UserServiceReactiveImpl(
                     UserAlreadyExistsException("A user with the username ${mongoUser.userName} already exists!")
                 )
             }
-            .switchIfEmpty(
+            .switchIfEmpty {
                 (mongoUser.password.length > 8)
                     .let {
                         val mongoUser2 = mongoUser.copy(password = encoder.encode(mongoUser.password))
@@ -31,12 +32,12 @@ class UserServiceReactiveImpl(
                             mongoUser2
                         )
                     }
-                    .switchIfEmpty(
+                    .switchIfEmpty {
                         Mono.error(
                             IllegalArgumentException("Password must be at least 8 characters long!")
                         )
-                    )
-            )
+                    }
+            }
     }
 
     override fun findUserById(id: String): Mono<MongoUser> {
@@ -48,11 +49,12 @@ class UserServiceReactiveImpl(
     }
 
     override fun getUserById(id: String): Mono<MongoUser> {
-        return userRepository.findById(id).switchIfEmpty(
-            Mono.error(
-                UserNotFoundException("User with id $id does not exist!")
-            )
-        )
+        return userRepository.findById(id)
+            .switchIfEmpty {
+                Mono.error(
+                    UserNotFoundException("User with id $id does not exist!")
+                )
+            }
     }
 
     override fun getUserByName(name: String): Mono<MongoUser> {
@@ -69,7 +71,7 @@ class UserServiceReactiveImpl(
 
     override fun updateUser(id: String, updatedUser: MongoUser): Mono<MongoUser> {
         return getUserById(id)
-            .onErrorComplete()
+            .onErrorResume { Mono.error(UserNotFoundException("User with id $id does not exist!")) }
             .flatMap {
                 userRepository.update(
                     id,
@@ -84,7 +86,7 @@ class UserServiceReactiveImpl(
 
     override fun deleteUser(id: String): Mono<Unit> {
         return getUserById(id)
-            .onErrorComplete()
+            .onErrorResume { Mono.error(UserNotFoundException("User with id $id does not exist!")) }
             .flatMap {
                 userRepository.delete(id)
             }

@@ -19,6 +19,10 @@ interface ChatService {
 
     fun removeUser(userId: String, chatId: String): Mono<Unit>
 
+    fun addMessage(messageId: String, chatId: String): Mono<Unit>
+
+    fun removeMessage(messageId: String, chatId: String): Mono<Unit>
+
     fun delete(id: String): Mono<Unit>
 
     fun findAll(): Flux<MongoChat>

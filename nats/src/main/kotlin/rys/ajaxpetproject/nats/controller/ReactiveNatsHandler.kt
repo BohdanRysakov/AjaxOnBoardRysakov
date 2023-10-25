@@ -19,7 +19,6 @@ class ReactiveNatsHandler(
             .subscribe()
     }
 
-
     companion object {
         private val logger = org.slf4j.LoggerFactory.getLogger(ReactiveNatsHandler::class.java)
     }

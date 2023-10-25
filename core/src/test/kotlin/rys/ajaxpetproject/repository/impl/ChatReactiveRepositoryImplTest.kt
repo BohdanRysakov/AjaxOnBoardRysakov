@@ -1,5 +1,6 @@
 package rys.ajaxpetproject.repository.impl
 
+import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,18 +61,12 @@ class ChatReactiveRepositoryImplTest {
         val messageId3 = actualMessage3!!.id!!.toString()
 
 
-        val chat: MongoChat = MongoChat(
+        val chat = MongoChat(
             name = "chat1",
             users = listOf(actualUserId),
             messages = listOf(messageId1, messageId2, messageId3)
         )
-        val chatId = chatRepo.save(chat).block()!!.id!!.toString()
-
-//        userRepo.findAll().subscribe { println(it) }
-//        chatRepo.findMessagesFromChat(chatId).subscribe { println(it) }
-//        println("Chat id : $chatId")
-        println(userRepo.findById(actualUserId).block()!!)
-        Thread.sleep(5000L)
+        val chatId = chatRepo.save(chat).block()!!.id!!
 
         //WHEN //THEN
         chatRepo.findMessagesByUserIdAndChatId(actualUserId, chatId)
@@ -80,10 +75,10 @@ class ChatReactiveRepositoryImplTest {
             .thenConsumeWhile { true }
             .consumeRecordedWith { actualList ->
                 println(actualList)
-//                assertIterableEquals(
-//                    listOf(actualMessage1, actualMessage2,actualMessage3),
-//                    actualList
-//                )
+                assertIterableEquals(
+                    listOf(actualMessage1, actualMessage2,actualMessage3),
+                    actualList
+                )
             }
             .verifyComplete()
     }

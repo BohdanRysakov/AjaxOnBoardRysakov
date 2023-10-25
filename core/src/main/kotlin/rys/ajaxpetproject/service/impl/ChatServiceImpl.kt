@@ -3,6 +3,7 @@ package rys.ajaxpetproject.service.impl
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
@@ -34,16 +35,16 @@ class ChatServiceImpl(
 
     override fun update(id: String, chat: MongoChat): Mono<MongoChat> {
         return findChatById(id)
-            .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $id not found")))
+            .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $id not found"))}
             .flatMap { chatRepository.update(id, chat) }
     }
 
     override fun addUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
             userService.findUserById(userId)
-                .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
+                .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))},
             findChatById(chatId)
-                .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $chatId not found")))
+                .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
         )
             .then(chatRepository.addUser(userId, chatId))
     }
@@ -51,18 +52,30 @@ class ChatServiceImpl(
     override fun removeUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
             userService.findUserById(userId)
-                .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
+                .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))},
             findChatById(chatId)
-                .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $chatId not found")))
+                .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
         )
             .then(chatRepository.removeUser(userId, chatId))
     }
 
-    override fun delete(id: String): Mono<Unit> {
+    override fun addMessage(messageId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
-            findChatById(id)
-                .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $id not found")))
+            findChatById(chatId)
+                .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))},
+            messageService.findMessageById(messageId)
+                .switchIfEmpty{Mono.error(ChatNotFoundException("Message with id $messageId not found"))}
         )
+            .then(chatRepository.addMessage(messageId, chatId))
+    }
+
+    override fun removeMessage(messageId: String, chatId: String): Mono<Unit> {
+        return chatRepository.removeMessage(messageId, chatId)
+    }
+
+    override fun delete(id: String): Mono<Unit> {
+        return findChatById(id)
+            .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $id not found"))}
             .then(chatRepository.delete(id))
     }
 
@@ -71,45 +84,41 @@ class ChatServiceImpl(
     }
 
     override fun findChatsByUserId(userId: String): Flux<MongoChat> {
-        return Mono.`when`(
-            userService.findUserById(userId)
-                .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found")))
-        )
+        return userService.findUserById(userId)
+            .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))}
             .thenMany(chatRepository.findChatsByUserId(userId))
     }
 
     override fun findMessagesFromUser(userId: String, chatId: String): Flux<MongoMessage> {
         return Mono.`when`(
             userService.findUserById(userId)
-                .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
+                .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))},
             findChatById(chatId)
-                .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $chatId not found")))
+                .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
         )
             .thenMany(
-                findMessagesInChat(chatId).filter{it.userId== userId}
+                findMessagesInChat(chatId).filter { it.userId == userId }
             )
     }
 
     override fun findMessagesInChat(chatId: String): Flux<MongoMessage> {
-        return Mono.`when`(
-            findChatById(chatId)
-                .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $chatId not found")))
-        )
+        return findChatById(chatId)
+            .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
             .thenMany(chatRepository.findMessagesFromChat(chatId))
     }
 
     override fun deleteAllFromUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
             userService.findUserById(userId)
-                .switchIfEmpty(Mono.error(UserNotFoundException("User with id $userId not found"))),
+                .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))},
             findChatById(chatId)
-                .switchIfEmpty(Mono.error(ChatNotFoundException("Chat with id $chatId not found")))
+                .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
         )
             .then(
                 findMessagesInChat(chatId)
                     .filter { it.userId == userId }
                     .mapNotNull { it.id }
-                    .flatMap { messageService.delete(it.toString())}
+                    .flatMap { messageService.delete(it.toString()) }
                     .then(Unit.toMono())
             )
     }

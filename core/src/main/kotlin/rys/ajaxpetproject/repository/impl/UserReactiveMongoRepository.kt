@@ -20,8 +20,7 @@ import rys.ajaxpetproject.repository.UserRepository
 @Repository
 class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTemplate) : UserRepository {
     override fun findById(id: String): Mono<MongoUser> {
-        val query = Query.query(Criteria.where("id").`is`(id))
-        return mongoTemplate.findById(query)
+        return mongoTemplate.findById<MongoUser>(id)
     }
 
     override fun findByName(name: String): Mono<MongoUser> {
@@ -33,12 +32,11 @@ class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTempla
 
     override fun deleteAll(): Mono<Unit> {
         return mongoTemplate.remove<MongoUser>(Query())
-            .doOnSuccess { }
             .thenReturn(Unit)
     }
 
     override fun update(id: String, user: MongoUser): Mono<MongoUser> {
-        val query = Query.query(Criteria.where("id").`is`(id))
+        val query = Query.query(Criteria.where("_id").`is`(id))
         val updatedUser = user.copy(id = ObjectId(id))
         val findAndModifyOptions = FindAndModifyOptions.options().returnNew(true)
         val updateDef = Update()
@@ -53,7 +51,7 @@ class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTempla
     }
 
     override fun delete(id: String): Mono<Unit> {
-        val query = Query.query(Criteria.where("id").`is`(id))
+        val query = Query.query(Criteria.where("_id").`is`(id))
         return mongoTemplate.remove<MongoUser>(query)
             .doOnSuccess { }
             .thenReturn(Unit)
