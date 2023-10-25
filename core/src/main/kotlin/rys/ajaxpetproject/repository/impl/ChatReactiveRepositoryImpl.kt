@@ -117,11 +117,14 @@ class ChatReactiveRepositoryImpl(
 
     override fun findMessagesByUserIdAndChatId(userId: String, chatId: String): Flux<MongoMessage> {
         val query = Query.query(Criteria.where("_id").`is`(chatId).and("users").`is`(userId))
-        return mongoTemplate.find<MongoChat>(query)
-            .flatMap { chat ->
+        return mongoTemplate.findOne<MongoChat>(query)
+            .log()
+            .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
             .filter { it.userId == userId }
+
+
     }
 
     override fun findMessagesFromChat(chatId: String): Flux<MongoMessage> {
@@ -130,14 +133,20 @@ class ChatReactiveRepositoryImpl(
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
+
     }
 
     override fun deleteMessagesFromUser(userId: String, chatId: String): Mono<Unit> {
         val query = Query.query(Criteria.where("_id").`is`(chatId))
         return mongoTemplate.findOne<MongoChat>(query)
-            .flatMap { chat ->
-                messageRepository.deleteMessagesByIds(chat.messages.filter { it == userId })
+            .flatMapMany { chat: MongoChat ->
+                messageRepository.findMessagesByIds(chat.messages)
             }
-            .thenReturn(Unit)
+            .filter { it.userId == userId }
+            .map { it.id!! }
+            .collectList()
+            .flatMap { messageIds ->
+                messageRepository.deleteMessagesByIds(messageIds)
+            }
     }
 }
