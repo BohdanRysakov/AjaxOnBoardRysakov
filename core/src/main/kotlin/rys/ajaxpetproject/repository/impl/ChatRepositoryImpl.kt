@@ -3,11 +3,11 @@ package rys.ajaxpetproject.repository.impl
 import org.springframework.data.mongodb.core.FindAndModifyOptions
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.findById
+import org.springframework.data.mongodb.core.findAndModify
+import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.remove
 import org.springframework.data.mongodb.core.findOne
 import org.springframework.data.mongodb.core.findAll
-import org.springframework.data.mongodb.core.findAndModify
-import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -21,7 +21,7 @@ import rys.ajaxpetproject.repository.MessageRepository
 
 @Repository
 @Suppress("TooManyFunctions")
-class ChatReactiveRepositoryImpl(
+class ChatRepositoryImpl(
     private val mongoTemplate: ReactiveMongoTemplate,
     private val messageRepository: MessageRepository
 ) : ChatRepository {
@@ -36,7 +36,6 @@ class ChatReactiveRepositoryImpl(
 
     override fun deleteAll(): Mono<Unit> {
         return mongoTemplate.remove<MongoChat>(Query())
-            .doOnSuccess { }
             .thenReturn(Unit)
     }
 
@@ -57,10 +56,10 @@ class ChatReactiveRepositoryImpl(
     override fun addUser(userId: String, chatId: String): Mono<Unit> {
         val query = Query.query(Criteria.where("_id").`is`(chatId))
         val updateDef = Update().addToSet("users", userId)
-        return mongoTemplate.findAndModify<MongoChat>(
+        return mongoTemplate.findAndModify(
             query,
             updateDef,
-            FindAndModifyOptions.options().returnNew(true)
+            MongoChat::class.java
         )
             .thenReturn(Unit)
     }
@@ -69,10 +68,10 @@ class ChatReactiveRepositoryImpl(
         val query = Query.query(Criteria.where("_id").`is`(chatId))
         val updateDef = Update().pull("users", userId)
 
-        return mongoTemplate.findAndModify<MongoChat>(
+        return mongoTemplate.findAndModify(
             query,
             updateDef,
-            FindAndModifyOptions.options().returnNew(true)
+            MongoChat::class.java
         )
             .thenReturn(Unit)
     }
@@ -81,10 +80,10 @@ class ChatReactiveRepositoryImpl(
         val query = Query.query(Criteria.where("_id").`is`(chatId))
         val updateDef = Update().addToSet("messages", messageId)
 
-        return mongoTemplate.findAndModify<MongoChat>(
+        return mongoTemplate.findAndModify(
             query,
             updateDef,
-            FindAndModifyOptions.options().returnNew(true)
+            MongoChat::class.java
         )
             .thenReturn(Unit)
     }
@@ -92,10 +91,10 @@ class ChatReactiveRepositoryImpl(
     override fun removeMessage(messageId: String, chatId: String): Mono<Unit> {
         val query = Query.query(Criteria.where("_id").`is`(chatId))
         val updateDef = Update().pull("messages", messageId)
-        return mongoTemplate.findAndModify<MongoChat>(
+        return mongoTemplate.findAndModify(
             query,
             updateDef,
-            FindAndModifyOptions.options().returnNew(true)
+            MongoChat::class.java
         )
             .thenReturn(Unit)
     }
@@ -118,13 +117,10 @@ class ChatReactiveRepositoryImpl(
     override fun findMessagesByUserIdAndChatId(userId: String, chatId: String): Flux<MongoMessage> {
         val query = Query.query(Criteria.where("_id").`is`(chatId).and("users").`is`(userId))
         return mongoTemplate.findOne<MongoChat>(query)
-            .log()
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
             .filter { it.userId == userId }
-
-
     }
 
     override fun findMessagesFromChat(chatId: String): Flux<MongoMessage> {
@@ -133,13 +129,12 @@ class ChatReactiveRepositoryImpl(
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
-
     }
 
-    override fun deleteMessagesFromUser(userId: String, chatId: String): Mono<Unit> {
+    override fun deleteMessagesFromChatByUserId(chatId: String, userId: String): Mono<Unit> {
         val query = Query.query(Criteria.where("_id").`is`(chatId))
         return mongoTemplate.findOne<MongoChat>(query)
-            .flatMapMany { chat: MongoChat ->
+            .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
             .filter { it.userId == userId }

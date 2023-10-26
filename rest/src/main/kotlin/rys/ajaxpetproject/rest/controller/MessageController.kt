@@ -21,25 +21,21 @@ class MessageController(val messageService: MessageService) {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/")
-    fun createMessage(@Valid @RequestBody mongoMessage: MongoMessage):
-            Mono<MongoMessage> =
+    fun createMessage(@Valid @RequestBody mongoMessage: MongoMessage): Mono<MongoMessage> =
         messageService.create(mongoMessage)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/{id}")
-    fun findMessageById(@PathVariable id: String): Mono<MongoMessage> =
-        messageService.findMessageById(id)
+    fun findMessageById(@PathVariable id: String): Mono<MongoMessage> = messageService.findMessageById(id)
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
     fun updateMessage(
         @PathVariable id: String,
         @Valid @RequestBody updatedMongoMessage: MongoMessage
-    ): Mono<MongoMessage> =
-        messageService.update(id, updatedMongoMessage)
+    ): Mono<MongoMessage> = messageService.update(id, updatedMongoMessage)
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
-    fun deleteMessage(@PathVariable id: String): Mono<Unit> =
-        messageService.delete(id)
+    fun deleteMessage(@PathVariable id: String): Mono<Unit> = messageService.delete(id)
 }

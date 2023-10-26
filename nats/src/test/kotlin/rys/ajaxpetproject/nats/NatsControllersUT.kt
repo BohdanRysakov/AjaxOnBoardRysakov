@@ -2,6 +2,7 @@ package rys.ajaxpetproject.nats
 
 import io.nats.client.Connection
 import org.bson.types.ObjectId
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
@@ -10,16 +11,24 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
+import reactor.kotlin.test.test
 import rys.ajaxpetproject.nats.exception.InternalException
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.commonmodels.chat.proto.Chat
+import rys.ajaxpetproject.configuration.SecurityConfiguration
 import rys.ajaxpetproject.nats.config.NatsControllerConfigurerPostProcessor
 import rys.ajaxpetproject.nats.controller.impl.NatsChatCreationController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatDeleteController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatFindAllController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatUpdateController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatFindOneController
+import rys.ajaxpetproject.nats.utils.toModel
+import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.repository.ChatRepository
+import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
+import rys.ajaxpetproject.repository.impl.MessageRepository
+import rys.ajaxpetproject.repository.impl.UserRepository
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateRequest
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateResponse
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteRequest
@@ -31,23 +40,26 @@ import rys.ajaxpetproject.request.update.create.proto.ChatUpdateRequest
 import rys.ajaxpetproject.request.update.create.proto.ChatUpdateResponse
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.impl.ChatServiceImpl
+import rys.ajaxpetproject.service.impl.MessageServiceImpl
+import rys.ajaxpetproject.service.impl.UserServiceImpl
 import rys.ajaxpetproject.subjects.ChatSubjectsV1
 import java.time.Duration
 
 @SpringBootTest(classes = [NatsTestConfiguration::class])
 @ContextConfiguration(
     classes = [
-        ChatRepository::class, ChatServiceImpl::class,
+        ChatRepositoryImpl::class, ChatServiceImpl::class,
         NatsChatCreationController::class,
         NatsChatDeleteController::class,
-        NatsChatFindAllController::class,
-        NatsChatFindOneController::class,
-        NatsChatUpdateController::class,
-        NatsControllerConfigurerPostProcessor::class
-        ]
+        NatsChatFindAllController::class, MessageRepository::class, UserRepository::class,
+        NatsChatFindOneController::class, MessageServiceImpl::class, UserServiceImpl::class,
+        NatsChatUpdateController::class, SecurityConfiguration::class,
+        NatsControllerConfigurerPostProcessor::class,
+
+    ]
 )
 @ActiveProfiles("testing")
-class NatsControllersTests {
+class NatsControllersUT {
     @SpyBean
     private lateinit var chatService: ChatService
 
@@ -59,99 +71,99 @@ class NatsControllersTests {
 
     @BeforeEach
     fun clearTestDB() {
-        chatRepository.deleteAll()
+        chatRepository.deleteAll().block()
     }
 
     @Test
-    fun `Nats chat creation success scenario`() {
-        val initialChat = MongoChat(
-            id = ObjectId(),
+    fun `should return chat when request to create chat is published`() {
+        //GIVEN
+        val expectedChat = MongoChat(
+            id = ObjectId().toString(),
             name = "test chat success",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        val request = ChatCreateRequest.newBuilder()
-            .apply {
-                this.chat = Chat.newBuilder()
-                    .apply {
-                        this.id = initialChat.id.toString()
-                        this.name = initialChat.name
-                        initialChat.users.forEach {
-                            this.addUsers(it.toString())
-                        }
-                    }.build()
-            }.build()
-        val response = ChatCreateResponse.parseFrom(
+        val request = ChatCreateRequest.newBuilder().apply {
+            this.chat = expectedChat.toProto()
+        }.build()
+
+        //WHEN
+        val actualChat = ChatCreateResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.CREATE,
                 request.toByteArray(),
                 Duration.ofSeconds(3)
             ).data
-        )
+        ).success.result.toModel()
 
-        assert(response.hasSuccess())
+        //THEN
+        Assertions.assertEquals(expectedChat, actualChat)
 
-        val successfulChat: MongoChat = response.success.result.let {
-            MongoChat(
-                id = ObjectId(it.id),
-                name = it.name,
-                users = it.usersList.map { ObjectId(it) }
-            )
-        }
-        val chatFromDB: MongoChat = chatRepository.findById(initialChat.id!!).get()
+        chatService.findChatById(expectedChat.id!!).test()
+            .expectSubscription()
+            .assertNext { savedInDBChat ->
+                Assertions.assertEquals(expectedChat.id, savedInDBChat.id)
+                Assertions.assertEquals(expectedChat.name, savedInDBChat.name)
+                Assertions.assertEquals(expectedChat.users, savedInDBChat.users)
+                Assertions.assertEquals(expectedChat.messages, savedInDBChat.messages)
 
-        assert(chatFromDB == successfulChat)
+            }
+            .verifyComplete()
     }
+
 
     @Test
     fun `Nats chat creation failure scenario`() {
-        val initialChat = MongoChat(
-            id = ObjectId(),
+        //GIVEN
+        val unexpectedChat = MongoChat(
+            id = ObjectId().toString(),
             name = "test chat failure",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        whenever(chatService.createChat(initialChat)).thenThrow(InternalException("Test exception"))
+
+        val expectedExceptionMessage = "Test exception - ${System.nanoTime()}"
+
+        val expectedException = InternalException(expectedExceptionMessage)
+
+        whenever(chatService.save(unexpectedChat)).thenReturn(expectedException.toMono())
+
+
         val request = ChatCreateRequest.newBuilder()
             .apply {
-                this.chat = Chat.newBuilder()
-                    .apply {
-                        this.id = initialChat.id.toString()
-                        this.name = initialChat.name
-                        initialChat.users.forEach {
-                            this.addUsers(it.toString())
-                        }
-                    }.build()
+                this.chat = unexpectedChat.toProto()
             }.build()
-        val response = ChatCreateResponse.parseFrom(
+
+        //WHEN
+        val actualResponse = ChatCreateResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.CREATE,
                 request.toByteArray(),
-                Duration.ofSeconds(10)
+                Duration.ofSeconds(2)
             ).data
         )
 
-        assert(response.hasFailure())
-
-        val failureMessage = ChatCreateResponse.newBuilder().apply {
-            failureBuilder.internalErrorBuilder
-            failureBuilder.message = "Test exception"
-        }.build()
-
-        assert(response == failureMessage)
+        //THEN
+        Assertions.assertTrue(actualResponse.hasFailure())
+        Assertions.assertTrue(actualResponse.failure.hasInternalError())
+        Assertions.assertEquals(expectedExceptionMessage, actualResponse.failure.message)
     }
 
+    //
     @Test
     fun `Nats chat delete success scenario`() {
+        //GIVEN
         val chatToDelete = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        chatRepository.save(chatToDelete)
+        chatRepository.save(chatToDelete).block()
+
 
         val request = ChatDeleteRequest.newBuilder()
             .apply {
                 this.requestId = chatToDelete.id.toString()
             }.build()
+        //WHEN
         val response = ChatDeleteResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.DELETE,
@@ -160,16 +172,24 @@ class NatsControllersTests {
             ).data
         )
 
-        assert(response.hasSuccess())
-        assert(response.success.result)
+        //THEN
+        Assertions.assertTrue(response.hasSuccess())
+        Assertions.assertTrue(response.success.result)
     }
 
     @Test
     fun `Nats chat delete failure scenario`() {
+        //GIVEN
+        val id = ObjectId().toString()
+
+        val expectedMessage = "Chat with id $id not found"
+
         val request = ChatDeleteRequest.newBuilder()
             .apply {
-                this.requestId = ObjectId().toString()
+                this.requestId = id
             }.build()
+
+        //WHEN
         val response = ChatDeleteResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.DELETE,
@@ -177,44 +197,51 @@ class NatsControllersTests {
                 Duration.ofSeconds(10)
             ).data
         )
-        assert(response.hasFailure())
-        assert(response.failure.message == "Chat not found")
+
+        //THEN
+        Assertions.assertTrue(response.hasFailure())
+        Assertions.assertEquals(expectedMessage, response.failure.message)
     }
 
     @Test
     fun `Nats chat find all success scenario`() {
+        //GIVEN
         val listOfUsers: MutableList<MongoChat> = mutableListOf()
+
         for (i in 1..10) {
             val chat = MongoChat(
-                id = ObjectId(),
+                id = ObjectId().toString(),
                 name = "test chat success $i",
-                users = listOf(ObjectId(), ObjectId())
+                users = listOf(ObjectId().toString(), ObjectId().toString())
             )
-            chatRepository.save(chat)
-            listOfUsers.add(chatRepository.findChatById(chat.id!!)!!)
+            chatRepository.save(chat).block()
+            listOfUsers.add(chatRepository.findChatById(chat.id!!).block()!!)
         }
+
+        //WHEN
         val response = ChatFindAllResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.FIND_ALL,
                 ByteArray(0),
-                Duration.ofSeconds(10)
+                Duration.ofSeconds(3)
             ).data
         )
-        assert(response.hasSuccess())
+
+        //THEN
+        Assertions.assertTrue(response.hasSuccess())
 
         val listFromResponse = response.success.resultList.map {
-            MongoChat(
-                id = ObjectId(it.id),
-                name = it.name,
-                users = it.usersList.map { ObjectId(it) }
-            )
+            it.toModel()
         }
-        assert(listFromResponse == listOfUsers)
+        Assertions.assertEquals(listFromResponse, listOfUsers)
     }
 
     @Test
     fun `Nats chat find all failure scenario`() {
-        whenever(chatService.findAllChats()).thenThrow(InternalException("Test exception"))
+        //GIVEN
+        whenever(chatService.findAll()).thenReturn(InternalException("Test exception").toFlux())
+
+        //WHEN
         val response = ChatFindAllResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.FIND_ALL,
@@ -223,6 +250,7 @@ class NatsControllersTests {
             ).data
         )
 
+        //THEN
         assert(response.hasFailure())
         assert(response.failure.message == "Test exception")
         assert(response.failure.internalError.isInitialized)
@@ -230,16 +258,19 @@ class NatsControllersTests {
 
     @Test
     fun `Nats chat find one success scenario`() {
+        //GIVEN
         val chatToFind = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        chatRepository.save(chatToFind)
+        chatRepository.save(chatToFind).block()
         val request = ChatFindOneRequest.newBuilder()
             .apply {
                 this.id = chatToFind.id.toString()
             }.build()
+
+        //WHEN
         val response = ChatFindOneResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.FIND_ONE,
@@ -250,11 +281,7 @@ class NatsControllersTests {
         assert(response.hasSuccess())
 
         val chatFromResponse = response.success.result.let {
-            MongoChat(
-                id = ObjectId(it.id),
-                name = it.name,
-                users = it.usersList.map { ObjectId(it) }
-            )
+            it.toModel()
         }
         assert(chatFromResponse == chatToFind)
     }
@@ -262,20 +289,21 @@ class NatsControllersTests {
     @Test
     fun `Nats chat find one failure scenario`() {
         val chatToFind = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        chatRepository.save(chatToFind)
+        chatRepository.save(chatToFind).block()
 
         val idToFind = chatToFind.id!!
 
         val request = ChatFindOneRequest.newBuilder()
             .apply {
-                this.id = idToFind.toString()
+                this.id = idToFind
             }.build()
-        whenever(chatService.findChatById(idToFind)).thenThrow(InternalException("Test exception"))
+        whenever(chatService.findChatById(idToFind)).thenReturn(InternalException("Test exception").toMono())
 
+        //WHEN
         val response = ChatFindOneResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.FIND_ONE,
@@ -283,6 +311,8 @@ class NatsControllersTests {
                 Duration.ofSeconds(10)
             ).data
         )
+
+        //THEN
         assert(response.hasFailure())
         assert(response.failure.message == "Test exception")
         assert(response.failure.internalError.isInitialized)
@@ -291,31 +321,26 @@ class NatsControllersTests {
     @Test
     fun `Nats chat update success scenario`() {
         val chatToUpdate = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success UNCHANGED",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
         val chatUpdatedVersion = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        chatRepository.save(chatToUpdate)
+        chatRepository.save(chatToUpdate).block()
 
         val idOfChatToUpdate = chatToUpdate.id!!
 
         val request = ChatUpdateRequest.newBuilder()
             .apply {
-                this.requestId = idOfChatToUpdate.toString()
-                this.chat = Chat.newBuilder()
-                    .apply {
-                        this.id = chatUpdatedVersion.id.toString()
-                        this.name = chatUpdatedVersion.name
-                        chatUpdatedVersion.users.forEach {
-                            this.addUsers(it.toString())
-                        }
-                    }.build()
+                this.requestId = idOfChatToUpdate
+                this.chat = chatUpdatedVersion.toProto()
             }.build()
+
+        //WHEN
         val response = ChatUpdateResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.UPDATE,
@@ -323,53 +348,44 @@ class NatsControllersTests {
                 Duration.ofSeconds(10)
             ).data
         )
+
+        //THEN
         assert(response.hasSuccess())
 
-        val chatFromResponse = response.success.result.let {
-            MongoChat(
-                id = ObjectId(it.id),
-                name = it.name,
-                users = it.usersList.map { ObjectId(it) }
-            )
-        }
+        val chatFromResponse = response.success.result.let { it.toModel() }
         assert(chatFromResponse == chatUpdatedVersion.copy(id = chatToUpdate.id))
     }
 
     @Test
     fun `Nats chat update failure scenario`() {
         val chatToUpdate = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success UNCHANGED",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
         val chatUpdatedVersion = MongoChat(
-            id = ObjectId(),
+            id = ObjectId().toString(),
             name = "test chat success",
-            users = listOf(ObjectId(), ObjectId())
+            users = listOf(ObjectId().toString(), ObjectId().toString())
         )
-        chatRepository.save(chatToUpdate)
+        chatRepository.save(chatToUpdate).block()
 
         val idOfChatToUpdate = chatUpdatedVersion.id!!
 
         whenever(
-            chatService.updateChat(
+            chatService.update(
                 idOfChatToUpdate,
                 chatUpdatedVersion
             )
-        ).thenThrow(InternalException("Test Exception"))
+        ).thenReturn(InternalException("Test Exception").toMono())
 
         val request = ChatUpdateRequest.newBuilder()
             .apply {
-                this.requestId = idOfChatToUpdate.toString()
-                this.chat = Chat.newBuilder()
-                    .apply {
-                        this.id = chatUpdatedVersion.id.toString()
-                        this.name = chatUpdatedVersion.name
-                        chatUpdatedVersion.users.forEach {
-                            this.addUsers(it.toString())
-                        }
-                    }.build()
+                this.requestId = idOfChatToUpdate
+                this.chat = chatUpdatedVersion.toProto()
             }.build()
+
+        //WHEN
         val response = ChatUpdateResponse.parseFrom(
             connection.request(
                 ChatSubjectsV1.ChatRequest.UPDATE,
@@ -377,6 +393,8 @@ class NatsControllersTests {
                 Duration.ofSeconds(10)
             ).data
         )
+
+        //THEN
         assert(response.hasFailure())
         assert(response.failure.message == "Test Exception")
         assert(response.failure.internalError.isInitialized)

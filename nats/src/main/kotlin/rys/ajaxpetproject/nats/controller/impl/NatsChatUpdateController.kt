@@ -2,16 +2,12 @@ package rys.ajaxpetproject.nats.controller.impl
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
-import org.bson.types.ObjectId
-import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.nats.controller.NatsController
-import rys.ajaxpetproject.nats.exception.InternalException
 import rys.ajaxpetproject.nats.utils.toModel
 import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.update.create.proto.ChatUpdateRequest
@@ -35,7 +31,7 @@ class NatsChatUpdateController(
 
         return chatService
             .update(targetId, newChat)
-            .flatMap { updatedChat -> buildSuccessResponse(updatedChat).toMono() }
+            .map { updatedChat -> buildSuccessResponse(updatedChat) }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
     }
 

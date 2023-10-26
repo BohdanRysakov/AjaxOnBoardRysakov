@@ -29,9 +29,9 @@ interface ChatService {
 
     fun findChatsByUserId(userId: String): Flux<MongoChat>
 
-    fun findMessagesFromUser(userId: String, chatId: String): Flux<MongoMessage>
+    fun getMessagesFromChatByUser(userId: String, chatId: String): Flux<MongoMessage>
 
-    fun findMessagesInChat(chatId: String) : Flux<MongoMessage>
+    fun getMessagesInChat(chatId: String) : Flux<MongoMessage>
 
     fun deleteAllFromUser(userId: String, chatId : String): Mono<Unit>
 }

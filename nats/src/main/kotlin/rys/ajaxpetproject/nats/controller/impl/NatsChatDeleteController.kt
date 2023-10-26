@@ -2,7 +2,6 @@ package rys.ajaxpetproject.nats.controller.impl
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
-import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
@@ -24,9 +23,10 @@ class NatsChatDeleteController(
 
     override fun reply(request: ChatDeleteRequest): Mono<ChatDeleteResponse> {
         val idToDelete = request.requestId
+
         return chatService
             .delete(idToDelete)
-            .flatMap { buildSuccessResponse().toMono() }
+            .map { buildSuccessResponse() }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
     }
 

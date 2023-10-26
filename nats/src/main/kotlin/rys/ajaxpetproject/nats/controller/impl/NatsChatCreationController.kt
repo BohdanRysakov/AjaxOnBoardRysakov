@@ -2,7 +2,6 @@ package rys.ajaxpetproject.nats.controller.impl
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
-import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -34,7 +33,7 @@ class NatsChatCreationController(
 
         return chatService
             .save(chat.toModel())
-            .flatMap { newChat -> buildSuccessResponse(newChat).toMono() }
+            .map { newChat -> buildSuccessResponse(newChat) }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
     }
 

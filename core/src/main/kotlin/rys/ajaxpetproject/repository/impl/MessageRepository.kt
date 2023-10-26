@@ -16,7 +16,8 @@ import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
 
 @Repository
-class MessageReactiveRepository(private val mongoTemplate : ReactiveMongoTemplate) : MessageRepository {
+class MessageRepository(private val mongoTemplate : ReactiveMongoTemplate) :
+    MessageRepository {
     override fun findMessageById(id: String): Mono<MongoMessage> {
         return mongoTemplate.findById<MongoMessage>(id)
     }

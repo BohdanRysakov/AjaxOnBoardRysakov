@@ -23,7 +23,9 @@ class NatsControllerConfigurerPostProcessor : BeanPostProcessor {
         connection: Connection
     ) {
         connection.createDispatcher { message ->
+
             ReactiveNatsHandler(controller).onMessage(message)
+
         }.apply { subscribe(controller.subject) }
     }
 }

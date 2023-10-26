@@ -84,12 +84,10 @@ class ChatServiceImpl(
     }
 
     override fun findChatsByUserId(userId: String): Flux<MongoChat> {
-        return userService.findUserById(userId)
-            .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))}
-            .thenMany(chatRepository.findChatsByUserId(userId))
+        return chatRepository.findChatsByUserId(userId)
     }
 
-    override fun findMessagesFromUser(userId: String, chatId: String): Flux<MongoMessage> {
+    override fun getMessagesFromChatByUser(userId: String, chatId: String): Flux<MongoMessage> {
         return Mono.`when`(
             userService.findUserById(userId)
                 .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))},
@@ -97,11 +95,11 @@ class ChatServiceImpl(
                 .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
         )
             .thenMany(
-                findMessagesInChat(chatId).filter { it.userId == userId }
+                getMessagesInChat(chatId).filter { it.userId == userId }
             )
     }
 
-    override fun findMessagesInChat(chatId: String): Flux<MongoMessage> {
+    override fun getMessagesInChat(chatId: String): Flux<MongoMessage> {
         return findChatById(chatId)
             .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
             .thenMany(chatRepository.findMessagesFromChat(chatId))
@@ -109,16 +107,15 @@ class ChatServiceImpl(
 
     override fun deleteAllFromUser(userId: String, chatId: String): Mono<Unit> {
         return Mono.`when`(
-            userService.findUserById(userId)
-                .switchIfEmpty{Mono.error(UserNotFoundException("User with id $userId not found"))},
+            userService.getUserById(userId),
             findChatById(chatId)
                 .switchIfEmpty{Mono.error(ChatNotFoundException("Chat with id $chatId not found"))}
         )
             .then(
-                findMessagesInChat(chatId)
+                getMessagesInChat(chatId)
                     .filter { it.userId == userId }
                     .mapNotNull { it.id }
-                    .flatMap { messageService.delete(it.toString()) }
+                    .map { messageService.delete(it.toString()) }
                     .then(Unit.toMono())
             )
     }

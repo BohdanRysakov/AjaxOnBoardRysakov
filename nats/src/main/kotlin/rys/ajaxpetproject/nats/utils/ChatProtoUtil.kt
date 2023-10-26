@@ -1,6 +1,5 @@
 package rys.ajaxpetproject.nats.utils
 
-import org.bson.types.ObjectId
 import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.model.MongoChat
 
@@ -12,6 +11,7 @@ fun Chat.toModel() : MongoChat {
         messages = this.messagesList
     )
 }
+
 fun MongoChat.toProto() : Chat {
     val chat = this@toProto
     return Chat.newBuilder().apply {

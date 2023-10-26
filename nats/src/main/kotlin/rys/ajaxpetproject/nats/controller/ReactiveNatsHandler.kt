@@ -11,10 +11,11 @@ class ReactiveNatsHandler(
     override fun onMessage(message: Message) {
         natsController.handle(message)
             .doOnNext {
-                logger.info("Message {} sent to {}", it.toString(), message.replyTo)
+                logger.info("Received message: subject={}, message={}", message.replyTo, it)
             }
             .map { it.toByteArray() }
             .doOnNext { natsController.connection.publish(message.replyTo, it) }
+            .doOnError{ logger.error("Error while handling message: {}", it.message, it)}
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe()
     }

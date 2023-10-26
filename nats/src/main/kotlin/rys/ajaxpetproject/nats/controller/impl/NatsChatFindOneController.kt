@@ -2,16 +2,13 @@ package rys.ajaxpetproject.nats.controller.impl
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
-import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.nats.exception.InternalException
 import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneResponse
@@ -30,7 +27,7 @@ class NatsChatFindOneController(
     override fun reply(request: ChatFindOneRequest): Mono<ChatFindOneResponse> {
         return chatService
             .findChatById(request.id)
-            .flatMap { buildSuccessResponse(it).toMono() }
+            .map { buildSuccessResponse(it) }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
     }
 

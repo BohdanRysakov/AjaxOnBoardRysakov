@@ -1,6 +1,5 @@
 package rys.ajaxpetproject.repository.impl
 
-import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.findOne
@@ -18,7 +17,8 @@ import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
 
 @Repository
-class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTemplate) : UserRepository {
+class UserRepository(private val mongoTemplate: ReactiveMongoTemplate) :
+    UserRepository {
     override fun findById(id: String): Mono<MongoUser> {
         return mongoTemplate.findById<MongoUser>(id)
     }
@@ -37,7 +37,7 @@ class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTempla
 
     override fun update(id: String, user: MongoUser): Mono<MongoUser> {
         val query = Query.query(Criteria.where("_id").`is`(id))
-        val updatedUser = user.copy(id = ObjectId(id))
+        val updatedUser = user.copy(id = id)
         val findAndModifyOptions = FindAndModifyOptions.options().returnNew(true)
         val updateDef = Update()
             .set("userName", updatedUser.userName)
@@ -53,7 +53,6 @@ class UserReactiveMongoRepository(private val mongoTemplate: ReactiveMongoTempla
     override fun delete(id: String): Mono<Unit> {
         val query = Query.query(Criteria.where("_id").`is`(id))
         return mongoTemplate.remove<MongoUser>(query)
-            .doOnSuccess { }
             .thenReturn(Unit)
     }
 

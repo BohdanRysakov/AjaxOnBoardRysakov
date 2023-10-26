@@ -93,6 +93,7 @@ subprojects {
         implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
         testImplementation("io.mockk:mockk:1.13.8")
+        testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
         testImplementation("io.projectreactor:reactor-test")
         testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("org.springframework.boot:spring-boot-starter-test")

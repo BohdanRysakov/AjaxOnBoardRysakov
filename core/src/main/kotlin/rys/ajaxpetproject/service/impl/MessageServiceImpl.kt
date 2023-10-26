@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
-import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.MessageNotFoundException
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
@@ -18,7 +17,7 @@ class MessageServiceImpl(private val messageRepository: MessageRepository) : Mes
 
     override fun getMessageById(id: String): Mono<MongoMessage> {
         return messageRepository.findMessageById(id)
-            .switchIfEmpty(MessageNotFoundException("Message with id $id not found").toMono())
+            .switchIfEmpty { Mono.error(MessageNotFoundException("Message with id $id not found")) }
     }
 
     override fun create(message: MongoMessage): Mono<MongoMessage> {
@@ -30,17 +29,14 @@ class MessageServiceImpl(private val messageRepository: MessageRepository) : Mes
     }
 
     override fun update(id: String, message: MongoMessage): Mono<MongoMessage> {
-        return findMessageById(id)
-            .switchIfEmpty { MessageNotFoundException("Message with id $id not found").toMono()
-        }
-            .flatMap { messageRepository.update(id, message) }
+        return messageRepository.update(id, message)
+            .switchIfEmpty {
+                Mono.error(MessageNotFoundException("Message with id $id not found"))
+            }
     }
 
     override fun delete(id: String): Mono<Unit> {
-        return findMessageById(id).switchIfEmpty {
-            MessageNotFoundException("Message with id $id not found").toMono()
-        }
-            .flatMap { messageRepository.delete(id) }
+        return messageRepository.delete(id)
     }
 
     override fun findMessagesByIds(ids: List<String>): Flux<MongoMessage> {

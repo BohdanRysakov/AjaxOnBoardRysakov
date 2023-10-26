@@ -2,7 +2,6 @@ package rys.ajaxpetproject.rest.controller
 
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -25,13 +24,11 @@ class ChatController(val chatService: ChatService) {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/")
-    fun createChat(@RequestBody mongoChat: MongoChat): Mono<MongoChat> =
-        chatService.save(mongoChat)
+    fun createChat(@RequestBody mongoChat: MongoChat): Mono<MongoChat> = chatService.save(mongoChat)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/{id}")
-    fun findChatById(@PathVariable id: String): Mono<MongoChat> =
-        chatService.findChatById(id)
+    fun findChatById(@PathVariable id: String): Mono<MongoChat> = chatService.findChatById(id)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/")
@@ -53,17 +50,14 @@ class ChatController(val chatService: ChatService) {
     fun addUser(
         @PathVariable chatId: String,
         @PathVariable userId: String
-    ): Mono<ResponseEntity<Void>> =
-        chatService.addUser(userId, chatId)
-            .thenReturn(ResponseEntity<Void>(HttpStatus.OK))
+    ): Mono<Unit> = chatService.addUser(userId, chatId).thenReturn(Unit)
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{chatId}/users/{userId}")
     fun removeUser(
         @PathVariable chatId: String,
         @PathVariable userId: String
-    ): Mono<Unit> =
-        chatService.removeUser(userId, chatId)
+    ): Mono<Unit> = chatService.removeUser(userId, chatId)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/chats/user/{userId}")
@@ -75,19 +69,17 @@ class ChatController(val chatService: ChatService) {
     fun findMessagesFromUser(
         @PathVariable userId: String,
         @PathVariable chatId: String
-    ): Flux<MongoMessage> =
-        chatService.findMessagesFromUser(userId, chatId)
+    ): Flux<MongoMessage> = chatService.getMessagesFromChatByUser(userId, chatId)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/messages/chat/{chatId}")
     fun findMessagesInChat(@PathVariable chatId: String): Flux<MongoMessage> =
-        chatService.findMessagesInChat(chatId)
+        chatService.getMessagesInChat(chatId)
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/messages/user/{userId}/chat/{chatId}")
     fun deleteAllFromUser(
         @PathVariable userId: String,
         @PathVariable chatId: String
-    ): Mono<Unit> =
-        chatService.deleteAllFromUser(userId, chatId)
+    ): Mono<Unit> = chatService.deleteAllFromUser(userId, chatId)
 }

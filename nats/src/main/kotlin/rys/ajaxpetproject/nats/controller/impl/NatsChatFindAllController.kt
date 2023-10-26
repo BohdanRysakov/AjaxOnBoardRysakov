@@ -27,16 +27,20 @@ class NatsChatFindAllController(
         return chatService
             .findAll()
             .collectList()
-            .map { chats -> buildSuccessResponse(chats.toList()) }
+            .map { chats -> buildSuccessResponse(chats) }
             .onErrorResume { e -> buildFailureResponse(e).toMono() }
 
     }
 
     private fun buildSuccessResponse(chats: List<MongoChat>): ChatFindAllResponse {
         return ChatFindAllResponse.newBuilder().apply {
-            successBuilder.apply {
-                resultList.addAll(chats.map { it.toProto() }
-                )
+            successBuilder.also { success ->
+                chats.map { chat ->
+                    chat.toProto()
+                    }
+                .fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
+                    result.addResult(chat)
+                }
             }
         }.build()
     }

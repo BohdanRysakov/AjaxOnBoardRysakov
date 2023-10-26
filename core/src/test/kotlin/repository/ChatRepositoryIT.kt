@@ -8,21 +8,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import reactor.kotlin.test.test
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.impl.ChatReactiveRepositoryImpl
-import rys.ajaxpetproject.repository.impl.MessageReactiveRepository
-import rys.ajaxpetproject.repository.impl.UserReactiveMongoRepository
+import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
+import rys.ajaxpetproject.repository.impl.MessageRepository
+import rys.ajaxpetproject.repository.impl.UserRepository
 
 @DbIntegrationTest
 class ChatRepositoryIT {
 
     @Autowired
-    private lateinit var chatRepository: ChatReactiveRepositoryImpl
+    private lateinit var chatRepository: ChatRepositoryImpl
 
     @Autowired
-    private lateinit var messageRepository: MessageReactiveRepository
+    private lateinit var messageRepository: MessageRepository
 
     @Autowired
-    private lateinit var userRepository: UserReactiveMongoRepository
+    private lateinit var userRepository: UserRepository
 
     @BeforeEach
     fun init() {
@@ -571,7 +571,7 @@ class ChatRepositoryIT {
         val expectedChatId = chatRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.deleteMessagesFromUser(userId, expectedChatId)
+        chatRepository.deleteMessagesFromChatByUserId(expectedChatId, userId)
             .test()
             .expectSubscription()
             .expectNext(Unit)

@@ -22,18 +22,15 @@ class UserController(val userService: UserService) {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/")
-    fun createUser(@Valid @RequestBody mongoUser: MongoUser): Mono<MongoUser> =
-        userService.createUser(mongoUser)
+    fun createUser(@Valid @RequestBody mongoUser: MongoUser): Mono<MongoUser> = userService.createUser(mongoUser)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/{id}")
-    fun findUserById(@PathVariable id: String): Mono<MongoUser> =
-        userService.findUserById(id)
+    fun findUserById(@PathVariable id: String): Mono<MongoUser> = userService.findUserById(id)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/name/{name}")
-    fun findUserByName(@PathVariable name: String): Mono<MongoUser> =
-        userService.findUserByName(name)
+    fun findUserByName(@PathVariable name: String): Mono<MongoUser> = userService.findUserByName(name)
 
     @ResponseStatus(HttpStatus.FOUND)
     @GetMapping("/")
@@ -41,13 +38,12 @@ class UserController(val userService: UserService) {
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
-    fun updateUser(@PathVariable id: String,
-                   @Valid @RequestBody updatedUser: MongoUser
-    ): Mono<MongoUser> =
-        userService.updateUser(id, updatedUser)
+    fun updateUser(
+        @PathVariable id: String,
+        @Valid @RequestBody updatedUser: MongoUser
+    ): Mono<MongoUser> = userService.updateUser(id, updatedUser)
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
-    fun deleteUser(@PathVariable id: String): Mono<Unit> =
-        userService.deleteUser(id)
+    fun deleteUser(@PathVariable id: String): Mono<Unit> = userService.deleteUser(id)
 }
