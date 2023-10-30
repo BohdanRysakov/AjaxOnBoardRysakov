@@ -3,5 +3,6 @@ include(
     "rest",
     "nats",
     "core",
-    "api"
+    "api",
+    "gRPC",
 )

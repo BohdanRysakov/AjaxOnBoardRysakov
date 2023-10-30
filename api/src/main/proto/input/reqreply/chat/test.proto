@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package rys.ajaxpetproject.request.test;
+
+service testService {
+    rpc testMethod (google.protobuf.Empty) returns (google.protobuf.Empty);
+}

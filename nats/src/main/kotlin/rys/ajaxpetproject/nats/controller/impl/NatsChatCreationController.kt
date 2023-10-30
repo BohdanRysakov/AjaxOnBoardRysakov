@@ -4,6 +4,7 @@ import com.google.protobuf.Parser
 import io.nats.client.Connection
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.commonmodels.chat.proto.Chat
@@ -58,4 +59,25 @@ class NatsChatCreationController(
     companion object {
         private val logger = LoggerFactory.getLogger(NatsChatCreationController::class.java)
     }
+}
+
+
+fun main() {
+    val flux = Flux.range(1,20)
+
+    flux.handle<Int> { it, sink ->
+        if(it%1==0) {
+            sink.error(RuntimeException("Error"))
+            return@handle
+        }
+        sink.next(it)}
+
+        .onErrorMap { e -> RuntimeException("Error while handling: ${e.message}", e)}
+        .map { it*2 }
+        .subscribe(
+            { println(it) },
+            {println("GOt errior: $it")},
+            { println("Completed") })
+
+
 }
