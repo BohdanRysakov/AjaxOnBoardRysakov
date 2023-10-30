@@ -8,11 +8,11 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.nats.controller.NatsController
-import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllRequest
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllResponse
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.utils.toProto
 
 @Service
 class NatsChatFindAllController(

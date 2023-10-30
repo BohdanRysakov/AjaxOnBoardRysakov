@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.nats.utils
+package rys.ajaxpetproject.utils
 
 import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.model.MongoChat

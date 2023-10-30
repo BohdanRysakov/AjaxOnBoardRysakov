@@ -9,10 +9,10 @@ import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneResponse
 import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.utils.toProto
 
 @Component
 @Suppress("NestedBlockDepth")
