@@ -80,10 +80,7 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
-//
-//        implementation("io.grpc:grpc-protobuf:1.58.0")
-//        implementation("io.grpc:grpc-netty:1.58.0")
-//        implementation("io.grpc:grpc-stub:1.58.0")
+
         implementation("com.salesforce.servicelibs:reactor-grpc:1.2.4")
         implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.4")
         implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.4")
