@@ -14,17 +14,12 @@ import rys.ajaxpetproject.utils.toProto
 class MessageCreateEventProducer(
     private val kafkaSender: KafkaSender<String, MessageCreateEvent>
 ) {
-    fun sendCreateEvent(eventData: Pair<MongoMessage,String>) {
-        val messageCreateEvent = MessageCreateEvent.newBuilder().apply {
-            this.message = eventData.first.toProto()
-            this.chatId = eventData.second
-        }.build()
-
+    fun sendCreateEvent(event: MessageCreateEvent) {
         val senderRecord = SenderRecord.create(
             ProducerRecord(
                 KafkaTopic.MESSAGE_ADDED_TO_CHAT,
-                eventData.second,
-                messageCreateEvent
+                event.chatId,
+                event
             ),
             null
         )

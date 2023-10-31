@@ -5,6 +5,6 @@ package rys.ajaxpetproject.request.message.create.proto;
 import "commonmodels/message/message.proto";
 
 message MessageCreateEvent {
-  commonmodels.message.proto.Message message = 1;
-  string chatId = 2;
+  //commonmodels.message.proto.Message message = 1;
+  string chatId = 1;
 }

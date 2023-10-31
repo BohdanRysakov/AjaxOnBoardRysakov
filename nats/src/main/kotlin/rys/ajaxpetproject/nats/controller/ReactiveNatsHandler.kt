@@ -2,6 +2,7 @@ package rys.ajaxpetproject.nats.controller
 
 import io.nats.client.Message
 import io.nats.client.MessageHandler
+import org.slf4j.LoggerFactory
 import reactor.core.scheduler.Schedulers
 
 class ReactiveNatsHandler(
@@ -21,6 +22,6 @@ class ReactiveNatsHandler(
     }
 
     companion object {
-        private val logger = org.slf4j.LoggerFactory.getLogger(ReactiveNatsHandler::class.java)
+        private val logger = LoggerFactory.getLogger(ReactiveNatsHandler::class.java)
     }
 }

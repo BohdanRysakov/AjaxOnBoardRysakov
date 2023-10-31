@@ -33,6 +33,9 @@ allprojects {
             setUrl("https://packages.confluent.io/maven/")
         }
     }
+    configurations.all {
+        exclude(group = "ch.qos", module = "logback")
+    }
 }
 
 dependencies {
@@ -54,6 +57,10 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+configurations.all {
+    exclude(group = "org.slf4j", module = "slf4j-reload4j")
 }
 
 subprojects {
@@ -79,9 +86,8 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.1.4")
+        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
         implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.5")
-        implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
         implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")

@@ -1,30 +1,40 @@
 package rys.ajaxpetproject.kafka
 
-import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
+import org.springframework.boot.CommandLineRunner
+import org.springframework.kafka.annotation.EnableKafka
+import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import reactor.kafka.receiver.KafkaReceiver
+import reactor.kafka.receiver.ReceiverRecord
 import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
 
 @Component
 class MessageCreateEventReceiver(
     private val kafkaReceiver: KafkaReceiver<String, MessageCreateEvent>
-) {
+) : CommandLineRunner{
 
-    @PostConstruct
-    fun start() {
+    override fun run(vararg args: String?) {
         kafkaReceiver.receive()
-            .doOnNext { record ->
-                val key = record.key()
-                val messageCreateEvent = record.value()
-                handleEvent(key, messageCreateEvent)
+            .log()
+            .doOnNext{
+                handleEvent(it.key(), it.value())
+            }.subscribe({ logger.error(it.value().chatId.toString())}, {logger.error(it.message)})
+    }
+
+    fun listen(): Flux<ReceiverRecord<String, MessageCreateEvent>> {
+        return kafkaReceiver.receive()
+            .log()
+            .doOnNext{
+                handleEvent(it.key(), it.value())
             }
-            .subscribe()
+
     }
 
     private fun handleEvent(chatId: String, event: MessageCreateEvent) {
         // Handle the received event
-        logger.info("Received message for chatId $chatId: ${event.message}")
+        logger.error("Received message for chatId $chatId: ")
     }
 
     companion object {
