@@ -31,7 +31,6 @@ class ChatCreateService(private val chatService: ChatService) :
     }
 
     private fun buildSuccessResponse(chat: MongoChat): ChatCreateResponse {
-
         return ChatCreateResponse.newBuilder().apply {
             successBuilder.result = chat.toProto()
         }.build()

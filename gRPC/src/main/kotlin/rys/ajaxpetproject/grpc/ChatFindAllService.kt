@@ -3,7 +3,6 @@ package rys.ajaxpetproject.grpc
 import net.devh.boot.grpc.server.service.GrpcService
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
@@ -19,16 +18,16 @@ class ChatFindAllService(private val chatService: ChatService) :
 
     override fun chatFindAll(request: ChatFindOneRequest): Flux<ChatFindOneResponse> {
         return chatService.findAll()
-            .flatMap { item ->
+            .map { item ->
                 buildSuccessResponse(item)
             }
             .onErrorResume { buildFailureResponse(it).toMono() }
     }
 
-    private fun buildSuccessResponse(chat: MongoChat): Mono<ChatFindOneResponse> {
+    private fun buildSuccessResponse(chat: MongoChat): ChatFindOneResponse {
         return ChatFindOneResponse.newBuilder().apply {
             this.successBuilder.result = chat.toProto()
-        }.build().toMono()
+        }.build()
     }
 
     private fun buildFailureResponse(e: Throwable): ChatFindOneResponse {
