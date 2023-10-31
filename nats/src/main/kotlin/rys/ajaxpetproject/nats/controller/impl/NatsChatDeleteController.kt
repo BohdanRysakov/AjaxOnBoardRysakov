@@ -21,7 +21,7 @@ class NatsChatDeleteController(
     override val subject = ChatSubjectsV1.ChatRequest.DELETE
     override val parser: Parser<ChatDeleteRequest> = ChatDeleteRequest.parser()
 
-    override fun reply(request: ChatDeleteRequest): Mono<ChatDeleteResponse> {
+    override fun handle(request: ChatDeleteRequest): Mono<ChatDeleteResponse> {
         val idToDelete = request.requestId
 
         return chatService
