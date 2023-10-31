@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package rys.ajaxpetproject.commonmodels.chat.proto;
 
-option java_multiple_files = true;
-
 message Chat {
   string id = 1;
   string name = 2;

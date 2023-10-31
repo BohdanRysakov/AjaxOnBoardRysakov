@@ -2,7 +2,5 @@ syntax = "proto3";
 
 package rys.ajaxpetproject.commonmodels.error.proto;
 
-option java_multiple_files = true;
-
 message Error {
 }

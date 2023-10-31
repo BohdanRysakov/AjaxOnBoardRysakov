@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package rys.ajaxpetproject.commonmodels.message.proto;
+
+import "google/protobuf/timestamp.proto";
+
+message Message {
+  string userId = 1;
+  string content = 2;
+  google.protobuf.Timestamp sentTime = 3;
+}

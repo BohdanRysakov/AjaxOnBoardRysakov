@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "input/reqreply/message/create.proto";
+
+package rys.ajaxpetproject.service.message;
+
+service MessageService {
+  rpc create(request.message.create.proto.MessageCreateRequest)
+      returns (request.message.create.proto.MessageCreateResponse);
+}

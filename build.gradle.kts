@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":rest"))
     implementation(project(":api"))
+    implementation(project(":kafka"))
     implementation(project(":gRPC"))
     implementation("org.springframework.boot:spring-boot-devtools")
 }
@@ -84,6 +85,9 @@ subprojects {
         implementation("com.salesforce.servicelibs:reactor-grpc:1.2.4")
         implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.4")
         implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.4")
+
+        implementation("io.projectreactor.kafka:reactor-kafka:1.3.19")
+        implementation("org.springframework.kafka:spring-kafka")
 
         implementation("org.springframework.security:spring-security-crypto:6.1.2")
         implementation("jakarta.validation:jakarta.validation-api:3.0.2")

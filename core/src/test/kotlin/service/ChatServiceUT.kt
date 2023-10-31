@@ -71,7 +71,6 @@ class ChatServiceUT {
             )
         )
 
-
         every{
             chatRepository.findChatById(chatId)
         } returns chat.toMono()
@@ -88,6 +87,5 @@ class ChatServiceUT {
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
-
     }
 }

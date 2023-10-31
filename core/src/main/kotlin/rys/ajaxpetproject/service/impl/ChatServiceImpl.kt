@@ -46,6 +46,12 @@ class ChatServiceImpl(
             findChatById(chatId)
                 .switchIfEmpty { Mono.error(ChatNotFoundException("Chat with id $chatId not found")) }
         )
+//            .then(reactiveKafkaProducerTemplate)
+//            .send("YOUR_TOPIC_NAME", message)
+//            .then(Mono.just(Unit))
+//            .onErrorResume {
+//                Mono.error<Unit>(it)
+//            }
             .then(chatRepository.addUser(userId, chatId))
     }
 

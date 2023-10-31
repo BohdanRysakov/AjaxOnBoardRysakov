@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.commonmodels.chat.proto.Chat
+import rys.ajaxpetproject.commonmodels.chat.proto.ChatOuterClass.Chat
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.nats.controller.NatsController
