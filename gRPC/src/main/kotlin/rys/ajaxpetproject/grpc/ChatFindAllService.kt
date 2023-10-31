@@ -8,28 +8,27 @@ import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneResponse
-import rys.ajaxpetproject.request.findOne.create.proto.ReactorChatFindAllServiceGrpc
 import rys.ajaxpetproject.service.ChatService
+import rys.ajaxpetproject.service.chat.ReactorChatFindAllServiceGrpc
 import rys.ajaxpetproject.utils.toProto
 
+//Made for gRPC stream Demo purpose
 @GrpcService
 class ChatFindAllService(private val chatService: ChatService) :
     ReactorChatFindAllServiceGrpc.ChatFindAllServiceImplBase() {
 
-    override fun chatFindAll(request: ChatFindOneRequest?): Flux<ChatFindOneResponse> {
+    override fun chatFindAll(request: ChatFindOneRequest): Flux<ChatFindOneResponse> {
         return chatService.findAll()
             .flatMap { item ->
-                buildSuccessResponse(item.toMono())
-                    .onErrorResume { e -> Mono.just(buildFailureResponse(e)) }
+                buildSuccessResponse(item)
             }
+            .onErrorResume { buildFailureResponse(it).toMono() }
     }
 
-    private fun buildSuccessResponse(chats: Mono<MongoChat>): Mono<ChatFindOneResponse> {
-        return chats.flatMap { chat ->
-            ChatFindOneResponse.newBuilder().apply {
-                this.successBuilder.result = chat.toProto()
-            }.build().toMono()
-        }
+    private fun buildSuccessResponse(chat: MongoChat): Mono<ChatFindOneResponse> {
+        return ChatFindOneResponse.newBuilder().apply {
+            this.successBuilder.result = chat.toProto()
+        }.build().toMono()
     }
 
     private fun buildFailureResponse(e: Throwable): ChatFindOneResponse {

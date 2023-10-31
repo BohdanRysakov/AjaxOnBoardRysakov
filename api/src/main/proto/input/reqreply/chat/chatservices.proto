@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "input/reqreply/chat/create.proto";
+import "input/reqreply/chat/findOne.proto";
+
+package rys.ajaxpetproject.service.chat;
+
+service ChatFindAllService {
+  rpc ChatFindAll(request.findOne.create.proto.ChatFindOneRequest)
+      returns (stream request.findOne.create.proto.ChatFindOneResponse);
+}
+
+service ChatCreateService {
+  rpc createChat(request.chat.create.proto.ChatCreateRequest)
+      returns (request.chat.create.proto.ChatCreateResponse);
+}

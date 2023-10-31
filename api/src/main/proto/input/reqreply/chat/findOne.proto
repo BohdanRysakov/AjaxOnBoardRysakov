@@ -32,7 +32,3 @@ message ChatFindOneResponse {
     }
   }
 }
-
-service ChatFindAllService {
-  rpc ChatFindAll(ChatFindOneRequest) returns (stream ChatFindOneResponse);
-}

@@ -32,7 +32,3 @@ message ChatCreateResponse {
     }
   }
 }
-
-service ChatCreateService {
-  rpc createChat(ChatCreateRequest) returns (ChatCreateResponse);
-}
