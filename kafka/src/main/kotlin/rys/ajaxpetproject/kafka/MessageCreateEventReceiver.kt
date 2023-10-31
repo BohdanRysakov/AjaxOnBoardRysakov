@@ -12,18 +12,20 @@ import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreate
 
 @Component
 class MessageCreateEventReceiver(
-    private val kafkaReceiver: KafkaReceiver<String, MessageCreateEvent>
+    private val kafkaReceiver: KafkaReceiver<String, ByteArray>
 ) : CommandLineRunner{
+
+    private val parser = MessageCreateEvent.parser()
 
     override fun run(vararg args: String?) {
         kafkaReceiver.receive()
             .log()
             .doOnNext{
                 handleEvent(it.key(), it.value())
-            }.subscribe({ logger.error(it.value().chatId.toString())}, {logger.error(it.message)})
+            }.subscribe({ logger.error("Actual info: ${parser.parseFrom(it.value())}")})
     }
 
-    fun listen(): Flux<ReceiverRecord<String, MessageCreateEvent>> {
+    fun listen(): Flux<ReceiverRecord<String, ByteArray>> {
         return kafkaReceiver.receive()
             .log()
             .doOnNext{
@@ -32,9 +34,10 @@ class MessageCreateEventReceiver(
 
     }
 
-    private fun handleEvent(chatId: String, event: MessageCreateEvent) {
+    private fun handleEvent(chatId: String, event: ByteArray) {
         // Handle the received event
         logger.error("Received message for chatId $chatId: ")
+        logger.error("Actual info: ${parser.parseFrom(event)}")
     }
 
     companion object {

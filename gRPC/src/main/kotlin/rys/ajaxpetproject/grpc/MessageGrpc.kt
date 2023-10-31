@@ -35,8 +35,8 @@ class MessageGrpc(
 
     private fun createEvent(eventData : Pair<MongoMessage,String>) : CreateEvent.MessageCreateEvent {
         return CreateEvent.MessageCreateEvent.newBuilder().apply {
-            //this.message = eventData.first.toProto()
-            this.chatId = "eventData.second"
+            this.message = eventData.first.toProto()
+            this.chatId = eventData.second
         }.build()
     }
 

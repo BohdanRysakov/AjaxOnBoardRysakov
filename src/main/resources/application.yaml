@@ -6,17 +6,12 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/main
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: http://localhost:9092
     properties:
       schema.registry.url: http://localhost:8081
-    producer:
-        key-serializer: org.apache.kafka.common.serialization.StringSerializer
-        value-serializer: io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
     consumer:
       group-id: my-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer
 
 grpc:
   server:
