@@ -1,6 +1,6 @@
 package rys.ajaxpetproject.utils
 
-import rys.ajaxpetproject.commonmodels.chat.proto.ChatOuterClass.Chat
+import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.model.MongoChat
 
 fun Chat.toModel() : MongoChat {

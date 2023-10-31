@@ -1,7 +1,6 @@
 package rys.ajaxpetproject.grpc
 
 import net.devh.boot.grpc.server.service.GrpcService
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateResponse

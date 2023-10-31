@@ -1,7 +1,7 @@
 package rys.ajaxpetproject.utils
 
 import com.google.protobuf.Timestamp
-import rys.ajaxpetproject.commonmodels.message.proto.MessageOuterClass.Message
+import rys.ajaxpetproject.commonmodels.message.proto.Message
 import rys.ajaxpetproject.model.MongoMessage
 import java.util.Date
 

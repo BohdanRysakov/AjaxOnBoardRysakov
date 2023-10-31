@@ -6,7 +6,6 @@ import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderRecord
 import reactor.kotlin.core.publisher.toMono
 
-
 @Component
 class KafkaProducer(
     private val kafkaSender: KafkaSender<String, String>
