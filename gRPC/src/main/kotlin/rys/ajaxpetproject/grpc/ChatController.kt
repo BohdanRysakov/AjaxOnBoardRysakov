@@ -23,31 +23,31 @@ class ChatController(private val chatService: ChatService) :
     override fun findAll(request: ChatFindOneRequest): Flux<ChatFindOneResponse> {
         return chatService.findAll()
             .map { item ->
-                chatFindAllBuildSuccessResponse(item)
+                findAllSuccessResponse(item)
             }
-            .onErrorResume { chatFindAllBuildFailureResponse(it).toMono() }
+            .onErrorResume { findAllFailureResponse(it).toMono() }
     }
 
     override fun create(request: ChatCreateRequest): Mono<ChatCreateResponse> {
         if (!request.hasChat()) {
             logger.info("Received empty request")
-            return chatCreateBuildFailureResponse(BadRequestException("Bad request")).toMono()
+            return createFailureResponse(BadRequestException("Bad request")).toMono()
         }
         logger.info("Received request to create chat: $request")
 
         return chatService.save(request.chat.toModel())
-            .map { chatCreateBuildSuccessResponse(it) }
-            .onErrorResume { chatCreateBuildFailureResponse(it).toMono() }
+            .map { createSuccessResponse(it) }
+            .onErrorResume { createFailureResponse(it).toMono() }
     }
 
-    private fun chatCreateBuildSuccessResponse(chat: MongoChat): ChatCreateResponse {
+    private fun createSuccessResponse(chat: MongoChat): ChatCreateResponse {
         return ChatCreateResponse.newBuilder().apply {
             successBuilder.result = chat.toProto()
         }.build()
 
     }
 
-    private fun chatCreateBuildFailureResponse(e: Throwable): ChatCreateResponse {
+    private fun createFailureResponse(e: Throwable): ChatCreateResponse {
         logger.error("Error while creating chat: ${e.message}", e)
 
         return ChatCreateResponse.newBuilder().apply {
@@ -58,13 +58,13 @@ class ChatController(private val chatService: ChatService) :
         }.build()
     }
 
-    private fun chatFindAllBuildSuccessResponse(chat: MongoChat): ChatFindOneResponse {
+    private fun findAllSuccessResponse(chat: MongoChat): ChatFindOneResponse {
         return ChatFindOneResponse.newBuilder().apply {
             this.successBuilder.result = chat.toProto()
         }.build()
     }
 
-    private fun chatFindAllBuildFailureResponse(e: Throwable): ChatFindOneResponse {
+    private fun findAllFailureResponse(e: Throwable): ChatFindOneResponse {
         logger.error("Error while creating chat: ${e.message}", e)
         return ChatFindOneResponse.newBuilder().apply {
             failureBuilder.message = e.message
