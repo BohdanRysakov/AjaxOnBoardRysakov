@@ -29,6 +29,9 @@ allprojects {
     version = "0.0.1-SNAPSHOT"
     repositories {
         mavenCentral()
+        maven {
+            setUrl("https://packages.confluent.io/maven/")
+        }
     }
 }
 
@@ -81,13 +84,16 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
+        implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
         implementation("com.salesforce.servicelibs:reactor-grpc:1.2.4")
         implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.4")
         implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.4")
 
+        implementation("io.confluent:kafka-schema-registry:7.5.1")
+        implementation("io.confluent:kafka-protobuf-serializer:7.5.1")
         implementation("io.projectreactor.kafka:reactor-kafka:1.3.19")
-        implementation("org.springframework.kafka:spring-kafka")
+        implementation("org.springframework.kafka:spring-kafka:3.0.12")
 
         implementation("org.springframework.security:spring-security-crypto:6.1.2")
         implementation("jakarta.validation:jakarta.validation-api:3.0.2")

@@ -3,6 +3,7 @@ package rys.ajaxpetproject.grpc
 import net.devh.boot.grpc.server.service.GrpcService
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import rys.ajaxpetproject.kafka.MessageCreateEventProducer
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateResponse
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateRequest
 import rys.ajaxpetproject.service.ChatService
@@ -13,7 +14,8 @@ import rys.ajaxpetproject.utils.toModel
 @GrpcService
 class MessageGrpc(
     private val chatService: ChatService,
-    private val messageService: MessageService
+    private val messageService: MessageService,
+    private val kafka: MessageCreateEventProducer
 ) :
     ReactorMessageServiceGrpc.MessageServiceImplBase() {
     override fun create(request: MessageCreateRequest): Mono<MessageCreateResponse> {
@@ -21,7 +23,9 @@ class MessageGrpc(
             messageService.create(it)
         }.map {
             chatService.addMessage(it.id!!, request.chatId)
-        }.then(createSuccessResponse().toMono())
+        }
+            .doOnNext { kafka.sendCreateEvent(Pair(request.message.toModel(), request.chatId)) }
+            .then(createSuccessResponse().toMono())
             .onErrorResume { createFailureResponse(it).toMono() }
 
     }

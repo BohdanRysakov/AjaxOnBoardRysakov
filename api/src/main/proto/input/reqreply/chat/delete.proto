@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "commonmodels/error/error.proto";
-import "commonmodels/chat/chat.proto";
 
 package rys.ajaxpetproject.request.chat.delete.proto;
 

@@ -17,7 +17,7 @@ import rys.ajaxpetproject.utils.toModel
 import rys.ajaxpetproject.utils.toProto
 
 @GrpcService
-class ChatController(private val chatService: ChatService) :
+class ChatGrpc(private val chatService: ChatService) :
     ReactorChatServiceGrpc.ChatServiceImplBase() {
 
     override fun findAll(request: ChatFindOneRequest): Flux<ChatFindOneResponse> {
@@ -73,6 +73,6 @@ class ChatController(private val chatService: ChatService) :
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(ChatController::class.java)
+        private val logger = LoggerFactory.getLogger(ChatGrpc::class.java)
     }
 }

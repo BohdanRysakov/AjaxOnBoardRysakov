@@ -26,20 +26,28 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT
     depends_on:
       - zookeeper
-#    volumes:
-#      - kafka-data:/var/lib/kafka/data
+  #    volumes:
+  #      - kafka-data:/var/lib/kafka/data
 
   zookeeper:
-      image: confluentinc/cp-zookeeper:7.5.1
-      environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-        ZOOKEEPER_TICK_TIME: 2000
-#      volumes:
-#        - zookeeper-data:/var/lib/zookeeper/data
-#        - zookeeper-log:/var/lib/zookeeper/log
+    image: confluentinc/cp-zookeeper:7.5.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.1
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka
+      - zookeeper
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
 
   mongo:
     image: mongo:6.0
     container_name: "mongodb"
     ports:
-      - "27070:27017"
+      - "27017:27017"
