@@ -6,9 +6,9 @@ import "input/reqreply/chat/findOne.proto";
 package rys.ajaxpetproject.service.chat;
 
 service ChatService {
-  rpc ChatFindAll(request.findOne.create.proto.ChatFindOneRequest)
+  rpc findAll(request.findOne.create.proto.ChatFindOneRequest)
       returns (stream request.findOne.create.proto.ChatFindOneResponse);
 
-  rpc createChat(request.chat.create.proto.ChatCreateRequest)
+  rpc create(request.chat.create.proto.ChatCreateRequest)
       returns (request.chat.create.proto.ChatCreateResponse);
 }

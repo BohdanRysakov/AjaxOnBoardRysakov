@@ -17,10 +17,10 @@ import rys.ajaxpetproject.utils.toModel
 import rys.ajaxpetproject.utils.toProto
 
 @GrpcService
-class ChatCreateService(private val chatService: ChatService) :
+class ChatController(private val chatService: ChatService) :
     ReactorChatServiceGrpc.ChatServiceImplBase() {
 
-    override fun chatFindAll(request: ChatFindOneRequest): Flux<ChatFindOneResponse> {
+    override fun findAll(request: ChatFindOneRequest): Flux<ChatFindOneResponse> {
         return chatService.findAll()
             .map { item ->
                 chatFindAllBuildSuccessResponse(item)
@@ -28,7 +28,7 @@ class ChatCreateService(private val chatService: ChatService) :
             .onErrorResume { chatFindAllBuildFailureResponse(it).toMono() }
     }
 
-    override fun createChat(request: ChatCreateRequest): Mono<ChatCreateResponse> {
+    override fun create(request: ChatCreateRequest): Mono<ChatCreateResponse> {
         if (!request.hasChat()) {
             logger.info("Received empty request")
             return chatCreateBuildFailureResponse(BadRequestException("Bad request")).toMono()
@@ -73,6 +73,6 @@ class ChatCreateService(private val chatService: ChatService) :
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(ChatCreateService::class.java)
+        private val logger = LoggerFactory.getLogger(ChatController::class.java)
     }
 }
