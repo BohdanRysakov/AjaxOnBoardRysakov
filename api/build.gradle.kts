@@ -5,6 +5,9 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 }
 protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.24.3"
+    }
     plugins {
         id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:1.46.0"
