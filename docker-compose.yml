@@ -14,4 +14,20 @@ services:
     image: mongo:6.0
     container_name: "mongodb"
     ports:
-      - "27070:27017"
+      - "27017:27017"
+
+  mongo-test:
+    image: mongo:6.0
+    container_name: "mongodb"
+    ports:
+      - "27018:27017"
+
+  nats:
+    image: nats:2.9.23
+    ports:
+      - "4222:4222"
+
+  nats-tests:
+    image: nats:2.9.23
+    ports:
+      - "4444:4222"
