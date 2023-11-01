@@ -16,7 +16,7 @@ import reactor.kafka.receiver.ReceiverOptions
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderOptions
 import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
-import rys.ajaxpetproject.subjects.KafkaTopic
+import rys.ajaxpetproject.internalapi.MessageEvent
 
 @Configuration
 class KafkaConfig(
@@ -54,10 +54,10 @@ class KafkaConfig(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java.name,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaProtobufDeserializer::class.java.name,
                 ConsumerConfig.GROUP_ID_CONFIG to "my-group",
-                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "latest",
                 "schema.registry.url" to schemaRegistryUrl,
                 KafkaProtobufDeserializerConfig.SPECIFIC_PROTOBUF_VALUE_TYPE to MessageCreateEvent::class.java.name
             )
-        ).subscription(setOf(KafkaTopic.MESSAGE_ADDED_TO_CHAT))
+        ).subscription(setOf(MessageEvent.MESSAGE_CREATE_EVENT))
     }
 }

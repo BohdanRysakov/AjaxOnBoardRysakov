@@ -1,7 +1,8 @@
-package rys.ajaxpetproject.subjects
+package rys.ajaxpetproject.internalapi
+
+import rys.ajaxpetproject.internalapi.MessageDestinations.REQUEST_PREFIX
 
 object ChatSubjectsV1 {
-    private const val REQUEST_PREFIX = "v1.rys.ajaxpetproject.core.input.reqreply"
 
     object ChatRequest {
         private const val CHAT_REQUEST = "$REQUEST_PREFIX.chat"

@@ -6,16 +6,16 @@ import org.slf4j.LoggerFactory
 import reactor.core.scheduler.Schedulers
 
 class ReactiveNatsHandler(
-    private val natsController: NatsController<*, *>,
+    private val natsChatController: NatsController<*, *>,
 ) : MessageHandler {
 
     override fun onMessage(message: Message) {
-        natsController.handle(message)
+        natsChatController.handle(message)
             .doOnNext {
                 logger.info("Received message: subject={}, message={}", message.replyTo, it)
             }
             .map { it.toByteArray() }
-            .doOnNext { natsController.connection.publish(message.replyTo, it) }
+            .doOnNext { natsChatController.connection.publish(message.replyTo, it) }
             .doOnError { logger.error("Error while handling message: {}", it.message, it) }
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe()

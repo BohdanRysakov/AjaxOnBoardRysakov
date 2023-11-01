@@ -18,11 +18,11 @@
 //import rys.ajaxpetproject.model.MongoChat
 //import rys.ajaxpetproject.configuration.SecurityConfiguration
 //import rys.ajaxpetproject.nats.config.NatsControllerConfigurerPostProcessor
-//import rys.ajaxpetproject.nats.controller.impl.NatsChatCreationController
-//import rys.ajaxpetproject.nats.controller.impl.NatsChatDeleteController
-//import rys.ajaxpetproject.nats.controller.impl.NatsChatFindAllController
-//import rys.ajaxpetproject.nats.controller.impl.NatsChatUpdateController
-//import rys.ajaxpetproject.nats.controller.impl.NatsChatFindOneController
+//import rys.ajaxpetproject.nats.controller.impl.chat.NatsChatCreationController
+//import rys.ajaxpetproject.nats.controller.impl.chat.NatsChatDeleteController
+//import rys.ajaxpetproject.nats.controller.impl.chat.NatsChatFindAllController
+//import rys.ajaxpetproject.nats.controller.impl.chat.NatsChatUpdateController
+//import rys.ajaxpetproject.nats.controller.impl.chat.NatsChatFindOneController
 //import rys.ajaxpetproject.nats.utils.toModel
 //import rys.ajaxpetproject.nats.utils.toProto
 //import rys.ajaxpetproject.repository.ChatRepository

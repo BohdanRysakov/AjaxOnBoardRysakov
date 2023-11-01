@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.nats.controller.impl
+package rys.ajaxpetproject.nats.controller.impl.chat
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
@@ -11,7 +11,7 @@ import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllRequest
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllResponse
 import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.internalapi.ChatSubjectsV1
 import rys.ajaxpetproject.utils.toProto
 
 @Service

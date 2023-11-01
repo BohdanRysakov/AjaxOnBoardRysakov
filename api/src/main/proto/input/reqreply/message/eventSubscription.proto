@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package rys.ajaxpetproject.request.message.subscription.proto;
+
+import "commonmodels/message/message.proto";
+import "commonmodels/error/error.proto";
+
+message CreateSubscriptionRequest {
+  repeated string chat = 1;
+}
+
+message CreateSubscriptionResponse {
+   string chatId = 1;
+   commonmodels.message.proto.Message message = 2;
+}

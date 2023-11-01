@@ -1,32 +1,38 @@
 package rys.ajaxpetproject.service.impl
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
+import rys.ajaxpetproject.kafka.MessageCreateEventProducer
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.UserService
+import rys.ajaxpetproject.utils.createEvent
+import rys.ajaxpetproject.utils.toModel
 
 @Service
 @Suppress("TooManyFunctions")
 class ChatServiceImpl(
     private val chatRepository: ChatRepository,
     private val userService: UserService,
-    private val messageService: MessageService
+    private val messageService: MessageService,
+    private val kafka: MessageCreateEventProducer
 ) : ChatService {
     override fun findChatById(id: String): Mono<MongoChat> {
         return chatRepository.findChatById(id)
     }
 
     override fun save(chat: MongoChat): Mono<MongoChat> {
-        return chatRepository.save(chat)
+        return chatRepository.save(chat.copy(id = null))
     }
 
     override fun deleteAll(): Mono<Unit> {
@@ -40,19 +46,7 @@ class ChatServiceImpl(
     }
 
     override fun addUser(userId: String, chatId: String): Mono<Unit> {
-        return Mono.`when`(
-            userService.findUserById(userId)
-                .switchIfEmpty { Mono.error(UserNotFoundException("User with id $userId not found")) },
-            findChatById(chatId)
-                .switchIfEmpty { Mono.error(ChatNotFoundException("Chat with id $chatId not found")) }
-        )
-//            .then(reactiveKafkaProducerTemplate)
-//            .send("YOUR_TOPIC_NAME", message)
-//            .then(Mono.just(Unit))
-//            .onErrorResume {
-//                Mono.error<Unit>(it)
-//            }
-            .then(chatRepository.addUser(userId, chatId))
+        return chatRepository.addUser(userId, chatId)
     }
 
     override fun removeUser(userId: String, chatId: String): Mono<Unit> {
@@ -66,13 +60,16 @@ class ChatServiceImpl(
     }
 
     override fun addMessage(messageId: String, chatId: String): Mono<Unit> {
-        return Mono.`when`(
-            findChatById(chatId)
-                .switchIfEmpty { Mono.error(ChatNotFoundException("Chat with id $chatId not found")) },
-            messageService.findMessageById(messageId)
-                .switchIfEmpty { Mono.error(ChatNotFoundException("Message with id $messageId not found")) }
-        )
-            .then(chatRepository.addMessage(messageId, chatId))
+        return chatRepository.addMessage(messageId, chatId)
+            .flatMap {
+                messageService.getMessageById(messageId)
+                    .doOnSuccess {
+                        kafka.sendCreateEvent(
+                            it.createEvent(chatId)
+                        )
+                    }
+            }
+            .thenReturn(Unit)
     }
 
     override fun removeMessage(messageId: String, chatId: String): Mono<Unit> {
@@ -124,5 +121,9 @@ class ChatServiceImpl(
                     .map { messageService.delete(it.toString()) }
                     .then(Unit.toMono())
             )
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger(ChatServiceImpl::class.java)
     }
 }
