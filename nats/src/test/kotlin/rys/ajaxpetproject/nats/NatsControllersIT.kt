@@ -23,8 +23,6 @@ import rys.ajaxpetproject.nats.controller.impl.NatsChatDeleteController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatFindAllController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatUpdateController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatFindOneController
-import rys.ajaxpetproject.nats.utils.toModel
-import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
 import rys.ajaxpetproject.repository.impl.MessageRepository
@@ -43,6 +41,8 @@ import rys.ajaxpetproject.service.impl.ChatServiceImpl
 import rys.ajaxpetproject.service.impl.MessageServiceImpl
 import rys.ajaxpetproject.service.impl.UserServiceImpl
 import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.utils.toModel
+import rys.ajaxpetproject.utils.toProto
 import java.time.Duration
 
 @SpringBootTest(classes = [NatsTestConfiguration::class])
@@ -59,7 +59,7 @@ import java.time.Duration
     ]
 )
 @ActiveProfiles("testing")
-class NatsControllersUT {
+class NatsControllersIT {
     @SpyBean
     private lateinit var chatService: ChatService
 
@@ -280,9 +280,7 @@ class NatsControllersUT {
         )
         assert(response.hasSuccess())
 
-        val chatFromResponse = response.success.result.let {
-            it.toModel()
-        }
+        val chatFromResponse = response.success.result.toModel()
         assert(chatFromResponse == chatToFind)
     }
 
@@ -352,7 +350,7 @@ class NatsControllersUT {
         //THEN
         assert(response.hasSuccess())
 
-        val chatFromResponse = response.success.result.let { it.toModel() }
+        val chatFromResponse = response.success.result.toModel()
         assert(chatFromResponse == chatUpdatedVersion.copy(id = chatToUpdate.id))
     }
 
