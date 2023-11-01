@@ -46,6 +46,12 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
 
+  nats:
+    image: nats:2.6.2
+    container_name: "nats"
+    ports:
+      - "4222:4222"
+
   mongo:
     image: mongo:6.0
     container_name: "mongodb"

@@ -25,7 +25,7 @@ class MessageCreateEventReceiver(
 
         natsConnection.publish(
             MessageEvent.createMessageCreateNatsSubject(event.chatId),
-            event.message.toByteArray())
+            event.toByteArray())
 
         logger.error("Published message in " +
                 "${MessageEvent.createMessageCreateNatsSubject(event.chatId)} " +

@@ -4,7 +4,6 @@ import io.nats.client.Connection
 import net.devh.boot.grpc.server.service.GrpcService
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateResponse
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateRequest
@@ -13,9 +12,9 @@ import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.message.ReactorMessageServiceGrpc
 import rys.ajaxpetproject.utils.toModel
 import rys.ajaxpetproject.internalapi.MessageEvent
+import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription.CreateSubscriptionRequest
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription.CreateSubscriptionResponse
-import rys.ajaxpetproject.commonmodels.message.proto.Message as ProtoMessage
 
 @GrpcService
 class MessageGrpc(
@@ -25,27 +24,22 @@ class MessageGrpc(
 ) :
     ReactorMessageServiceGrpc.MessageServiceImplBase() {
 
-    private val messageParser = ProtoMessage.parser()
+    private val messageParser = MessageCreateEvent.parser()
 
     override fun subscribe(requests: Flux<CreateSubscriptionRequest>):
             Flux<CreateSubscriptionResponse> {
 
         logger.error("gRPC succesfully invoked subscribe method ")
 
-        return requests
-            .handle {
-
+        return requests.log()
+            .flatMap { request: CreateSubscriptionRequest ->
+                val chatIds = request.chatList
+                logger.error(
+                    "Checking subject - " +
+                            MessageEvent.createMessageCreateNatsSubject(chatIds[0])
+                )
+                Flux.merge(chatIds.map { chatId -> subscribeToChat(chatId) })
             }
-
-//        return requests.log()
-//            .flatMap { request: CreateSubscriptionRequest ->
-//                val chatIds = request.chatList
-//                logger.error(
-//                    "Checking subject - " +
-//                            MessageEvent.createMessageCreateNatsSubject(chatIds[0])
-//                )
-//                Flux.merge(chatIds.map { chatId -> subscribeToChat(chatId) })
-//            }
     }
 
     private fun subscribeToChat(chatId: String): Flux<CreateSubscriptionResponse> {
@@ -73,9 +67,10 @@ class MessageGrpc(
         }
     }
 
-    private fun buildResponse(message: ProtoMessage): CreateSubscriptionResponse {
+    private fun buildResponse(message: MessageCreateEvent): CreateSubscriptionResponse {
         return CreateSubscriptionResponse.newBuilder().apply {
-            this.message = message
+            this.message = message.message
+            this.chatId = message.chatId
         }.build()
     }
 
