@@ -200,6 +200,7 @@ class NatsControllersIT {
 
         //THEN
         Assertions.assertTrue(response.hasFailure())
+
         Assertions.assertEquals(expectedMessage, response.failure.message)
     }
 
