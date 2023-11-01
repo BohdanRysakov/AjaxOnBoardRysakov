@@ -33,9 +33,6 @@ allprojects {
             setUrl("https://packages.confluent.io/maven/")
         }
     }
-    configurations.all {
-        exclude(group = "ch.qos", module = "logback")
-    }
 }
 
 dependencies {
