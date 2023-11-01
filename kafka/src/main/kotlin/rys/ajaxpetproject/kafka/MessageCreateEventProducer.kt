@@ -14,7 +14,7 @@ import rys.ajaxpetproject.utils.toProto
 class MessageCreateEventProducer(
     private val kafkaSender: KafkaSender<String, MessageCreateEvent>
 ) {
-    fun sendCreateEvent(eventData: Pair<MongoMessage,String>) {
+    fun sendCreateEvent(eventData: Pair<MongoMessage, String>) {
         val messageCreateEvent = MessageCreateEvent.newBuilder().apply {
             this.message = eventData.first.toProto()
             this.chatId = eventData.second

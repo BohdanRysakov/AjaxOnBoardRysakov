@@ -13,9 +13,9 @@ class MessageCreateEventReceiver(
 
     override fun run(vararg args: String?) {
         kafkaReceiver.receive().log()
-            .doOnNext{
+            .doOnNext {
                 handleEvent(it.key(), it.value())
-            }.subscribe({ logger.error(it.value().chatId.toString())}, {logger.error(it.message)})
+            }.subscribe({ logger.error(it.value().chatId.toString()) }, { logger.error(it.message) })
     }
 
     private fun handleEvent(chatId: String, event: MessageCreateEvent) {
@@ -27,3 +27,4 @@ class MessageCreateEventReceiver(
         private val logger = LoggerFactory.getLogger(MessageCreateEventReceiver::class.java)
     }
 }
+

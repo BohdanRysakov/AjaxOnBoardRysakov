@@ -37,10 +37,10 @@ class NatsChatFindAllController(
             successBuilder.also { success ->
                 chats.map { chat ->
                     chat.toProto()
-                    }
-                .fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
-                    result.addResult(chat)
                 }
+                    .fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
+                        result.addResult(chat)
+                    }
             }
         }.build()
     }

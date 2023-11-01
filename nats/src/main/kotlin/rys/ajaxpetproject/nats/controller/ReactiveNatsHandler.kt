@@ -16,7 +16,7 @@ class ReactiveNatsHandler(
             }
             .map { it.toByteArray() }
             .doOnNext { natsController.connection.publish(message.replyTo, it) }
-            .doOnError{ logger.error("Error while handling message: {}", it.message, it)}
+            .doOnError { logger.error("Error while handling message: {}", it.message, it) }
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe()
     }

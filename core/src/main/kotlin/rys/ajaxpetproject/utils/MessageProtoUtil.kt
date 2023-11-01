@@ -5,7 +5,7 @@ import rys.ajaxpetproject.commonmodels.message.proto.Message
 import rys.ajaxpetproject.model.MongoMessage
 import java.util.Date
 
-fun Message.toModel() : MongoMessage {
+fun Message.toModel(): MongoMessage {
     return MongoMessage(
         userId = this.userId,
         content = this.content,
@@ -13,7 +13,7 @@ fun Message.toModel() : MongoMessage {
     )
 }
 
-fun MongoMessage.toProto() : Message {
+fun MongoMessage.toProto(): Message {
     val message = this@toProto
     return Message.newBuilder().apply {
         this.userId = message.userId
