@@ -30,7 +30,6 @@ class MessageCreateEventReceiver(
     }
 
     private fun handleEvent(event: MessageCreateEvent) {
-
         if (event.chatId.isNotBlank()) {
             natsConnection.publish(
                 MessageEvent.createMessageCreateNatsSubject(event.chatId),
@@ -40,9 +39,9 @@ class MessageCreateEventReceiver(
                 }.build().toByteArray()
             )
             logger.info(
-                "Published message in " +
-                        "${MessageEvent.createMessageCreateNatsSubject(event.chatId)} " +
-                        " - [${event.message}]"
+                "Published message in {} - {}",
+                MessageEvent.createMessageCreateNatsSubject(event.chatId),
+                event.message
             )
         }
     }

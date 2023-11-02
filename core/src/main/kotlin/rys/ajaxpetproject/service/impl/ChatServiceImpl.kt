@@ -61,7 +61,7 @@ class ChatServiceImpl(
         return chatRepository.addMessage(messageId, chatId)
             .flatMap {
                 messageService.getMessageById(messageId)
-                    .doOnSuccess {
+                    .flatMap {
                         kafka.sendCreateEvent(
                             it.createEvent(chatId)
                         )

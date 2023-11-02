@@ -14,20 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Start MongoDB container
-        run: |
-          docker run -d --name mongo -p 27017:27017 \
-            -e MONGO_INITDB_DATABASE=main \
-            mongo:6.0
-
       - name: Start MongoDB test-container
         run: |
           docker run -d --name mongo-test -p 27018:27017 \
             -e MONGO_INITDB_DATABASE=testDB \
             mongo:6.0    
-
-      - name: Start NATS container
-        run: docker run -d --name nats -p 4222:4222 nats:latest
 
       - name: Start NATS test-container
         run: docker run -d --name nats-test -p 4444:4222 nats:latest

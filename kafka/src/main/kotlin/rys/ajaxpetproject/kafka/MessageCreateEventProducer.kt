@@ -2,6 +2,7 @@ package rys.ajaxpetproject.kafka
 
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderRecord
 import reactor.kotlin.core.publisher.toMono
@@ -12,7 +13,7 @@ import rys.ajaxpetproject.internalapi.MessageEvent
 class MessageCreateEventProducer(
     private val kafkaSender: KafkaSender<String, MessageCreateEvent>
 ) {
-    fun sendCreateEvent(event: MessageCreateEvent) {
+    fun sendCreateEvent(event: MessageCreateEvent): Mono<Unit> {
 
         val senderRecord = SenderRecord.create(
             ProducerRecord(
@@ -22,6 +23,7 @@ class MessageCreateEventProducer(
             ),
             null
         )
-        kafkaSender.send(senderRecord.toMono()).subscribe()
+        return kafkaSender.send(senderRecord.toMono())
+            .then(Unit.toMono())
     }
 }

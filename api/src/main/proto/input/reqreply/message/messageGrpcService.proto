@@ -10,5 +10,5 @@ service MessageService {
       returns (request.message.create.proto.MessageCreateResponse);
 
   rpc subscribe(stream request.message.subscription.proto.CreateSubscriptionRequest)
-      returns (stream request.message.subscription.proto.CreateSubscriptionResponse);
+      returns (stream request.message.subscription.proto.CreateSubscriptionResponse) {} ;
 }

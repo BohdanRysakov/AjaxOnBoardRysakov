@@ -61,6 +61,7 @@ configurations.all {
 }
 
 subprojects {
+
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
     apply(plugin = "org.springframework.boot")
@@ -84,7 +85,7 @@ subprojects {
 
     dependencies {
         implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
-        implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.5")
+        implementation("org.springframework.boot:spring-boot-starter-webflux")
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
         implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
@@ -96,9 +97,9 @@ subprojects {
         implementation("io.confluent:kafka-schema-registry:7.5.1")
         implementation("io.confluent:kafka-protobuf-serializer:7.5.1")
         implementation("io.projectreactor.kafka:reactor-kafka:1.3.19")
-        implementation("org.springframework.kafka:spring-kafka:3.0.12")
+        implementation("org.springframework.kafka:spring-kafka")
 
-        implementation("org.springframework.security:spring-security-crypto:6.1.2")
+        implementation("org.springframework.security:spring-security-crypto")
         implementation("jakarta.validation:jakarta.validation-api:3.0.2")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
