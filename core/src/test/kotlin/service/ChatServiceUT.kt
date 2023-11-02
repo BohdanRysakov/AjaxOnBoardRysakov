@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
+import rys.ajaxpetproject.kafka.MessageCreateEventProducer
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.model.MongoUser
@@ -22,6 +23,9 @@ import rys.ajaxpetproject.service.impl.ChatServiceImpl
 class ChatServiceUT {
     @MockK
     private lateinit var chatRepository: ChatRepository
+
+    @MockK
+    private lateinit var kafkaEventSender: MessageCreateEventProducer
 
     @MockK
     private lateinit var userService: UserService

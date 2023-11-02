@@ -23,7 +23,7 @@ class ChatServiceImpl(
     private val chatRepository: ChatRepository,
     private val userService: UserService,
     private val messageService: MessageService,
-    private val kafka: MessageCreateEventProducer
+    private val kafkaEventSender: MessageCreateEventProducer
 ) : ChatService {
     override fun findChatById(id: String): Mono<MongoChat> {
         return chatRepository.findChatById(id)
@@ -62,11 +62,9 @@ class ChatServiceImpl(
             .flatMap {
                 messageService.getMessageById(messageId)
                     .flatMap {
-                        kafka.sendCreateEvent(
+                        kafkaEventSender.sendCreateEvent(
                             it.createEvent(chatId)
                         )
-                    }.onErrorResume {
-                        Mono.error(it)
                     }
             }
             .onErrorResume {

@@ -3,7 +3,7 @@ package rys.ajaxpetproject.utils
 import com.google.protobuf.Timestamp
 import rys.ajaxpetproject.commonmodels.message.proto.Message
 import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
+import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreatedEvent
 import java.util.Date
 
 fun Message.toModel(): MongoMessage {
@@ -23,9 +23,9 @@ fun MongoMessage.toProto(): Message {
     }.build()
 }
 
-fun MongoMessage.createEvent(chatId: String): MessageCreateEvent {
+fun MongoMessage.createEvent(chatId: String): MessageCreatedEvent {
     val message = this@createEvent
-    return MessageCreateEvent.newBuilder().apply {
+    return MessageCreatedEvent.newBuilder().apply {
         this.chatId = chatId
         this.message = message.toProto()
     }.build()

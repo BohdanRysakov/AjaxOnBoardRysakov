@@ -56,11 +56,12 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-configurations.all {
-    exclude(group = "org.slf4j", module = "slf4j-reload4j")
-}
 
 subprojects {
+
+    configurations.all {
+        exclude(group = "org.slf4j", module = "slf4j-reload4j")
+    }
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")

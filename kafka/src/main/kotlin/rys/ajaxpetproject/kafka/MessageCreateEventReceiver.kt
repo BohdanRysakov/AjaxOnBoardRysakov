@@ -7,13 +7,13 @@ import reactor.core.scheduler.Schedulers
 import reactor.kafka.receiver.KafkaReceiver
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.internalapi.MessageEvent
-import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
+import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreatedEvent
 import javax.annotation.PostConstruct
 
 @Component
 class MessageCreateEventReceiver(
     private val natsConnection: Connection,
-    private val kafkaReceiver: KafkaReceiver<String, MessageCreateEvent>
+    private val kafkaReceiver: KafkaReceiver<String, MessageCreatedEvent>
 ) {
 
     @PostConstruct
@@ -29,7 +29,7 @@ class MessageCreateEventReceiver(
             .subscribe()
     }
 
-    private fun handleEvent(event: MessageCreateEvent) {
+    private fun handleEvent(event: MessageCreatedEvent) {
         if (event.chatId.isNotBlank()) {
             natsConnection.publish(
                 MessageEvent.createMessageCreateNatsSubject(event.chatId),

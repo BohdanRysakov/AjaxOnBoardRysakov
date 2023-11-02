@@ -14,7 +14,7 @@ import rys.ajaxpetproject.utils.toModel
 import rys.ajaxpetproject.utils.toProto
 
 @GrpcService
-class ChatGrpc(private val chatService: ChatService) :
+class ChatGrpcService(private val chatService: ChatService) :
     ReactorChatServiceGrpc.ChatServiceImplBase() {
 
     override fun create(request: ChatCreateRequest): Mono<ChatCreateResponse> {
@@ -48,6 +48,6 @@ class ChatGrpc(private val chatService: ChatService) :
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(ChatGrpc::class.java)
+        private val logger = LoggerFactory.getLogger(ChatGrpcService::class.java)
     }
 }

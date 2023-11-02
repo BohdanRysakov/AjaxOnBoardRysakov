@@ -6,14 +6,14 @@ import reactor.core.publisher.Mono
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderRecord
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
+import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreatedEvent
 import rys.ajaxpetproject.internalapi.MessageEvent
 
 @Component
 class MessageCreateEventProducer(
-    private val kafkaSender: KafkaSender<String, MessageCreateEvent>
+    private val kafkaSender: KafkaSender<String, MessageCreatedEvent>
 ) {
-    fun sendCreateEvent(event: MessageCreateEvent): Mono<Unit> {
+    fun sendCreateEvent(event: MessageCreatedEvent): Mono<Unit> {
 
         val senderRecord = SenderRecord.create(
             ProducerRecord(

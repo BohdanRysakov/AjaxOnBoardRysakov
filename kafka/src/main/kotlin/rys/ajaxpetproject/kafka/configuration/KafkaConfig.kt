@@ -15,7 +15,7 @@ import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderOptions
-import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
+import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreatedEvent
 import rys.ajaxpetproject.internalapi.MessageEvent
 
 @Configuration
@@ -24,7 +24,7 @@ class KafkaConfig(
     @Value("\${spring.kafka.properties.schema.registry.url}") private val schemaRegistryUrl: String
 ) {
     @Bean
-    fun kafkaSenderEvent(): KafkaSender<String, MessageCreateEvent> =
+    fun kafkaSenderEvent(): KafkaSender<String, MessageCreatedEvent> =
         createKafkaSender(producerProperties())
 
     private fun <T : GeneratedMessageV3> createKafkaSender(properties: MutableMap<String, Any>):
@@ -44,7 +44,7 @@ class KafkaConfig(
     }
 
     @Bean
-    fun kafkaReceiver(): KafkaReceiver<String, MessageCreateEvent> =
+    fun kafkaReceiver(): KafkaReceiver<String, MessageCreatedEvent> =
         KafkaReceiver.create(receiverOptions())
 
     private fun <T : GeneratedMessageV3> receiverOptions(): ReceiverOptions<String, T> {
@@ -56,7 +56,7 @@ class KafkaConfig(
                 ConsumerConfig.GROUP_ID_CONFIG to "my-group",
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "latest",
                 "schema.registry.url" to schemaRegistryUrl,
-                KafkaProtobufDeserializerConfig.SPECIFIC_PROTOBUF_VALUE_TYPE to MessageCreateEvent::class.java.name
+                KafkaProtobufDeserializerConfig.SPECIFIC_PROTOBUF_VALUE_TYPE to MessageCreatedEvent::class.java.name
             )
         ).subscription(setOf(MessageEvent.MESSAGE_CREATE_EVENT))
     }

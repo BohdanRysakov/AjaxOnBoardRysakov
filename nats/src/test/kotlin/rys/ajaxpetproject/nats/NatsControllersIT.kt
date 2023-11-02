@@ -5,9 +5,11 @@ import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
@@ -17,12 +19,10 @@ import reactor.kotlin.test.test
 import rys.ajaxpetproject.nats.exception.InternalException
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.configuration.SecurityConfiguration
+import rys.ajaxpetproject.internalapi.ChatSubjectsV1
+import rys.ajaxpetproject.kafka.MessageCreateEventProducer
 import rys.ajaxpetproject.nats.config.NatsControllerConfigurerPostProcessor
-import rys.ajaxpetproject.nats.controller.impl.NatsChatCreationController
-import rys.ajaxpetproject.nats.controller.impl.NatsChatDeleteController
-import rys.ajaxpetproject.nats.controller.impl.NatsChatFindAllController
-import rys.ajaxpetproject.nats.controller.impl.NatsChatUpdateController
-import rys.ajaxpetproject.nats.controller.impl.NatsChatFindOneController
+import rys.ajaxpetproject.nats.controller.impl.chat.*
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
 import rys.ajaxpetproject.repository.impl.MessageRepository
@@ -40,7 +40,6 @@ import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.impl.ChatServiceImpl
 import rys.ajaxpetproject.service.impl.MessageServiceImpl
 import rys.ajaxpetproject.service.impl.UserServiceImpl
-import rys.ajaxpetproject.subjects.ChatSubjectsV1
 import rys.ajaxpetproject.utils.toModel
 import rys.ajaxpetproject.utils.toProto
 import java.time.Duration
@@ -54,14 +53,16 @@ import java.time.Duration
         NatsChatFindAllController::class, MessageRepository::class, UserRepository::class,
         NatsChatFindOneController::class, MessageServiceImpl::class, UserServiceImpl::class,
         NatsChatUpdateController::class, SecurityConfiguration::class,
-        NatsControllerConfigurerPostProcessor::class,
-
+        NatsControllerConfigurerPostProcessor::class
     ]
 )
 @ActiveProfiles("testing")
 class NatsControllersIT {
     @SpyBean
     private lateinit var chatService: ChatService
+
+    @MockBean
+    private lateinit var kafkaSenderEvent : MessageCreateEventProducer
 
     @Autowired
     private lateinit var connection: Connection
@@ -85,6 +86,9 @@ class NatsControllersIT {
         val request = ChatCreateRequest.newBuilder().apply {
             this.chat = expectedChat.toProto()
         }.build()
+
+        whenever(kafkaSenderEvent.sendCreateEvent(any())).
+        thenReturn(Unit.toMono())
 
         //WHEN
         val actualChat = ChatCreateResponse.parseFrom(
