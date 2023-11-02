@@ -4,7 +4,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
@@ -17,7 +16,6 @@ import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.UserService
 import rys.ajaxpetproject.utils.createEvent
-import rys.ajaxpetproject.utils.toModel
 
 @Service
 @Suppress("TooManyFunctions")
@@ -67,7 +65,13 @@ class ChatServiceImpl(
                         kafka.sendCreateEvent(
                             it.createEvent(chatId)
                         )
+                    }.onErrorResume {
+                        Mono.error(it)
                     }
+            }
+            .onErrorResume {
+                logger.error("Error while adding message to chat: ${it.message}", it)
+                Mono.error(it)
             }
             .thenReturn(Unit)
     }

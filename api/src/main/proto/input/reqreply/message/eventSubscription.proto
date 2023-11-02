@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package rys.ajaxpetproject.request.message.subscription.proto;
 
-import "commonmodels/message/message.proto";
+import "commonmodels/message/messageDto.proto";
 import "commonmodels/error/error.proto";
 
 message CreateSubscriptionRequest {
@@ -10,6 +10,17 @@ message CreateSubscriptionRequest {
 }
 
 message CreateSubscriptionResponse {
-   string chatId = 1;
-   commonmodels.message.proto.Message message = 2;
+  oneof response {
+    Success success = 1;
+    Failure failure = 2;
+  }
+  message Success {
+    commonmodels.message.proto.MessageDto messageDto = 1;
+  }
+
+  message Failure {
+    string message = 1;
+    commonmodels.error.proto.Error error = 2;
+
+  }
 }

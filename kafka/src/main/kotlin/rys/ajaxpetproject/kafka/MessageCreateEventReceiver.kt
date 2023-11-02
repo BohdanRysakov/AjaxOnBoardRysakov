@@ -2,34 +2,49 @@ package rys.ajaxpetproject.kafka
 
 import io.nats.client.Connection
 import org.slf4j.LoggerFactory
-import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
+import reactor.core.scheduler.Schedulers
 import reactor.kafka.receiver.KafkaReceiver
+import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.internalapi.MessageEvent
 import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
+import javax.annotation.PostConstruct
 
 @Component
 class MessageCreateEventReceiver(
-    private val natsConnection : Connection,
+    private val natsConnection: Connection,
     private val kafkaReceiver: KafkaReceiver<String, MessageCreateEvent>
-) : CommandLineRunner {
+) {
 
-    override fun run(vararg args: String?) {
-        kafkaReceiver.receive()
-            .doOnNext {
-                handleEvent(it.value())
-            }.subscribe()
+    @PostConstruct
+    fun startListening() {
+        logger.info("Starting to listen to kafka")
+        kafkaReceiver.receiveAutoAck()
+            .flatMap { consumerRecord ->
+                consumerRecord.map {
+                    handleEvent(it.value())
+                }
+            }
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe()
     }
 
     private fun handleEvent(event: MessageCreateEvent) {
 
-        natsConnection.publish(
-            MessageEvent.createMessageCreateNatsSubject(event.chatId),
-            event.toByteArray())
-
-        logger.error("Published message in " +
-                "${MessageEvent.createMessageCreateNatsSubject(event.chatId)} " +
-                " - [${event.message.content}]")
+        if (event.chatId.isNotBlank()) {
+            natsConnection.publish(
+                MessageEvent.createMessageCreateNatsSubject(event.chatId),
+                MessageDto.newBuilder().apply {
+                    this.chatId = event.chatId
+                    this.message = event.message
+                }.build().toByteArray()
+            )
+            logger.info(
+                "Published message in " +
+                        "${MessageEvent.createMessageCreateNatsSubject(event.chatId)} " +
+                        " - [${event.message}]"
+            )
+        }
     }
 
     companion object {

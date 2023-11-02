@@ -5,6 +5,7 @@ import net.devh.boot.grpc.server.service.GrpcService
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateResponse
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateRequest
 import rys.ajaxpetproject.service.ChatService
@@ -12,68 +13,18 @@ import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.message.ReactorMessageServiceGrpc
 import rys.ajaxpetproject.utils.toModel
 import rys.ajaxpetproject.internalapi.MessageEvent
-import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreateEvent
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription.CreateSubscriptionRequest
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription.CreateSubscriptionResponse
 
 @GrpcService
+@Suppress("TooGenericExceptionCaught")
 class MessageGrpc(
     private val natsConnection: Connection,
     private val chatService: ChatService,
     private val messageService: MessageService,
-) :
-    ReactorMessageServiceGrpc.MessageServiceImplBase() {
+) : ReactorMessageServiceGrpc.MessageServiceImplBase() {
 
-    private val messageParser = MessageCreateEvent.parser()
-
-    override fun subscribe(requests: Flux<CreateSubscriptionRequest>):
-            Flux<CreateSubscriptionResponse> {
-
-        logger.error("gRPC succesfully invoked subscribe method ")
-
-        return requests.log()
-            .flatMap { request: CreateSubscriptionRequest ->
-                val chatIds = request.chatList
-                logger.error(
-                    "Checking subject - " +
-                            MessageEvent.createMessageCreateNatsSubject(chatIds[0])
-                )
-                Flux.merge(chatIds.map { chatId -> subscribeToChat(chatId) })
-            }
-    }
-
-    private fun subscribeToChat(chatId: String): Flux<CreateSubscriptionResponse> {
-        return Flux.create { sink ->
-            val subject = MessageEvent.createMessageCreateNatsSubject(chatId)
-
-            val dispatcher = natsConnection.createDispatcher { msg ->
-
-                logger.error("Received message in ${subject} - [${msg.data.decodeToString()}]")
-
-                try {
-                    val message = messageParser.parseFrom(msg.data)
-                    val response = buildResponse(message)
-                    sink.next(response)
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
-            }
-
-            dispatcher.subscribe(subject)
-
-            sink.onDispose {
-                dispatcher.unsubscribe(subject)
-            }
-        }
-    }
-
-    private fun buildResponse(message: MessageCreateEvent): CreateSubscriptionResponse {
-        return CreateSubscriptionResponse.newBuilder().apply {
-            this.message = message.message
-            this.chatId = message.chatId
-        }.build()
-    }
-
+    private val messageParser = MessageDto.parser()
 
     override fun create(request: MessageCreateRequest): Mono<MessageCreateResponse> {
         return request.message.toModel().let {
@@ -84,6 +35,50 @@ class MessageGrpc(
             .then(createSuccessResponse().toMono())
             .onErrorResume { createFailureResponse(it).toMono() }
 
+    }
+
+    override fun subscribe(requests: Flux<CreateSubscriptionRequest>): Flux<CreateSubscriptionResponse> {
+        logger.info("Received request to subscribe to chats")
+
+        return requests.flatMap { request: CreateSubscriptionRequest ->
+            Flux.merge(request.chatList.map { chatId ->
+                subscribeToChat(chatId)
+            })
+        }.onErrorResume { e -> Flux.just(buildFailureResponse(e.message)) }
+    }
+
+    private fun subscribeToChat(chatId: String): Flux<CreateSubscriptionResponse> {
+        return Flux.create { sink ->
+            val subject = MessageEvent.createMessageCreateNatsSubject(chatId)
+
+            val dispatcher = natsConnection.createDispatcher { msg ->
+
+                try {
+                    val messageDto = messageParser.parseFrom(msg.data)
+                    val response = buildSuccessResponse(messageDto)
+                    sink.next(response)
+                } catch (e: Exception) {
+                    sink.error(e)
+                }
+            }.subscribe(subject)
+
+            sink.onDispose {
+                dispatcher.unsubscribe(subject)
+            }
+        }
+    }
+
+    private fun buildSuccessResponse(messageDto: MessageDto): CreateSubscriptionResponse {
+        return CreateSubscriptionResponse.newBuilder().apply {
+            successBuilder.messageDto = messageDto
+        }.build()
+    }
+
+    private fun buildFailureResponse(message: String?): CreateSubscriptionResponse {
+        return CreateSubscriptionResponse.newBuilder().apply {
+            message?.let { failureBuilder.message = it }
+            failureBuilder.errorBuilder
+        }.build()
     }
 
     private fun createSuccessResponse(): MessageCreateResponse {
