@@ -20,6 +20,7 @@ import rys.ajaxpetproject.service.UserService
 import rys.ajaxpetproject.service.impl.ChatServiceImpl
 
 @ExtendWith(MockKExtension::class)
+@Suppress("UnusedPrivateMember")
 class ChatServiceUT {
     @MockK
     private lateinit var chatRepository: ChatRepository

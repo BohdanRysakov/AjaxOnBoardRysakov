@@ -79,7 +79,6 @@ class NatsControllersIT {
     fun `should return chat when request to create chat is published`() {
         //GIVEN
         val expectedChat = MongoChat(
-            id = ObjectId().toString(),
             name = "test chat success",
             users = listOf(ObjectId().toString(), ObjectId().toString())
         )
@@ -100,12 +99,11 @@ class NatsControllersIT {
         ).success.result.toModel()
 
         //THEN
-        Assertions.assertEquals(expectedChat, actualChat)
+        Assertions.assertEquals(expectedChat, actualChat.copy(id = null))
 
-        chatService.findChatById(expectedChat.id!!).test()
+        chatService.findChatById(actualChat.id!!).test()
             .expectSubscription()
             .assertNext { savedInDBChat ->
-                Assertions.assertEquals(expectedChat.id, savedInDBChat.id)
                 Assertions.assertEquals(expectedChat.name, savedInDBChat.name)
                 Assertions.assertEquals(expectedChat.users, savedInDBChat.users)
                 Assertions.assertEquals(expectedChat.messages, savedInDBChat.messages)

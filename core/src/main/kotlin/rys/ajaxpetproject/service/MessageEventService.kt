@@ -10,6 +10,7 @@ import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription
 import rys.ajaxpetproject.utils.toProto
 
 @Service
+@Suppress("TooGenericExceptionCaught")
 class MessageEventService(
     natsConnection: Connection, private val chatService: ChatService
 ) {

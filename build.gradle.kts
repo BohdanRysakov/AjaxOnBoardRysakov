@@ -88,6 +88,7 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
         implementation("org.springframework.boot:spring-boot-starter-webflux")
         implementation("org.springframework.boot:spring-boot-starter-validation")
+        implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
         implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
