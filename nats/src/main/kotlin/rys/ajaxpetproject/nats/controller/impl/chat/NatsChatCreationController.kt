@@ -45,7 +45,7 @@ class NatsChatCreationController(
     }
 
     private fun buildFailureResponse(e: Throwable): ChatCreateResponse {
-        logger.error("Error while creating chat: ${e.message}", e)
+        logger.error("Error while creating chat: {}", e.message, e)
 
         return ChatCreateResponse.newBuilder().apply {
             failureBuilder.apply {
