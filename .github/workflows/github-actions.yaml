@@ -28,7 +28,7 @@ jobs:
         run: ./gradlew assemble
 
       - name: Run Docker Compose
-        run: docker compose -f docker-compose-tests.yaml up --build --force-recreate -d tests-container
+        run: docker compose -f docker-compose-tests.yml up --build --force-recreate -d tests-container
 
       - name: Run tests
         run: ./gradlew test
