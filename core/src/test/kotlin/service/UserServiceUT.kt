@@ -189,10 +189,10 @@ class UserServiceUT {
         //WHEN //THEN
         userService.updateUser(idToUpdate, userToPass).test()
             .expectSubscription()
-            .assertNext { user ->
-                Assertions.assertEquals(idToUpdate, user.id.toString())
-                Assertions.assertEquals(expectedName, user.userName)
-                Assertions.assertEquals(expectedPassword, user.password)
+            .assertNext { actualUser ->
+                Assertions.assertEquals(idToUpdate, actualUser.id.toString())
+                Assertions.assertEquals(expectedName, actualUser.userName)
+                Assertions.assertEquals(expectedPassword, actualUser.password)
             }
             .verifyComplete()
     }

@@ -7,6 +7,8 @@ services:
     container_name: "app"
     ports:
       - "8080:8080"
+      - "9091:9091"
+      - "9090:9090"
     depends_on:
       - mongo
       - kafka
@@ -50,20 +52,8 @@ services:
     ports:
       - "27017:27017"
 
-  mongo-test:
-    image: mongo:6.0
-    container_name: "mongodb-test"
-    ports:
-      - "27018:27017"
-
   nats:
     image: nats:2.9.23
     container_name: "nats"
     ports:
       - "4222:4222"
-
-  nats-tests:
-    image: nats:2.9.23
-    container_name: "nats-test"
-    ports:
-      - "4444:4222"

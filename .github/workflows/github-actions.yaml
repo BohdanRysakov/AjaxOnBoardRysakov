@@ -7,30 +7,32 @@ on:
       - '*'
 
 jobs:
-  build:
+  setup-build-publish:
+    name: Run Docker Compose
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Check out the repo
         uses: actions/checkout@v3
-
-      - name: Start MongoDB test-container
-        run: |
-          docker run -d --name mongo-test -p 27018:27017 \
-            -e MONGO_INITDB_DATABASE=testDB \
-            mongo:6.0    
-
-      - name: Start NATS test-container
-        run: docker run -d --name nats-test -p 4444:4222 nats:latest
 
       - name: Setup JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'oracle'
           java-version: '17'
+          cache: gradle
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Compile
-        run: ./gradlew build
+      - name: Assemble Gradle project
+        run: ./gradlew assemble
+
+      - name: Run Docker Compose
+        run: docker compose -f docker-compose-tests.yaml up --build --force-recreate -d tests-container
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Shutdown
+        if: always()
+        run: docker compose down
