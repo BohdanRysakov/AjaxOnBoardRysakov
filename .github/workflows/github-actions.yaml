@@ -28,11 +28,11 @@ jobs:
         run: ./gradlew assemble
 
       - name: Run Docker Compose
-        run: docker compose -f docker-compose-tests.yml up --build --force-recreate -d tests-container
+        run: docker-compose -f docker-compose-app.yml -p app1 up --build --force-recreate
 
       - name: Run tests
         run: ./gradlew test
 
       - name: Shutdown
         if: always()
-        run: docker compose down
+        run: docker-compose down
