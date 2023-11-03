@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  myapp:
+  app-tests:
     build:
       dockerfile: Dockerfile
     container_name: "app-test"
