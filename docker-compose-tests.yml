@@ -23,3 +23,8 @@ services:
     container_name: "nats-test"
     ports:
       - "4444:4222"
+
+  redis:
+    image: redis:alpine3.18
+    ports:
+      - "6379:6379"
