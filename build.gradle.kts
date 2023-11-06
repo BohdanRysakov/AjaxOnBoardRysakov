@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":rest"))
     implementation(project(":api"))
+    implementation(project(":gRPC"))
     implementation("org.springframework.boot:spring-boot-devtools")
 }
 
@@ -78,7 +79,11 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.5")
         implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")
-        implementation("org.springframework.data:spring-data-jpa:3.0.9")
+        implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
+
+        implementation("com.salesforce.servicelibs:reactor-grpc:1.2.4")
+        implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.4")
+        implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.4")
 
         implementation("org.springframework.security:spring-security-crypto:6.1.2")
         implementation("jakarta.validation:jakarta.validation-api:3.0.2")
