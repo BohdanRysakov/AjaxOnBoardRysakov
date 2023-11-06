@@ -23,6 +23,8 @@ import rys.ajaxpetproject.nats.controller.impl.NatsChatDeleteController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatFindAllController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatUpdateController
 import rys.ajaxpetproject.nats.controller.impl.NatsChatFindOneController
+import rys.ajaxpetproject.nats.utils.toModel
+import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
 import rys.ajaxpetproject.repository.impl.MessageRepository
@@ -41,8 +43,6 @@ import rys.ajaxpetproject.service.impl.ChatServiceImpl
 import rys.ajaxpetproject.service.impl.MessageServiceImpl
 import rys.ajaxpetproject.service.impl.UserServiceImpl
 import rys.ajaxpetproject.subjects.ChatSubjectsV1
-import rys.ajaxpetproject.utils.toModel
-import rys.ajaxpetproject.utils.toProto
 import java.time.Duration
 
 @SpringBootTest(classes = [NatsTestConfiguration::class])
@@ -200,7 +200,6 @@ class NatsControllersIT {
 
         //THEN
         Assertions.assertTrue(response.hasFailure())
-
         Assertions.assertEquals(expectedMessage, response.failure.message)
     }
 

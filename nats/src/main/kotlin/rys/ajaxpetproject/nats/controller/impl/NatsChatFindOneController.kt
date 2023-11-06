@@ -24,7 +24,7 @@ class NatsChatFindOneController(
     override val subject = ChatSubjectsV1.ChatRequest.FIND_ONE
     override val parser: Parser<ChatFindOneRequest> = ChatFindOneRequest.parser()
 
-    override fun reply(request: ChatFindOneRequest): Mono<ChatFindOneResponse> {
+    override fun handle(request: ChatFindOneRequest): Mono<ChatFindOneResponse> {
         return chatService
             .findChatById(request.id)
             .map { buildSuccessResponse(it) }

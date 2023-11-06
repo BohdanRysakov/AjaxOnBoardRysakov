@@ -23,7 +23,7 @@ class NatsChatFindAllController(
     override val subject = ChatSubjectsV1.ChatRequest.FIND_ALL
     override val parser: Parser<ChatFindAllRequest> = ChatFindAllRequest.parser()
 
-    override fun reply(request: ChatFindAllRequest): Mono<ChatFindAllResponse> {
+    override fun handle(request: ChatFindAllRequest): Mono<ChatFindAllResponse> {
         return chatService
             .findAll()
             .collectList()
@@ -37,10 +37,10 @@ class NatsChatFindAllController(
             successBuilder.also { success ->
                 chats.map { chat ->
                     chat.toProto()
-                    }
-                .fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
-                    result.addResult(chat)
                 }
+                    .fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
+                        result.addResult(chat)
+                    }
             }
         }.build()
     }

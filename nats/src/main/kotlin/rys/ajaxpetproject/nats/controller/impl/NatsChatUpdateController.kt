@@ -25,7 +25,7 @@ class NatsChatUpdateController(
     override val subject = ChatSubjectsV1.ChatRequest.UPDATE
     override val parser: Parser<ChatUpdateRequest> = ChatUpdateRequest.parser()
 
-    override fun reply(request: ChatUpdateRequest): Mono<ChatUpdateResponse> {
+    override fun handle(request: ChatUpdateRequest): Mono<ChatUpdateResponse> {
         val targetId = request.requestId
         val newChat = request.chat.toModel()
 

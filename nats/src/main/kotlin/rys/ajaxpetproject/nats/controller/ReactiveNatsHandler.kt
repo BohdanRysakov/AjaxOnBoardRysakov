@@ -5,17 +5,17 @@ import io.nats.client.MessageHandler
 import reactor.core.scheduler.Schedulers
 
 class ReactiveNatsHandler(
-    private val natsController: NatsController<*, *>,
+    private val natsController: NatsController<*, *>
 ) : MessageHandler {
 
     override fun onMessage(message: Message) {
-        natsController.handle(message)
+        natsController.reply(message)
             .doOnNext {
                 logger.info("Received message: subject={}, message={}", message.replyTo, it)
             }
             .map { it.toByteArray() }
             .doOnNext { natsController.connection.publish(message.replyTo, it) }
-            .doOnError{ logger.error("Error while handling message: {}", it.message, it)}
+            .doOnError { logger.error("Error while handling message: {}", it.message, it) }
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe()
     }

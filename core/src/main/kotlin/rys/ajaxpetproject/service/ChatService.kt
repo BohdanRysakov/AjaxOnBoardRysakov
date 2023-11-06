@@ -9,6 +9,8 @@ import rys.ajaxpetproject.model.MongoMessage
 interface ChatService {
     fun findChatById(id: String): Mono<MongoChat>
 
+    fun getChatById(id: String): Mono<MongoChat>
+
     fun save(chat: MongoChat): Mono<MongoChat>
 
     fun deleteAll(): Mono<Unit>
@@ -31,7 +33,7 @@ interface ChatService {
 
     fun getMessagesFromChatByUser(userId: String, chatId: String): Flux<MongoMessage>
 
-    fun getMessagesInChat(chatId: String) : Flux<MongoMessage>
+    fun getMessagesInChat(chatId: String): Flux<MongoMessage>
 
-    fun deleteAllFromUser(userId: String, chatId : String): Mono<Unit>
+    fun deleteAllFromUser(userId: String, chatId: String): Mono<Unit>
 }

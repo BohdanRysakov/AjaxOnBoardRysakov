@@ -27,7 +27,7 @@ class NatsChatCreationController(
 
     override val parser: Parser<ChatCreateRequest> = ChatCreateRequest.parser()
 
-    override fun reply(request: ChatCreateRequest): Mono<ChatCreateResponse> {
+    override fun handle(request: ChatCreateRequest): Mono<ChatCreateResponse> {
 
         val chat: Chat = request.chat
 
