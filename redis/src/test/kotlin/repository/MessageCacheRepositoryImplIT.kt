@@ -9,12 +9,12 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
 import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.MessageRepository
+import rys.ajaxpetproject.redis.repository.CacheMessageRepository
 
 @DbIntegrationTest
-class MessageRepositoryIT {
+class MessageCacheRepositoryImplIT {
     @Autowired
-    private lateinit var messageRepository: MessageRepository
+    private lateinit var messageRepository: CacheMessageRepository
 
     @BeforeEach
     fun init() {

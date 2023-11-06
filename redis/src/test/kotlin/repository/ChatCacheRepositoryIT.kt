@@ -5,90 +5,124 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.ScanOptions
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.test.test
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
-import rys.ajaxpetproject.repository.impl.MessageRepositoryImpl
+import rys.ajaxpetproject.redis.repository.CacheChatRepository
+import rys.ajaxpetproject.redis.repository.CacheMessageRepository
 import rys.ajaxpetproject.repository.impl.UserRepositoryImpl
+import rys.ajaxpetproject.internalapi.RedisPrefixes.CHAT_CACHE_KEY_PREFIX
+import rys.ajaxpetproject.internalapi.RedisPrefixes.MESSAGE_CACHE_KEY_PREFIX
 
 @DbIntegrationTest
-class ChatRepositoryIT {
+@Suppress("LongMethod")
+class ChatCacheRepositoryIT {
 
     @Autowired
-    private lateinit var chatRepository: ChatRepositoryImpl
+    private lateinit var chatCacheRepository: CacheChatRepository
 
     @Autowired
-    private lateinit var messageRepository: MessageRepositoryImpl
+    private lateinit var messageCacheRepository: CacheMessageRepository
 
     @Autowired
     private lateinit var userRepository: UserRepositoryImpl
 
+    @Autowired
+    private lateinit var redisOperations: ReactiveRedisTemplate<String, MongoChat>
+
     @BeforeEach
     fun init() {
-        chatRepository.deleteAll().block()
-        messageRepository.deleteAll().block()
+        chatCacheRepository.deleteAll().block()
+        messageCacheRepository.deleteAll().block()
         userRepository.deleteAll().block()
     }
 
 
     @Test
-    fun `should return chat when chat found by id`() {
+    fun `should return chat and cache him when chat found by id`() {
         //GIVEN
         val chat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
         )
-        val actualChat = chatRepository.save(chat).block()!!
-        val actualChatId = actualChat.id!!
+        val expectedChat = chatCacheRepository.save(chat).block()!!
+        val expectedChatId = expectedChat.id!!
 
         //WHEN //THEN
-        chatRepository.findChatById(actualChatId)
+        chatCacheRepository.findChatById(expectedChatId)
             .test()
             .expectSubscription()
-            .assertNext { expectedChat ->
-                Assertions.assertEquals(actualChatId, expectedChat.id)
-                Assertions.assertEquals(chat.name, expectedChat.name)
-                Assertions.assertNotNull(chat.users)
-                Assertions.assertNotNull(chat.messages)
+            .assertNext { actualChat ->
+                Assertions.assertEquals(expectedChatId, actualChat.id)
+                Assertions.assertEquals(expectedChat.name, actualChat.name)
+                Assertions.assertNotNull(expectedChat.users)
+                Assertions.assertNotNull(expectedChat.messages)
+            }
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$expectedChatId")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(expectedChat.id, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
             }
             .verifyComplete()
     }
 
     @Test
-    fun `should return chat when chat saved`() {
+    fun `should return chat and cache him when chat saved`() {
         //GIVEN
-        val actualChatWithoutId = MongoChat(
+        val expectedChatWithoutId = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
         //WHEN //THEN
-        chatRepository.save(actualChatWithoutId)
+        chatCacheRepository.save(expectedChatWithoutId)
             .test()
             .expectSubscription()
             .assertNext { expectedChat ->
                 Assertions.assertNotNull(expectedChat.id)
-                Assertions.assertEquals(actualChatWithoutId.name, expectedChat.name)
-                Assertions.assertEquals(actualChatWithoutId.users, expectedChat.users)
-                Assertions.assertEquals(actualChatWithoutId.messages, expectedChat.messages)
+                Assertions.assertEquals(expectedChatWithoutId.name, expectedChat.name)
+                Assertions.assertEquals(expectedChatWithoutId.users, expectedChat.users)
+                Assertions.assertEquals(expectedChatWithoutId.messages, expectedChat.messages)
             }
             .verifyComplete()
 
         //THEN
-        chatRepository.findAll()
+        chatCacheRepository.findAll()
             .test()
             .expectSubscription()
-            .assertNext { expectedChat ->
-                Assertions.assertNotNull(expectedChat.id)
-                Assertions.assertEquals(actualChatWithoutId.name, expectedChat.name)
-                Assertions.assertEquals(actualChatWithoutId.users, expectedChat.users)
-                Assertions.assertEquals(actualChatWithoutId.messages, expectedChat.messages)
+            .assertNext { actualChat ->
+                Assertions.assertNotNull(actualChat.id)
+                Assertions.assertEquals(expectedChatWithoutId.name, actualChat.name)
+                Assertions.assertEquals(expectedChatWithoutId.users, actualChat.users)
+                Assertions.assertEquals(expectedChatWithoutId.messages, actualChat.messages)
+            }
+            .verifyComplete()
+
+        //THEN
+        redisOperations.scan(
+            ScanOptions.scanOptions()
+                .match("$CHAT_CACHE_KEY_PREFIX*").build()
+        )
+            .flatMap {
+                redisOperations.opsForValue().get(it)
+            }
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(expectedChatWithoutId.name, cachedChat.name)
+                Assertions.assertEquals(expectedChatWithoutId.users, cachedChat.users)
+                Assertions.assertEquals(expectedChatWithoutId.messages, cachedChat.messages)
             }
             .verifyComplete()
     }
 
     @Test
-    fun `should return unit when all chats deleted`() {
+    fun `should return unit and clean cache when all chats deleted`() {
         //GIVEN
         val chat1 = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
@@ -100,27 +134,38 @@ class ChatRepositoryIT {
             name = "chat3",
         )
 
-        chatRepository.save(chat1).block()!!.id!!
-        chatRepository.save(chat2).block()!!.id!!
-        chatRepository.save(chat3).block()!!.id!!
+        chatCacheRepository.save(chat1).block()!!.id!!
+        chatCacheRepository.save(chat2).block()!!.id!!
+        chatCacheRepository.save(chat3).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.deleteAll()
+        chatCacheRepository.deleteAll()
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findAll()
+        chatCacheRepository.findAll()
             .test()
             .expectSubscription()
+            .expectNextCount(0)
+            .verifyComplete()
+
+        redisOperations.scan(
+            ScanOptions.scanOptions()
+                .match("$CHAT_CACHE_KEY_PREFIX*").build()
+        )
+            .flatMap {
+                redisOperations.opsForValue().get(it)
+            }
+            .test()
             .expectNextCount(0)
             .verifyComplete()
     }
 
     @Test
-    fun `should return chat when chat was updated`() {
+    fun `should return chat and save to cache when chat was updated`() {
         //GIVEN
         val expectedName = "UPDATED_NAME - ${System.nanoTime()}"
         val expectedUsers = listOf(ObjectId().toString(), ObjectId().toString())
@@ -132,7 +177,7 @@ class ChatRepositoryIT {
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
 
-        val oldChatId = chatRepository.save(oldChat).block()!!.id!!.toString()
+        val oldChatId = chatCacheRepository.save(oldChat).block()!!.id!!.toString()
 
         val expectedChat = MongoChat(
             id = oldChatId,
@@ -141,7 +186,7 @@ class ChatRepositoryIT {
             messages = expectedMessages,
         )
         //WHEN //THEN
-        chatRepository.update(oldChatId, expectedChat)
+        chatCacheRepository.update(oldChatId, expectedChat)
             .test()
             .expectSubscription()
             .assertNext { actualChat ->
@@ -153,7 +198,7 @@ class ChatRepositoryIT {
             .verifyComplete()
 
         //THEN
-        chatRepository.findChatById(oldChatId)
+        chatCacheRepository.findChatById(oldChatId)
             .test()
             .expectSubscription()
             .assertNext { actualChat ->
@@ -163,142 +208,208 @@ class ChatRepositoryIT {
                 Assertions.assertEquals(expectedMessages, actualChat.messages)
             }
             .verifyComplete()
+
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX${expectedChat.id}")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(expectedChat.id, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
+                Assertions.assertEquals(expectedChat.users, cachedChat.users)
+                Assertions.assertEquals(expectedChat.messages, cachedChat.messages)
+            }
+            .verifyComplete()
     }
 
     @Test
-    fun `should add user to list and return unit when addUser invoked`() {
+    fun `should add user to list then return unit and update cache when addUser invoked`() {
         //GIVEN
         val expectedNewUserId = ObjectId().toString()
-        val chat = MongoChat(
+        val listOfUsers = mutableListOf(ObjectId().toString(), ObjectId().toString())
+        val oldChat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
+        listOfUsers.add(expectedNewUserId)
 
-        val chatId = chatRepository.save(chat).block()!!.id!!
+        val savedChatId = chatCacheRepository.save(oldChat).block()!!.id!!
+
+        val expectedChat = MongoChat(
+            id = savedChatId,
+            name = "chat1 - ${System.nanoTime()}",
+            users = listOfUsers,
+            messages = listOf(ObjectId().toString(), ObjectId().toString()),
+        )
 
         //WHEN //THEN
-        chatRepository.addUser(expectedNewUserId, chatId)
+        chatCacheRepository.addUser(expectedNewUserId, savedChatId)
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findChatById(chatId)
+        chatCacheRepository.findChatById(expectedChat.id!!)
             .test()
             .expectSubscription()
             .assertNext { actualChat ->
-                Assertions.assertEquals(chatId, actualChat.id)
-                Assertions.assertEquals(chat.name, actualChat.name)
-                Assertions.assertEquals(chat.messages, actualChat.messages)
-                Assertions.assertEquals(chat.users.size + 1, actualChat.users.size)
+                Assertions.assertEquals(expectedChat.id!!, actualChat.id)
+                Assertions.assertEquals(expectedChat.name, actualChat.name)
+                Assertions.assertEquals(expectedChat.messages, actualChat.messages)
+                Assertions.assertEquals(expectedChat.users.size, actualChat.users.size)
                 Assertions.assertTrue(actualChat.users.contains(expectedNewUserId))
+            }
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX${expectedChat.id!!}")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(expectedChat.id, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
+                Assertions.assertEquals(expectedChat.users, cachedChat.users)
+                Assertions.assertEquals(expectedChat.messages, cachedChat.messages)
             }
             .verifyComplete()
     }
 
     @Test
-    fun `should remove user from list and return unit when removeUser invoked`() {
+    fun `should remove user from list then return unit and update cache when removeUser invoked`() {
         //GIVEN
         val unexpectedUser = ObjectId().toString()
-        val chat = MongoChat(
+        val expectedChat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString(), unexpectedUser),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
 
-        val chatId = chatRepository.save(chat).block()!!.id!!
+        val chatId = chatCacheRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.removeUser(unexpectedUser, chatId)
+        chatCacheRepository.removeUser(unexpectedUser, chatId)
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findChatById(chatId)
+        chatCacheRepository.findChatById(chatId)
             .test()
             .expectSubscription()
             .assertNext { actualChat ->
                 Assertions.assertEquals(chatId, actualChat.id)
-                Assertions.assertEquals(chat.name, actualChat.name)
-                Assertions.assertEquals(chat.messages, actualChat.messages)
-                Assertions.assertEquals(chat.users.size - 1, actualChat.users.size)
+                Assertions.assertEquals(expectedChat.name, actualChat.name)
+                Assertions.assertEquals(expectedChat.messages, actualChat.messages)
+                Assertions.assertEquals(expectedChat.users.size - 1, actualChat.users.size)
                 Assertions.assertFalse(actualChat.users.contains(unexpectedUser))
+            }
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$chatId")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(chatId, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
+                Assertions.assertEquals(expectedChat.messages, cachedChat.messages)
+                Assertions.assertEquals(expectedChat.users.size - 1, cachedChat.users.size)
+                Assertions.assertFalse(cachedChat.users.contains(unexpectedUser))
             }
             .verifyComplete()
     }
 
     @Test
-    fun `should add message to list and return unit when addMessage is invoked`() {
+    fun `should add message to list and return unit and update cache when addMessage is invoked`() {
         //GIVEN
         val expectedNewMessageId = ObjectId().toString()
-        val chat = MongoChat(
+        val expectedChat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
 
-        val chatId = chatRepository.save(chat).block()!!.id!!
+        val chatId = chatCacheRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.addMessage(expectedNewMessageId, chatId)
+        chatCacheRepository.addMessage(expectedNewMessageId, chatId)
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findChatById(chatId)
+        chatCacheRepository.findChatById(chatId)
             .test()
             .expectSubscription()
             .assertNext { actualChat ->
                 Assertions.assertEquals(chatId, actualChat.id)
-                Assertions.assertEquals(chat.name, actualChat.name)
-                Assertions.assertEquals(chat.users, actualChat.users)
-                Assertions.assertEquals(chat.messages.size + 1, actualChat.messages.size)
+                Assertions.assertEquals(expectedChat.name, actualChat.name)
+                Assertions.assertEquals(expectedChat.users, actualChat.users)
+                Assertions.assertEquals(expectedChat.messages.size + 1, actualChat.messages.size)
                 Assertions.assertTrue(actualChat.messages.contains(expectedNewMessageId))
             }
             .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$chatId")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(chatId, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
+                Assertions.assertEquals(expectedChat.users, cachedChat.users)
+                Assertions.assertEquals(expectedChat.messages.size + 1, cachedChat.messages.size)
+                Assertions.assertTrue(cachedChat.messages.contains(expectedNewMessageId))
+            }
+            .verifyComplete()
     }
 
     @Test
-    fun `should remove message from chat and return unit when removeMessage is invoked`() {
+    fun `should remove message from chat and return unit and update cache when removeMessage is invoked`() {
         //GIVEN
-        val unexpectedMessage = ObjectId().toString()
-        val chat = MongoChat(
+        val unexpectedMessageId = ObjectId().toString()
+        val expectedChat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
-            messages = listOf(ObjectId().toString(), ObjectId().toString(), unexpectedMessage),
+            messages = listOf(ObjectId().toString(), ObjectId().toString(), unexpectedMessageId),
         )
 
-        val chatId = chatRepository.save(chat).block()!!.id!!
+        val chatId = chatCacheRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.removeMessage(unexpectedMessage, chatId)
+        chatCacheRepository.removeMessage(unexpectedMessageId, chatId)
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findChatById(chatId)
+        chatCacheRepository.findChatById(chatId)
             .test()
             .expectSubscription()
             .assertNext { actualChat ->
                 Assertions.assertEquals(chatId, actualChat.id)
-                Assertions.assertEquals(chat.name, actualChat.name)
-                Assertions.assertEquals(chat.users, actualChat.users)
-                Assertions.assertEquals(chat.messages.size - 1, actualChat.messages.size)
-                Assertions.assertFalse(actualChat.messages.contains(unexpectedMessage))
+                Assertions.assertEquals(expectedChat.name, actualChat.name)
+                Assertions.assertEquals(expectedChat.users, actualChat.users)
+                Assertions.assertEquals(expectedChat.messages.size - 1, actualChat.messages.size)
+                Assertions.assertFalse(actualChat.messages.contains(unexpectedMessageId))
+            }
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$chatId")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(chatId, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
+                Assertions.assertEquals(expectedChat.users, cachedChat.users)
+                Assertions.assertEquals(expectedChat.messages.size - 1, cachedChat.messages.size)
+                Assertions.assertFalse(cachedChat.messages.contains(unexpectedMessageId))
             }
             .verifyComplete()
     }
 
     @Test
-    fun `should return unit when chat is deleted`() {
+    fun `should return unit and clean cache when chat is deleted`() {
         //GIVEN
         val unexpectedChat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
@@ -306,19 +417,25 @@ class ChatRepositoryIT {
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
 
-        val chatId = chatRepository.save(unexpectedChat).block()!!.id!!
+        val chatId = chatCacheRepository.save(unexpectedChat).block()!!.id!!
 
         //WHEN
-        chatRepository.delete(chatId)
+        chatCacheRepository.delete(chatId)
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findChatById(chatId)
+        chatCacheRepository.findChatById(chatId)
             .test()
             .expectSubscription()
+            .expectNextCount(0)
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$chatId")
+            .test()
             .expectNextCount(0)
             .verifyComplete()
     }
@@ -343,13 +460,13 @@ class ChatRepositoryIT {
         )
 
         val expectedListOfChats = listOf(
-            chatRepository.save(expectedChat1).block()!!,
-            chatRepository.save(expectedChat2).block()!!,
-            chatRepository.save(expectedChat3).block()!!
+            chatCacheRepository.save(expectedChat1).block()!!,
+            chatCacheRepository.save(expectedChat2).block()!!,
+            chatCacheRepository.save(expectedChat3).block()!!
         )
 
         //WHEN //THEN
-        chatRepository.findAll()
+        chatCacheRepository.findAll()
             .test()
             .expectSubscription()
             .recordWith { mutableListOf<MongoChat>() }
@@ -387,15 +504,15 @@ class ChatRepositoryIT {
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
-        chatRepository.save(unexpectedChat).block()!!
+        chatCacheRepository.save(unexpectedChat).block()!!
         val expectedListOfChats = listOf(
-            chatRepository.save(expectedChat1).block()!!,
-            chatRepository.save(expectedChat2).block()!!,
-            chatRepository.save(expectedChat3).block()!!,
+            chatCacheRepository.save(expectedChat1).block()!!,
+            chatCacheRepository.save(expectedChat2).block()!!,
+            chatCacheRepository.save(expectedChat3).block()!!,
         )
 
         //WHEN //THEN
-        chatRepository.findChatsByUserId(expectedUserId)
+        chatCacheRepository.findChatsByUserId(expectedUserId)
             .test()
             .expectSubscription()
             .recordWith { mutableListOf<MongoChat>() }
@@ -430,12 +547,12 @@ class ChatRepositoryIT {
             content = "message3 - ${System.nanoTime()}",
             userId = ObjectId().toString(),
         )
-        val unexpectedMessageId: String = messageRepository.save(unexpectedMessage).block()!!.id!!
+        val unexpectedMessageId: String = messageCacheRepository.save(unexpectedMessage).block()!!.id!!
 
         val expectedListOfMessages = listOf(
-            messageRepository.save(expectedMessage1).block()!!,
-            messageRepository.save(expectedMessage2).block()!!,
-            messageRepository.save(expectedMessage3).block()!!,
+            messageCacheRepository.save(expectedMessage1).block()!!,
+            messageCacheRepository.save(expectedMessage2).block()!!,
+            messageCacheRepository.save(expectedMessage3).block()!!,
         )
         val expectedMessagesIds: List<String?> = expectedListOfMessages.map { it.id!! }
 
@@ -452,10 +569,10 @@ class ChatRepositoryIT {
             messages = listOfAllMessages,
         )
 
-        val expectedChatId = chatRepository.save(expectedChat).block()!!.id!!
+        val expectedChatId = chatCacheRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.findMessagesByUserIdAndChatId(expectedUserId, expectedChatId)
+        chatCacheRepository.findMessagesByUserIdAndChatId(expectedUserId, expectedChatId)
             .test()
             .expectSubscription()
             .recordWith { mutableListOf<MongoMessage>() }
@@ -472,43 +589,47 @@ class ChatRepositoryIT {
     @Test
     fun `should return list of messages when findMessagesFromChat is invoked`() {
         //GIVEN
+
+        val expectedUserId = ObjectId().toString()
+
         val expectedMessage1 = MongoMessage(
             content = "message1 - ${System.nanoTime()}",
-            userId = ObjectId().toString(),
+            userId = expectedUserId,
         )
         val expectedMessage2 = MongoMessage(
             content = "message2 - ${System.nanoTime()}",
-            userId = ObjectId().toString(),
+            userId = expectedUserId,
         )
         val expectedMessage3 = MongoMessage(
             content = "message3 - ${System.nanoTime()}",
-            userId = ObjectId().toString(),
+            userId = expectedUserId,
         )
         val unexpectedMessage = MongoMessage(
-            content = "message3 - ${System.nanoTime()}",
-            userId = ObjectId().toString(),
+            content = "message4 - ${System.nanoTime()}",
+            userId = expectedUserId,
         )
 
         val expectedListOfMessages = listOf(
-            messageRepository.save(expectedMessage1).block()!!,
-            messageRepository.save(expectedMessage2).block()!!,
-            messageRepository.save(expectedMessage3).block()!!,
+            messageCacheRepository.save(expectedMessage1).block()!!,
+            messageCacheRepository.save(expectedMessage2).block()!!,
+            messageCacheRepository.save(expectedMessage3).block()!!,
         )
 
-        messageRepository.save(unexpectedMessage).block()!!.id!!
+        messageCacheRepository.save(unexpectedMessage).block()!!.id!!
 
         val expectedMessagesIds: List<String> = expectedListOfMessages.map { it.id!! }
 
         val expectedChat = MongoChat(
+            id = null,
             name = "chat1 - ${System.nanoTime()}",
-            users = listOf(ObjectId().toString(), ObjectId().toString()),
+            users = listOf(expectedUserId),
             messages = expectedMessagesIds,
         )
 
-        val expectedChatId = chatRepository.save(expectedChat).block()!!.id!!
+        val expectedChatId = chatCacheRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.findMessagesFromChat(expectedChatId)
+        chatCacheRepository.findMessagesFromChat(expectedChatId)
             .test()
             .expectSubscription()
             .recordWith { mutableListOf<MongoMessage>() }
@@ -523,7 +644,7 @@ class ChatRepositoryIT {
     }
 
     @Test
-    fun `should return unit when messages from user is deleted`() {
+    fun `should return unit when messages and clean cache from user is deleted`() {
         //GIVEN
         val userId = ObjectId().toString()
 
@@ -545,12 +666,12 @@ class ChatRepositoryIT {
         )
 
         val unexpectedMessages = listOf(
-            messageRepository.save(unexpectedMessage1).block()!!,
-            messageRepository.save(unexpectedMessage2).block()!!,
-            messageRepository.save(unexpectedMessage3).block()!!,
+            messageCacheRepository.save(unexpectedMessage1).block()!!,
+            messageCacheRepository.save(unexpectedMessage2).block()!!,
+            messageCacheRepository.save(unexpectedMessage3).block()!!,
         )
 
-        val expectedMessage = messageRepository.save(expectedInitialMessage).block()!!
+        val expectedMessage = messageCacheRepository.save(expectedInitialMessage).block()!!
         val expectedMessageList: List<MongoMessage> = listOf(expectedMessage)
 
         val unexpectedMessagesIds: List<String> = unexpectedMessages.map { it.id!! }
@@ -568,17 +689,17 @@ class ChatRepositoryIT {
             messages = listOfAllMessages,
         )
 
-        val expectedChatId = chatRepository.save(expectedChat).block()!!.id!!
+        val expectedChatId = chatCacheRepository.save(expectedChat).block()!!.id!!
 
         //WHEN //THEN
-        chatRepository.deleteMessagesFromChatByUserId(expectedChatId, userId)
+        chatCacheRepository.deleteMessagesFromChatByUserId(expectedChatId, userId)
             .test()
             .expectSubscription()
             .expectNext(Unit)
             .verifyComplete()
 
         //THEN
-        chatRepository.findMessagesFromChat(expectedChatId)
+        chatCacheRepository.findMessagesFromChat(expectedChatId)
             .test()
             .expectSubscription()
             .recordWith { mutableListOf<MongoMessage>() }
@@ -589,6 +710,27 @@ class ChatRepositoryIT {
                     actualList
                 )
             }
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$expectedChatId")
+            .test()
+            .assertNext { cachedChat ->
+                Assertions.assertEquals(expectedChatId, cachedChat.id)
+                Assertions.assertEquals(expectedChat.name, cachedChat.name)
+                Assertions.assertEquals(expectedChat.users, cachedChat.users)
+                Assertions.assertEquals(expectedMessageList.size, cachedChat.messages.size)
+                Assertions.assertTrue(cachedChat.messages.contains(expectedMessage.id))
+                Assertions.assertFalse(cachedChat.messages.containsAll(unexpectedMessagesIds))
+            }
+            .verifyComplete()
+
+        //THEN
+        unexpectedMessagesIds.toFlux().flatMap {
+            redisOperations.opsForValue().get("$MESSAGE_CACHE_KEY_PREFIX$it")
+        }
+            .test()
+            .expectNextCount(0)
             .verifyComplete()
     }
 }

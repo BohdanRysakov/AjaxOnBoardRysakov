@@ -25,8 +25,8 @@ import rys.ajaxpetproject.nats.config.NatsControllerConfigurerPostProcessor
 import rys.ajaxpetproject.nats.controller.impl.chat.*
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
-import rys.ajaxpetproject.repository.impl.MessageRepository
-import rys.ajaxpetproject.repository.impl.UserRepository
+import rys.ajaxpetproject.repository.impl.MessageRepositoryImpl
+import rys.ajaxpetproject.repository.impl.UserRepositoryImpl
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateRequest
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateResponse
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteRequest
@@ -50,7 +50,7 @@ import java.time.Duration
         ChatRepositoryImpl::class, ChatServiceImpl::class,
         NatsChatCreationController::class,
         NatsChatDeleteController::class,
-        NatsChatFindAllController::class, MessageRepository::class, UserRepository::class,
+        NatsChatFindAllController::class, MessageRepositoryImpl::class, UserRepositoryImpl::class,
         NatsChatFindOneController::class, MessageServiceImpl::class, UserServiceImpl::class,
         NatsChatUpdateController::class, SecurityConfiguration::class,
         NatsControllerConfigurerPostProcessor::class
