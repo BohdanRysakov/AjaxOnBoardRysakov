@@ -59,7 +59,7 @@ import java.time.Duration
     ]
 )
 @ActiveProfiles("testing")
-class NatsControllersUT {
+class NatsControllersIT {
     @SpyBean
     private lateinit var chatService: ChatService
 
