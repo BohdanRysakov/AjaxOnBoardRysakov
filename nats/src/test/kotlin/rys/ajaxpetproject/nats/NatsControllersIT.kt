@@ -48,14 +48,19 @@ import java.time.Duration
 @SpringBootTest(classes = [NatsTestConfiguration::class])
 @ContextConfiguration(
     classes = [
-        ChatRepositoryImpl::class, ChatServiceImpl::class,
+        ChatRepositoryImpl::class,
+        ChatServiceImpl::class,
         NatsChatCreationController::class,
         NatsChatDeleteController::class,
-        NatsChatFindAllController::class, MessageRepository::class, UserRepository::class,
-        NatsChatFindOneController::class, MessageServiceImpl::class, UserServiceImpl::class,
-        NatsChatUpdateController::class, SecurityConfiguration::class,
-        NatsControllerConfigurerPostProcessor::class,
-
+        NatsChatFindAllController::class,
+        MessageRepository::class,
+        UserRepository::class,
+        NatsChatFindOneController::class,
+        MessageServiceImpl::class,
+        UserServiceImpl::class,
+        NatsChatUpdateController::class,
+        SecurityConfiguration::class,
+        NatsControllerConfigurerPostProcessor::class
     ]
 )
 @ActiveProfiles("testing")
@@ -280,9 +285,7 @@ class NatsControllersIT {
         )
         assert(response.hasSuccess())
 
-        val chatFromResponse = response.success.result.let {
-            it.toModel()
-        }
+        val chatFromResponse = response.success.result.toModel()
         assert(chatFromResponse == chatToFind)
     }
 
@@ -352,7 +355,7 @@ class NatsControllersIT {
         //THEN
         assert(response.hasSuccess())
 
-        val chatFromResponse = response.success.result.let { it.toModel() }
+        val chatFromResponse = response.success.result.toModel()
         assert(chatFromResponse == chatUpdatedVersion.copy(id = chatToUpdate.id))
     }
 
