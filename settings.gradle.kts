@@ -5,5 +5,6 @@ include(
     "core",
     "api",
     "gRPC",
-    "kafka"
+    "kafka",
+    "redis"
 )
