@@ -17,9 +17,6 @@ plugins {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
-noArg {
-    annotation("rys.ajaxpetproject.commonmodels.annotations.NoArg")
-}
 
 configurations {
     compileOnly {
@@ -55,15 +52,12 @@ tasks.withType<Test> {
 }
 
 subprojects {
-    apply(plugin = "org.springframework.boot")
-    apply(plugin = "io.spring.dependency-management")
-    apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
-    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
-    apply(plugin = "org.jetbrains.kotlin.plugin.noarg")
-    apply(plugin = "java")
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
     apply(plugin = "com.google.protobuf")
+    apply(plugin = "io.gitlab.arturbosch.detekt")
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -80,20 +74,28 @@ subprojects {
     }
 
     dependencies {
-        implementation("com.google.protobuf:protobuf-java:3.24.3")
-        implementation("org.springframework.boot:spring-boot-starter-web")
-        implementation("org.springframework.security:spring-security-crypto:6.1.2")
+        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.1.4")
+        implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.5")
+        implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
         implementation("org.springframework.boot:spring-boot-starter-validation")
-        implementation("jakarta.validation:jakarta.validation-api:3.0.2")
         implementation("org.springframework.data:spring-data-jpa:3.0.9")
+
+        implementation("org.springframework.security:spring-security-crypto:6.1.2")
+        implementation("jakarta.validation:jakarta.validation-api:3.0.2")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-        implementation("io.nats:jnats:2.17.0")
-        implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.0.10")
-        implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
 
+        implementation("com.google.protobuf:protobuf-java:3.24.3")
+        implementation("io.nats:jnats:2.17.0")
+
+        implementation("io.projectreactor:reactor-core")
+        implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+
+        testImplementation("io.mockk:mockk:1.13.8")
         testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
+        testImplementation("io.projectreactor:reactor-test")
+        testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
     }
 

@@ -1,36 +1,116 @@
 package rys.ajaxpetproject.service.impl
 
-import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
+import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
 import rys.ajaxpetproject.model.MongoChat
+import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.service.ChatService
+import rys.ajaxpetproject.service.MessageService
+import rys.ajaxpetproject.service.UserService
 
 @Service
-class ChatServiceImpl(val chatRepository: ChatRepository) : ChatService {
-
-    override fun createChat(mongoChat: MongoChat): MongoChat {
-        return chatRepository.save(mongoChat)
+@Suppress("TooManyFunctions")
+class ChatServiceImpl(
+    private val chatRepository: ChatRepository,
+    private val userService: UserService,
+    private val messageService: MessageService
+) : ChatService {
+    override fun findChatById(id: String): Mono<MongoChat> {
+        return chatRepository.findChatById(id)
     }
 
-    override fun findChatById(id: ObjectId): MongoChat? = chatRepository.findChatById(id)
-
-    override fun findAllChats(): List<MongoChat> = chatRepository.findAllBy()
-
-    override fun updateChat(id: ObjectId, updatedMongoChat: MongoChat): MongoChat {
-        return findChatById(id)
-            .let {
-                chatRepository.save(updatedMongoChat.copy(id = id))
+    override fun getChatById(id: String): Mono<MongoChat> {
+        return chatRepository.findChatById(id)
+            .switchIfEmpty {
+                Mono.error(ChatNotFoundException("Chat with id $id not found"))
             }
     }
 
-    override fun deleteChat(id: ObjectId): Boolean {
-        findChatById(id)?.let {
-            chatRepository.deleteById(id)
-            return true
-        } ?: throw ChatNotFoundException("Chat not found")
+    override fun save(chat: MongoChat): Mono<MongoChat> {
+        return chatRepository.save(chat)
     }
 
-    override fun deleteChats() = chatRepository.deleteAll()
+    override fun deleteAll(): Mono<Unit> {
+        return chatRepository.deleteAll()
+    }
+
+    override fun update(id: String, chat: MongoChat): Mono<MongoChat> {
+        return getChatById(id)
+            .flatMap { chatRepository.update(id, chat) }
+    }
+
+    override fun addUser(userId: String, chatId: String): Mono<Unit> {
+        return Mono.`when`(
+            userService.getUserById(userId),
+            getChatById(chatId)
+        )
+            .then(chatRepository.addUser(userId, chatId))
+    }
+
+    override fun removeUser(userId: String, chatId: String): Mono<Unit> {
+        return Mono.`when`(
+            userService.getUserById(userId),
+            getChatById(chatId)
+        )
+            .then(chatRepository.removeUser(userId, chatId))
+    }
+
+    override fun addMessage(messageId: String, chatId: String): Mono<Unit> {
+        return Mono.`when`(
+            getChatById(chatId),
+            messageService.getMessageById(messageId)
+        )
+            .then(chatRepository.addMessage(messageId, chatId))
+    }
+
+    override fun removeMessage(messageId: String, chatId: String): Mono<Unit> {
+        return chatRepository.removeMessage(messageId, chatId)
+    }
+
+    override fun delete(id: String): Mono<Unit> {
+        return getChatById(id)
+            .then(chatRepository.delete(id))
+    }
+
+    override fun findAll(): Flux<MongoChat> {
+        return chatRepository.findAll()
+    }
+
+    override fun findChatsByUserId(userId: String): Flux<MongoChat> {
+        return chatRepository.findChatsByUserId(userId)
+    }
+
+    override fun getMessagesFromChatByUser(userId: String, chatId: String): Flux<MongoMessage> {
+        return Mono.`when`(
+            userService.getUserById(userId),
+            getChatById(chatId)
+        )
+            .thenMany(
+                getMessagesInChat(chatId).filter { it.userId == userId }
+            )
+    }
+
+    override fun getMessagesInChat(chatId: String): Flux<MongoMessage> {
+        return getChatById(chatId)
+            .thenMany(chatRepository.findMessagesFromChat(chatId))
+    }
+
+    override fun deleteAllFromUser(userId: String, chatId: String): Mono<Unit> {
+        return Mono.`when`(
+            userService.getUserById(userId),
+            getChatById(chatId)
+        )
+            .then(
+                getMessagesInChat(chatId)
+                    .filter { it.userId == userId }
+                    .mapNotNull { it.id }
+                    .map { messageService.delete(it.toString()) }
+                    .then(Unit.toMono())
+            )
+    }
 }

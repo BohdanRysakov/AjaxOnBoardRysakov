@@ -1,18 +1,21 @@
 package rys.ajaxpetproject.repository
 
-import org.bson.types.ObjectId
-import org.springframework.data.mongodb.repository.MongoRepository
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import rys.ajaxpetproject.model.MongoMessage
 
-interface MessageRepository : MongoRepository<MongoMessage, ObjectId> {
+interface MessageRepository {
+    fun findMessageById(id: String): Mono<MongoMessage>
 
-    fun getMessageById(id: ObjectId): MongoMessage?
+    fun save(message: MongoMessage): Mono<MongoMessage>
 
-    fun findMessageById(id: ObjectId): MongoMessage?
+    fun deleteAll(): Mono<Unit>
 
-    fun findMessagesByChatId(chatId: ObjectId): List<MongoMessage>
+    fun update(id: String, message: MongoMessage): Mono<MongoMessage>
 
-    fun getMessagesByChatId(chatId: ObjectId): List<MongoMessage>
+    fun delete(id: String): Mono<Unit>
 
-    fun deleteMessageById(id: ObjectId): Boolean
+    fun findMessagesByIds(ids: List<String>): Flux<MongoMessage>
+
+    fun deleteMessagesByIds(ids : List<String>): Mono<Unit>
 }

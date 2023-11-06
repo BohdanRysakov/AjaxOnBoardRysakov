@@ -1,39 +1,90 @@
 package rys.ajaxpetproject.service.impl
 
-import org.bson.types.ObjectId
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
+import rys.ajaxpetproject.exceptions.UserAlreadyExistsException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
 import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
 import rys.ajaxpetproject.service.UserService
 
 @Service
+@Suppress("MagicNumber")
 class UserServiceImpl(
-    val userRepository: UserRepository,
-    val passwordEncoder: PasswordEncoder) : UserService {
+    private val encoder: PasswordEncoder,
+    private val userRepository: UserRepository
+) : UserService {
 
-    override fun createUser(mongoUser: MongoUser): MongoUser {
-        return userRepository.save(mongoUser.copy(password = passwordEncoder.encode(mongoUser.password)))
+    override fun createUser(mongoUser: MongoUser): Mono<MongoUser> {
+        return userRepository.findByName(mongoUser.userName)
+            .handle<MongoUser> { _, sync ->
+                sync.error(UserAlreadyExistsException("A user with the username ${mongoUser.userName} already exists!"))
+            }
+            .switchIfEmpty {
+                (mongoUser.password.length > MIN_PASSWORD_LENGTH)
+                    .let {
+                        val nesUser = mongoUser.copy(password = encoder.encode(mongoUser.password))
+                        userRepository.save(nesUser)
+                    }
+                    .switchIfEmpty {
+                        Mono.error(
+                            IllegalArgumentException("Password must be at least $MIN_PASSWORD_LENGTH characters long!")
+                        )
+                    }
+            }
     }
 
-    override fun getUserById(id: ObjectId): MongoUser = userRepository.findUserById(id) ?: throw UserNotFoundException()
-
-    override fun findUserById(id: ObjectId): MongoUser? = userRepository.findUserById(id)
-
-    override fun findAllUsers(): List<MongoUser> = userRepository.findAllBy()
-
-    override fun updateUser(id: ObjectId, updatedMongoUser: MongoUser): MongoUser? =
-        findUserById(id)?.let {
-            userRepository.save(updatedMongoUser.copy(id = id))
-        } ?: throw UserNotFoundException()
-
-    override fun deleteUser(id: ObjectId): Boolean {
-        return userRepository.deleteUserById(id)
+    override fun findUserById(id: String): Mono<MongoUser> {
+        return userRepository.findById(id)
     }
 
-    override fun deleteUsers(): Boolean {
-        userRepository.deleteAll()
-        return true
+    override fun findUserByName(name: String): Mono<MongoUser> {
+        return userRepository.findByName(name)
+    }
+
+    override fun getUserById(id: String): Mono<MongoUser> {
+        return userRepository.findById(id)
+            .switchIfEmpty {
+                Mono.error(UserNotFoundException("User with id $id does not exist!"))
+            }
+    }
+
+    override fun getUserByName(name: String): Mono<MongoUser> {
+        return userRepository.findByName(name)
+            .switchIfEmpty {
+                Mono.error(UserNotFoundException("User with name $name does not exist!"))
+            }
+    }
+
+    override fun findAllUsers(): Flux<MongoUser> {
+        return userRepository.findAll()
+    }
+
+    override fun updateUser(id: String, updatedUser: MongoUser): Mono<MongoUser> {
+        return getUserById(id)
+            .flatMap {
+                userRepository.update(
+                    id,
+                    updatedUser.copy(
+                        id = it.id,
+                        password = encoder.encode(updatedUser.password)
+                    )
+                )
+            }
+    }
+
+    override fun deleteUser(id: String): Mono<Unit> {
+        return userRepository.delete(id)
+    }
+
+    override fun deleteAll(): Mono<Unit> {
+        return userRepository.deleteAll()
+    }
+
+    companion object {
+        private const val MIN_PASSWORD_LENGTH = 8
     }
 }
