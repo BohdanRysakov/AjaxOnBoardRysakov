@@ -22,7 +22,7 @@ class ChatGrpcService(private val chatService: ChatService) :
             logger.info("Received empty request")
             return createFailureResponse(BadRequestException("Bad request")).toMono()
         }
-        logger.info("Received request to create chat: {}",request)
+        logger.info("Received request to create chat: {}", request)
 
         return chatService.save(request.chat.toModel())
             .map { createSuccessResponse(it) }
@@ -37,7 +37,7 @@ class ChatGrpcService(private val chatService: ChatService) :
     }
 
     private fun createFailureResponse(e: Throwable): ChatCreateResponse {
-        logger.error("Error while creating chat: {}",e.message, e)
+        logger.error("Error while creating chat: {}", e.message, e)
 
         return ChatCreateResponse.newBuilder().apply {
             failureBuilder.apply {
