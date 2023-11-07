@@ -2,3 +2,5 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27018/testDB
+    redis:
+      port: 6479
