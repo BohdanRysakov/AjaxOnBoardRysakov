@@ -17,5 +17,5 @@ interface MessageRepository {
 
     fun findMessagesByIds(ids: List<String>): Flux<MongoMessage>
 
-    fun deleteMessagesByIds(ids : List<String>): Mono<Unit>
+    fun deleteMessagesByIds(ids: List<String>): Mono<Unit>
 }

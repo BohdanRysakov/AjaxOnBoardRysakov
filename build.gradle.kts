@@ -29,6 +29,9 @@ allprojects {
     version = "0.0.1-SNAPSHOT"
     repositories {
         mavenCentral()
+        maven {
+            setUrl("https://packages.confluent.io/maven/")
+        }
     }
 }
 
@@ -37,6 +40,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":rest"))
     implementation(project(":api"))
+    implementation(project(":kafka"))
     implementation(project(":gRPC"))
     implementation("org.springframework.boot:spring-boot-devtools")
 }
@@ -53,6 +57,12 @@ tasks.withType<Test> {
 }
 
 subprojects {
+
+    configurations.all {
+        exclude(group = "org.slf4j", module = "slf4j-reload4j")
+    }
+
+
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
     apply(plugin = "org.springframework.boot")
@@ -75,17 +85,23 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.1.4")
-        implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.5")
-        implementation("org.springframework.boot:spring-boot-starter-logging:3.1.0")
+        implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+        implementation("org.springframework.boot:spring-boot-starter-webflux")
         implementation("org.springframework.boot:spring-boot-starter-validation")
+        implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
+        implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
         implementation("com.salesforce.servicelibs:reactor-grpc:1.2.4")
         implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.4")
         implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.4")
 
-        implementation("org.springframework.security:spring-security-crypto:6.1.2")
+        implementation("io.confluent:kafka-schema-registry:7.5.1")
+        implementation("io.confluent:kafka-protobuf-serializer:7.5.1")
+        implementation("io.projectreactor.kafka:reactor-kafka:1.3.19")
+        implementation("org.springframework.kafka:spring-kafka")
+
+        implementation("org.springframework.security:spring-security-crypto")
         implementation("jakarta.validation:jakarta.validation-api:3.0.2")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
         implementation("org.jetbrains.kotlin:kotlin-reflect")

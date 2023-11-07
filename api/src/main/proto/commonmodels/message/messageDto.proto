@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package rys.ajaxpetproject.commonmodels.message.proto;
+
+import "commonmodels/message/message.proto";
+
+option java_multiple_files = true;
+
+message MessageDto {
+  string chatId = 1;
+  commonmodels.message.proto.Message message = 2;
+}

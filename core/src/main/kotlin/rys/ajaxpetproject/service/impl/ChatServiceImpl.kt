@@ -1,24 +1,28 @@
 package rys.ajaxpetproject.service.impl
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
+import rys.ajaxpetproject.kafka.MessageCreateEventProducer
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.MessageService
 import rys.ajaxpetproject.service.UserService
+import rys.ajaxpetproject.utils.createEvent
 
 @Service
 @Suppress("TooManyFunctions")
 class ChatServiceImpl(
     private val chatRepository: ChatRepository,
     private val userService: UserService,
-    private val messageService: MessageService
+    private val messageService: MessageService,
+    private val kafkaEventSender: MessageCreateEventProducer
 ) : ChatService {
     override fun findChatById(id: String): Mono<MongoChat> {
         return chatRepository.findChatById(id)
@@ -32,7 +36,7 @@ class ChatServiceImpl(
     }
 
     override fun save(chat: MongoChat): Mono<MongoChat> {
-        return chatRepository.save(chat)
+        return chatRepository.save(chat.copy(id = null))
     }
 
     override fun deleteAll(): Mono<Unit> {
@@ -66,6 +70,19 @@ class ChatServiceImpl(
             messageService.getMessageById(messageId)
         )
             .then(chatRepository.addMessage(messageId, chatId))
+            .flatMap<Unit> {
+                messageService.getMessageById(messageId)
+                    .flatMap {
+                        kafkaEventSender.sendCreateEvent(
+                            it.createEvent(chatId)
+                        )
+                    }
+            }
+            .onErrorResume {
+                logger.error("Error while adding message to chat: {}",it.message, it)
+                Mono.error(it)
+            }
+            .thenReturn(Unit)
     }
 
     override fun removeMessage(messageId: String, chatId: String): Mono<Unit> {
@@ -112,5 +129,9 @@ class ChatServiceImpl(
                     .map { messageService.delete(it.toString()) }
                     .then(Unit.toMono())
             )
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger(ChatServiceImpl::class.java)
     }
 }

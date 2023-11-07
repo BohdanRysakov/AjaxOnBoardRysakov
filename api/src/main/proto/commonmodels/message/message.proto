@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package rys.ajaxpetproject.commonmodels.message.proto;
+
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+message Message {
+  string userId = 1;
+  string content = 2;
+  google.protobuf.Timestamp sentTime = 3;
+}

@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.ChatRepository
@@ -61,6 +62,9 @@ class ChatRepositoryImpl(
             updateDef,
             MongoChat::class.java
         )
+            .switchIfEmpty {
+                Mono.error(IllegalArgumentException("Chat with id $chatId not found"))
+            }
             .thenReturn(Unit)
     }
 
@@ -85,6 +89,9 @@ class ChatRepositoryImpl(
             updateDef,
             MongoChat::class.java
         )
+            .switchIfEmpty {
+                Mono.error(IllegalArgumentException("Chat with id $chatId not found"))
+            }
             .thenReturn(Unit)
     }
 
