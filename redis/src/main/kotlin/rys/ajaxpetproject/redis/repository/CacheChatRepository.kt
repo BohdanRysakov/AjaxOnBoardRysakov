@@ -14,7 +14,6 @@ import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.internalapi.RedisPrefixes.CHAT_CACHE_KEY_PREFIX
 import rys.ajaxpetproject.internalapi.RedisPrefixes.MESSAGE_CACHE_KEY_PREFIX
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.ChatRepository
 
 @Repository
@@ -23,7 +22,7 @@ import rys.ajaxpetproject.repository.ChatRepository
 class CacheChatRepository(
     @Qualifier("chatRepositoryImpl") private val actualRepository: ChatRepository,
     private val redisOperations: ReactiveRedisTemplate<String, MongoChat>
-) : ChatRepository {
+) : ChatRepository by actualRepository {
     override fun findChatById(id: String): Mono<MongoChat> {
         return redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$id")
             .switchIfEmpty {
@@ -164,18 +163,6 @@ class CacheChatRepository(
             .switchIfEmptyDeferred {
                 actualRepository.findAll()
             }
-    }
-
-    override fun findChatsByUserId(userId: String): Flux<MongoChat> {
-        return actualRepository.findChatsByUserId(userId)
-    }
-
-    override fun findMessagesByUserIdAndChatId(userId: String, chatId: String): Flux<MongoMessage> {
-        return actualRepository.findMessagesByUserIdAndChatId(userId, chatId)
-    }
-
-    override fun findMessagesFromChat(chatId: String): Flux<MongoMessage> {
-        return actualRepository.findMessagesFromChat(chatId)
     }
 
     override fun deleteMessagesFromChatByUserId(chatId: String, userId: String): Mono<Unit> {

@@ -19,7 +19,7 @@ import rys.ajaxpetproject.repository.MessageRepository
 class CacheMessageRepository(
     @Qualifier("messageRepositoryImpl") private val actualRepository: MessageRepository,
     private val redisOperations: ReactiveRedisOperations<String, MongoMessage>
-) : MessageRepository {
+) : MessageRepository by actualRepository {
 
     override fun findMessageById(id: String): Mono<MongoMessage> {
         return redisOperations.opsForValue().get("$MESSAGE_CACHE_KEY_PREFIX$id")
@@ -68,10 +68,6 @@ class CacheMessageRepository(
                 redisOperations.opsForValue().delete("$MESSAGE_CACHE_KEY_PREFIX$id")
             ).doOnSuccess { logger.info("Message with id {} was deleted from cache", id) }
             .then(Unit.toMono())
-    }
-
-    override fun findMessagesByIds(ids: List<String>): Flux<MongoMessage> {
-        return actualRepository.findMessagesByIds(ids)
     }
 
     override fun deleteMessagesByIds(ids: List<String>): Mono<Unit> {
