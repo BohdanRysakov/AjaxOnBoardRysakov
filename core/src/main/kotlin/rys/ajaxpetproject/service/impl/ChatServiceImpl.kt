@@ -68,7 +68,7 @@ class ChatServiceImpl(
                     }
             }
             .onErrorResume {
-                logger.error("Error while adding message to chat: {}",it.message, it)
+                logger.error("Error while adding message to chat: {}", it.message, it)
                 Mono.error(it)
             }
             .thenReturn(Unit)

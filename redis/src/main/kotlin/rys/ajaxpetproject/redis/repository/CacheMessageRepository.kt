@@ -29,7 +29,9 @@ class CacheMessageRepository(
                         redisOperations.opsForValue().set("$MESSAGE_CACHE_KEY_PREFIX$id", savedMessage)
                             .thenReturn(savedMessage)
                     }
-            }.doOnSuccess { logger.info("Message with id {} was found in cache", it.id) }
+            }
+            .doOnError { logger.error("Error while finding message with id {} in cache", id) }
+            .doOnSuccess { logger.info("Message with id {} was found in cache", id) }
     }
 
     override fun save(message: MongoMessage): Mono<MongoMessage> {
@@ -74,7 +76,7 @@ class CacheMessageRepository(
 
     override fun deleteMessagesByIds(ids: List<String>): Mono<Unit> {
         return actualRepository.deleteMessagesByIds(ids)
-            .then(redisOperations.delete(Flux.fromIterable(ids)))
+            .then(redisOperations.delete(Flux.fromIterable(ids).map { "$MESSAGE_CACHE_KEY_PREFIX$it" }))
             .thenReturn(Unit)
             .doOnSuccess { logger.info("Messages with ids {} were deleted from cache", ids) }
     }

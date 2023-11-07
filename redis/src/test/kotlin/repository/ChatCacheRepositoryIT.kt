@@ -227,7 +227,7 @@ class ChatCacheRepositoryIT {
         val listOfUsers = mutableListOf(ObjectId().toString(), ObjectId().toString())
         val oldChat = MongoChat(
             name = "chat1 - ${System.nanoTime()}",
-            users = listOf(ObjectId().toString(), ObjectId().toString()),
+            users = listOfUsers,
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
         listOfUsers.add(expectedNewUserId)
@@ -236,9 +236,9 @@ class ChatCacheRepositoryIT {
 
         val expectedChat = MongoChat(
             id = savedChatId,
-            name = "chat1 - ${System.nanoTime()}",
+            name = oldChat.name,
             users = listOfUsers,
-            messages = listOf(ObjectId().toString(), ObjectId().toString()),
+            messages = oldChat.messages,
         )
 
         //WHEN //THEN

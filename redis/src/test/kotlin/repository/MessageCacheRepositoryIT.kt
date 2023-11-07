@@ -5,16 +5,24 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.ScanOptions
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.redis.repository.CacheMessageRepository
+import rys.ajaxpetproject.internalapi.RedisPrefixes.MESSAGE_CACHE_KEY_PREFIX
+
 
 @DbIntegrationTest
-class MessageCacheRepositoryImplIT {
+class MessageCacheRepositoryIT {
     @Autowired
     private lateinit var messageRepository: CacheMessageRepository
+
+    @Autowired
+    private lateinit var redisOperations: ReactiveRedisTemplate<String, MongoMessage>
 
     @BeforeEach
     fun init() {
@@ -22,7 +30,7 @@ class MessageCacheRepositoryImplIT {
     }
 
     @Test
-    fun `should return message when message found by Id `() {
+    fun `should return message and save it to cache when message found by Id `() {
         // GIVEN
         val message = MongoMessage(
             content = "SUCCESFULL_findMessageById - ${System.nanoTime()}",
@@ -32,7 +40,8 @@ class MessageCacheRepositoryImplIT {
         val expectedMessage = messageRepository.save(message).block()!!
 
         // WHEN //THEN
-        StepVerifier.create(messageRepository.findMessageById(expectedMessage.id!!.toString()))
+        messageRepository.findMessageById(expectedMessage.id!!.toString())
+            .test()
             .expectSubscription()
             .assertNext { actualMessage ->
                 Assertions.assertNotNull(actualMessage.id)
@@ -41,19 +50,39 @@ class MessageCacheRepositoryImplIT {
                 Assertions.assertNotNull(actualMessage.sentAt)
             }
             .verifyComplete()
+
+        //THEN
+        redisOperations.scan(
+            ScanOptions.scanOptions()
+                .match("$MESSAGE_CACHE_KEY_PREFIX*").build()
+        )
+            .flatMap { redisOperations.opsForValue().get(it) }
+            .test()
+            .expectSubscription()
+            .expectNext(expectedMessage)
+            .verifyComplete()
     }
 
     @Test
-    fun `should return empty when findMessageById is called with invalid id`() {
+    fun `should return empty and empty cache when findMessageById is called with invalid id`() {
+        //GIVEN
+        val invalidId = ObjectId().toString()
+
         // WHEN // THEN
-        StepVerifier.create(messageRepository.findMessageById(ObjectId().toString()))
+        StepVerifier.create(messageRepository.findMessageById(invalidId))
+            .expectSubscription()
+            .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$MESSAGE_CACHE_KEY_PREFIX$invalidId")
+            .test()
             .expectSubscription()
             .expectNextCount(0)
             .verifyComplete()
     }
 
     @Test
-    fun `should return unit when all messages deleted`() {
+    fun `should return unit and clear cache when all messages deleted`() {
         //GIVEN
         val message1 = MongoMessage(
             content = "SUCCESFULL_deleteAll - ${System.nanoTime()}",
@@ -91,10 +120,20 @@ class MessageCacheRepositoryImplIT {
             .expectSubscription()
             .expectNextCount(0)
             .verifyComplete()
+
+
+        redisOperations.scan(
+            ScanOptions.scanOptions()
+                .match("$MESSAGE_CACHE_KEY_PREFIX*").build()
+        )
+            .test()
+            .expectSubscription()
+            .expectNextCount(0)
+            .verifyComplete()
     }
 
     @Test
-    fun `should return message when update successful`() {
+    fun `should return message and update cache when update successful`() {
         //GIVEN
         val expectedContent = "SUCCESFULL_update - ${System.nanoTime()}"
 
@@ -131,6 +170,13 @@ class MessageCacheRepositoryImplIT {
                 Assertions.assertNotNull(actualMessage.sentAt)
             }
             .verifyComplete()
+
+        //THEN
+        redisOperations.opsForValue().get("$MESSAGE_CACHE_KEY_PREFIX$expectedId")
+            .test()
+            .expectSubscription()
+            .expectNext(expectedMessage.copy(id = expectedId))
+            .verifyComplete()
     }
 
     @Test
@@ -158,7 +204,7 @@ class MessageCacheRepositoryImplIT {
     }
 
     @Test
-    fun `should return messages when multiple messages found by list of ids`() {
+    fun `should return messages and update cache when multiple messages found by list of ids`() {
         //GIVEN
         val message1 = MongoMessage(
             content = "SUCCESFULL_findByIds - ${System.nanoTime()}",
@@ -192,10 +238,26 @@ class MessageCacheRepositoryImplIT {
                 )
             }
             .verifyComplete()
+
+        //THEN
+        expectedIds.toFlux()
+            .flatMap {
+                redisOperations.opsForValue().get("$MESSAGE_CACHE_KEY_PREFIX$it")
+            }.test()
+            .expectSubscription()
+            .recordWith { mutableListOf<MongoMessage>() }
+            .thenConsumeWhile { true }
+            .consumeRecordedWith { actualList ->
+                Assertions.assertIterableEquals(
+                    expectedMessages,
+                    actualList
+                )
+            }
+            .verifyComplete()
     }
 
     @Test
-    fun `should return unit when multiple messages deleted by ids `() {
+    fun `should return unit and update cache when multiple messages deleted by ids `() {
         //GIVEN
         val message1 = MongoMessage(
             content = "SUCCESFULL_findByIds - ${System.nanoTime()}",
@@ -227,6 +289,19 @@ class MessageCacheRepositoryImplIT {
             .test()
             .expectSubscription()
             .expectNextCount(0)
+            .verifyComplete()
+
+        //THEN
+        idsToDelete.toFlux()
+            .flatMap {
+                redisOperations.opsForValue().get("$MESSAGE_CACHE_KEY_PREFIX$it")
+            }.test()
+            .expectSubscription()
+            .recordWith { mutableListOf<MongoMessage>() }
+            .thenConsumeWhile { true }
+            .consumeRecordedWith { actualList ->
+                Assertions.assertEquals(0, actualList.size)
+            }
             .verifyComplete()
     }
 }

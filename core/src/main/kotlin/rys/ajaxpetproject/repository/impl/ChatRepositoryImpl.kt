@@ -156,7 +156,7 @@ class ChatRepositoryImpl(
             .filter { it.userId == userId }
             .map { it.id!! }
             .collectList()
-            .flatMap {messageIds ->
+            .flatMap { messageIds ->
                 messageRepository.deleteMessagesByIds(messageIds).thenReturn(messageIds)
             }
             .flatMap { messageIds ->

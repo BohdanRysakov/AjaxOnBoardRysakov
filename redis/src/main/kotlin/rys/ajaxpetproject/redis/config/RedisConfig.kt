@@ -14,10 +14,9 @@ import rys.ajaxpetproject.model.MongoMessage
 
 @Configuration
 @EnableCaching
-class RedisConfig
-{
+class RedisConfig {
     @Bean
-    fun  reactiveChatRedisTemplate(
+    fun reactiveChatRedisTemplate(
         connectionFactory: ReactiveRedisConnectionFactory
     ): ReactiveRedisTemplate<String, MongoChat> {
         val objectMapper = ObjectMapper().findAndRegisterModules()
@@ -30,7 +29,7 @@ class RedisConfig
     }
 
     @Bean
-    fun  reactiveMessageRedisTemplate(
+    fun reactiveMessageRedisTemplate(
         connectionFactory: ReactiveRedisConnectionFactory
     ): ReactiveRedisTemplate<String, MongoMessage> {
         val objectMapper = ObjectMapper().findAndRegisterModules()
