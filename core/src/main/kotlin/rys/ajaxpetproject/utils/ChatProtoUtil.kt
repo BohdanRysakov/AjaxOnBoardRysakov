@@ -1,9 +1,9 @@
-package rys.ajaxpetproject.nats.utils
+package rys.ajaxpetproject.utils
 
 import rys.ajaxpetproject.commonmodels.chat.proto.Chat
 import rys.ajaxpetproject.model.MongoChat
 
-fun Chat.toModel() : MongoChat {
+fun Chat.toModel(): MongoChat {
     return MongoChat(
         id = this.id,
         name = this.name,
@@ -12,7 +12,7 @@ fun Chat.toModel() : MongoChat {
     )
 }
 
-fun MongoChat.toProto() : Chat {
+fun MongoChat.toProto(): Chat {
     val chat = this@toProto
     return Chat.newBuilder().apply {
         this.id = chat.id.toString()

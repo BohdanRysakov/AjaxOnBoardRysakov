@@ -16,7 +16,7 @@ import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
 
 @Repository
-class MessageRepository(private val mongoTemplate : ReactiveMongoTemplate) :
+class MessageRepository(private val mongoTemplate: ReactiveMongoTemplate) :
     MessageRepository {
     override fun findMessageById(id: String): Mono<MongoMessage> {
         return mongoTemplate.findById<MongoMessage>(id)
@@ -39,7 +39,7 @@ class MessageRepository(private val mongoTemplate : ReactiveMongoTemplate) :
             .set("userId", updatedMessage.userId)
             .set("content", updatedMessage.content)
             .set("sentAt", updatedMessage.sentAt)
-        
+
         return mongoTemplate.findAndModify<MongoMessage>(
             query,
             updateDef,

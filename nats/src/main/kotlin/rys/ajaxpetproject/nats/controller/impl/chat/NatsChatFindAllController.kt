@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.nats.controller.impl
+package rys.ajaxpetproject.nats.controller.impl.chat
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
@@ -8,11 +8,11 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.nats.controller.NatsController
-import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllRequest
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllResponse
 import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.internalapi.ChatSubjectsV1
+import rys.ajaxpetproject.utils.toProto
 
 @Service
 class NatsChatFindAllController(
@@ -46,7 +46,7 @@ class NatsChatFindAllController(
     }
 
     private fun buildFailureResponse(e: Throwable): ChatFindAllResponse {
-        logger.error("Error while creating chat: ${e.message}", e)
+        logger.error("Error while creating chat: {}",e.message, e)
         return ChatFindAllResponse.newBuilder().apply {
             failureBuilder.message = e.message
             failureBuilder.internalErrorBuilder

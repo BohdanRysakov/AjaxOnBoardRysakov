@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.nats.controller.impl
+package rys.ajaxpetproject.nats.controller.impl.chat
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
@@ -8,12 +8,12 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.nats.controller.NatsController
-import rys.ajaxpetproject.nats.utils.toModel
-import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.update.create.proto.ChatUpdateRequest
 import rys.ajaxpetproject.request.update.create.proto.ChatUpdateResponse
 import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.internalapi.ChatSubjectsV1
+import rys.ajaxpetproject.utils.toModel
+import rys.ajaxpetproject.utils.toProto
 
 @Component
 @Suppress("NestedBlockDepth")
@@ -41,7 +41,7 @@ class NatsChatUpdateController(
         }.build()
 
     private fun buildFailureResponse(e: Throwable): ChatUpdateResponse {
-        logger.error("Error while creating chat: ${e.message}", e)
+        logger.error("Error while creating chat: {}",e.message, e)
 
         return ChatUpdateResponse.newBuilder().apply {
             failureBuilder.apply {

@@ -1,13 +1,9 @@
 package rys.ajaxpetproject.model
 
-import com.mongodb.internal.connection.Time
 import jakarta.validation.constraints.NotNull
-import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.core.mapping.MongoId
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.Date
 
 @Document(collection = "MESSAGES")

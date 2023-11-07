@@ -31,7 +31,7 @@ interface ChatRepository {
 
     fun findMessagesByUserIdAndChatId(userId: String, chatId: String): Flux<MongoMessage>
 
-    fun findMessagesFromChat(chatId: String) : Flux<MongoMessage>
+    fun findMessagesFromChat(chatId: String): Flux<MongoMessage>
 
     fun deleteMessagesFromChatByUserId(chatId: String, userId: String): Mono<Unit>
 }

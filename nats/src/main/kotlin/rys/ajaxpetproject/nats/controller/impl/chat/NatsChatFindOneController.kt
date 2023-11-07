@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.nats.controller.impl
+package rys.ajaxpetproject.nats.controller.impl.chat
 
 import com.google.protobuf.Parser
 import io.nats.client.Connection
@@ -9,10 +9,10 @@ import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.nats.utils.toProto
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneResponse
-import rys.ajaxpetproject.subjects.ChatSubjectsV1
+import rys.ajaxpetproject.internalapi.ChatSubjectsV1
+import rys.ajaxpetproject.utils.toProto
 
 @Component
 @Suppress("NestedBlockDepth")
@@ -37,7 +37,7 @@ class NatsChatFindOneController(
         }.build()
 
     private fun buildFailureResponse(e: Throwable): ChatFindOneResponse {
-        logger.error("Error while creating chat: ${e.message}", e)
+        logger.error("Error while creating chat: {}",e.message, e)
         return ChatFindOneResponse.newBuilder().apply {
             failureBuilder.message = e.message
             failureBuilder.internalErrorBuilder
