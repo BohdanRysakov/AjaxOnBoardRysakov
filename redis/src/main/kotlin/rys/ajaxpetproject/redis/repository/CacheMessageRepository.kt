@@ -28,18 +28,17 @@ class CacheMessageRepository(
                     .flatMap { savedMessage ->
                         redisOperations.opsForValue().set("$MESSAGE_CACHE_KEY_PREFIX$id", savedMessage)
                             .thenReturn(savedMessage)
-                    }
+                    }.doOnSuccess { logger.info("Message with id {} was saved in cache", id) }
             }
-            .doOnError { logger.error("Error while finding message with id {} in cache", id) }
-            .doOnSuccess { logger.info("Message with id {} was found in cache", id) }
     }
 
     override fun save(message: MongoMessage): Mono<MongoMessage> {
         return actualRepository.save(message)
             .flatMap { savedMessage ->
                 redisOperations.opsForValue().set("$MESSAGE_CACHE_KEY_PREFIX${savedMessage.id!!}", savedMessage)
+                    .doOnSuccess { logger.info("Message with id {} was saved in cache", message.id) }
                     .thenReturn(savedMessage)
-            }.doOnSuccess { logger.info("Message with id {} was saved in cache", message.id) }
+            }
     }
 
     override fun deleteAll(): Mono<Unit> {
@@ -58,8 +57,9 @@ class CacheMessageRepository(
         return actualRepository.update(id, message)
             .then(
                 redisOperations.opsForValue().set("$MESSAGE_CACHE_KEY_PREFIX$id", message)
+                    .doOnSuccess { logger.info("Message with id {} was updated in cache", id) }
                     .thenReturn(message)
-            ).doOnSuccess { logger.info("Message with id {} was updated in cache", id) }
+            )
     }
 
     override fun delete(id: String): Mono<Unit> {

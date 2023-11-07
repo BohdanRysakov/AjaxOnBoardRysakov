@@ -32,7 +32,7 @@ class CacheChatRepository(
                         redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX$id", savedChat)
                             .thenReturn(savedChat)
                             .doOnSuccess {
-                                logger.info("Chat with id {} was found in cache", savedChat.id)
+                                logger.info("Chat with id {} was saved in cache", savedChat.id)
                             }
                     }
             }
@@ -66,6 +66,7 @@ class CacheChatRepository(
                 redisOperations.opsForValue()
                     .set("$CHAT_CACHE_KEY_PREFIX$id", it).then(it.toMono())
             }
+            .doOnSuccess { logger.info("Chat with id {} was updated in cache", id) }
     }
 
     override fun addUser(userId: String, chatId: String): Mono<Unit> {
@@ -74,8 +75,8 @@ class CacheChatRepository(
                 actualRepository.findChatById(chatId).flatMap { updatedChat ->
                     redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX${updatedChat.id!!}", updatedChat)
                         .thenReturn(Unit)
-                }
-            ).doOnSuccess { logger.info("User with id {} was added to chat with id {} in cache", userId, chatId) }
+                }.doOnSuccess { logger.info("User with id {} was added to chat with id {} in cache", userId, chatId) }
+            )
     }
 
     override fun removeUser(userId: String, chatId: String): Mono<Unit> {
@@ -85,8 +86,14 @@ class CacheChatRepository(
                     .flatMap { updatedChat ->
                         redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX${updatedChat.id!!}", updatedChat)
                             .thenReturn(Unit)
+                    }.doOnSuccess {
+                        logger.info(
+                            "User with id {} was removed from chat with id {} in cache",
+                            userId,
+                            chatId
+                        )
                     }
-            ).doOnSuccess { logger.info("User with id {} was removed from chat with id {} in cache", userId, chatId) }
+            )
     }
 
     override fun addMessage(messageId: String, chatId: String): Mono<Unit> {
@@ -95,9 +102,15 @@ class CacheChatRepository(
                 actualRepository.findChatById(chatId).flatMap { updatedChat ->
                     redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX${updatedChat.id!!}", updatedChat)
                         .thenReturn(Unit)
+                }.doOnSuccess {
+                    logger.info(
+                        "Message with id {} was added to chat with id {} in cache",
+                        messageId,
+                        chatId
+                    )
                 }
             )
-            .doOnSuccess { logger.info("Message with id {} was added to chat with id {} in cache", messageId, chatId) }
+
     }
 
     override fun removeMessage(messageId: String, chatId: String): Mono<Unit> {
@@ -106,15 +119,15 @@ class CacheChatRepository(
                 actualRepository.findChatById(chatId).flatMap { updatedChat ->
                     redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX${updatedChat.id!!}", updatedChat)
                         .thenReturn(Unit)
+                }.doOnSuccess {
+                    logger.info(
+                        "Message with id {} was removed from chat with id {} in cache",
+                        messageId,
+                        chatId
+                    )
                 }
             )
-            .doOnSuccess {
-                logger.info(
-                    "Message with id {} was removed from chat with id {} in cache",
-                    messageId,
-                    chatId
-                )
-            }
+
     }
 
     override fun removeMessages(ids: List<String>, chatId: String): Mono<Unit> {
@@ -123,20 +136,21 @@ class CacheChatRepository(
                 actualRepository.findChatById(chatId).flatMap { updatedChat ->
                     redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX${updatedChat.id!!}", updatedChat)
                         .thenReturn(Unit)
+                }.doOnSuccess {
+                    logger.info(
+                        "Messages with ids {} were removed from chat with id {} in cache",
+                        ids,
+                        chatId
+                    )
                 }
-            ).doOnSuccess {
-                logger.info(
-                    "Messages with ids {} were removed from chat with id {} in cache",
-                    ids,
-                    chatId
-                )
-            }
+            )
     }
 
     override fun delete(id: String): Mono<Unit> {
         return actualRepository.delete(id)
             .then(redisOperations.opsForValue().delete("$CHAT_CACHE_KEY_PREFIX$id"))
-            .then(Unit.toMono()).doOnSuccess { logger.info("Chat with id {} was deleted from cache", id) }
+            .then(Unit.toMono())
+            .doOnSuccess { logger.info("Chat with id {} was removed from cache", id) }
     }
 
     override fun findAll(): Flux<MongoChat> {
@@ -161,22 +175,20 @@ class CacheChatRepository(
     }
 
     override fun findMessagesFromChat(chatId: String): Flux<MongoMessage> {
-        return redisOperations.opsForValue().get("$CHAT_CACHE_KEY_PREFIX$chatId")
-            .flatMapMany {
-                actualRepository.findMessagesFromChat(chatId)
-            }
+        return actualRepository.findMessagesFromChat(chatId)
     }
 
     override fun deleteMessagesFromChatByUserId(chatId: String, userId: String): Mono<Unit> {
-        return findMessagesByUserIdAndChatId(userId, chatId).flatMap { message ->
-            redisOperations.opsForValue().delete("$MESSAGE_CACHE_KEY_PREFIX${message.id}")
-        }
+        return findMessagesByUserIdAndChatId(userId, chatId)
+            .flatMap { message ->
+                redisOperations.opsForValue().delete("$MESSAGE_CACHE_KEY_PREFIX${message.id}")
+            }
             .then(actualRepository.deleteMessagesFromChatByUserId(chatId, userId))
             .then(
                 actualRepository.findChatById(chatId).flatMap {
                     redisOperations.opsForValue().set("$CHAT_CACHE_KEY_PREFIX$chatId", it)
                 }).then(Unit.toMono())
-            .doOnSuccess { logger.info("Messages from chat with id {} were deleted from cache", chatId) }
+            .doOnSuccess { logger.info("Messages from chat with id {} were removed from cache", chatId) }
     }
 
     companion object {
