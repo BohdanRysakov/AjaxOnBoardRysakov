@@ -32,8 +32,8 @@ class GlobalRestExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun validationException(ex: MethodArgumentNotValidException): Mono<ResponseEntity<Map<String, Any>>> {
         val body = mapOf(
-            "message" to  ex.bindingResult.allErrors.map { it.defaultMessage }
-                .toString().let{it.substring(1,it.lastIndex)}.toString(),
+            "message" to ex.bindingResult.allErrors.map { it.defaultMessage }
+                .toString().let { it.substring(1, it.lastIndex) }.toString(),
             "status" to ex.statusCode.value()
         )
         return Mono.just(ResponseEntity(body, ex.statusCode))

@@ -13,6 +13,7 @@ services:
       - mongo
       - kafka
       - zookeeper
+      - redis
 
   kafka:
     image: confluentinc/cp-kafka:7.5.1
@@ -57,3 +58,9 @@ services:
     container_name: "nats"
     ports:
       - "4222:4222"
+
+  redis:
+    image: redis:alpine3.18
+    container_name: "redis"
+    ports:
+      - "6379:6379"
