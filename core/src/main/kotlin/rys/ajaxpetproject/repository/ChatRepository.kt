@@ -23,6 +23,8 @@ interface ChatRepository {
 
     fun removeMessage(messageId: String, chatId: String): Mono<Unit>
 
+    fun removeMessages(ids: List<String>, chatId: String): Mono<Unit>
+
     fun delete(id: String): Mono<Unit>
 
     fun findAll(): Flux<MongoChat>

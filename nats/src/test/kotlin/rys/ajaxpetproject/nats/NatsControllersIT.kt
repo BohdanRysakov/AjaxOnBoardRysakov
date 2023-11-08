@@ -25,8 +25,8 @@ import rys.ajaxpetproject.nats.config.NatsControllerConfigurerPostProcessor
 import rys.ajaxpetproject.nats.controller.impl.chat.*
 import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.impl.ChatRepositoryImpl
-import rys.ajaxpetproject.repository.impl.MessageRepository
-import rys.ajaxpetproject.repository.impl.UserRepository
+import rys.ajaxpetproject.repository.impl.MessageRepositoryImpl
+import rys.ajaxpetproject.repository.impl.UserRepositoryImpl
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateRequest
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateResponse
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteRequest
@@ -69,7 +69,7 @@ class NatsControllersIT {
     private lateinit var chatService: ChatService
 
     @MockBean
-    private lateinit var kafkaSenderEvent : MessageCreateEventProducer
+    private lateinit var kafkaSenderEvent: MessageCreateEventProducer
 
     @Autowired
     private lateinit var connection: Connection
@@ -93,8 +93,7 @@ class NatsControllersIT {
             this.chat = expectedChat.toProto()
         }.build()
 
-        whenever(kafkaSenderEvent.sendCreateEvent(any())).
-        thenReturn(Unit.toMono())
+        whenever(kafkaSenderEvent.sendCreateEvent(any())).thenReturn(Unit.toMono())
 
         //WHEN
         val actualChat = ChatCreateResponse.parseFrom(

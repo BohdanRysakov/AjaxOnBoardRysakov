@@ -106,6 +106,17 @@ class ChatRepositoryImpl(
             .thenReturn(Unit)
     }
 
+    override fun removeMessages(ids: List<String>, chatId: String): Mono<Unit> {
+        val query = Query.query(Criteria.where("_id").`is`(chatId))
+        val updateDef = Update().pullAll("messages", ids.toTypedArray())
+        return mongoTemplate.findAndModify(
+            query,
+            updateDef,
+            MongoChat::class.java
+        )
+            .thenReturn(Unit)
+    }
+
     override fun delete(id: String): Mono<Unit> {
         val query = Query.query(Criteria.where("_id").`is`(id))
         return mongoTemplate.remove<MongoChat>(query)
@@ -131,16 +142,14 @@ class ChatRepositoryImpl(
     }
 
     override fun findMessagesFromChat(chatId: String): Flux<MongoMessage> {
-        val query = Query.query(Criteria.where("_id").`is`(chatId))
-        return mongoTemplate.findOne<MongoChat>(query)
+        return findChatById(chatId)
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
     }
 
     override fun deleteMessagesFromChatByUserId(chatId: String, userId: String): Mono<Unit> {
-        val query = Query.query(Criteria.where("_id").`is`(chatId))
-        return mongoTemplate.findOne<MongoChat>(query)
+        return findChatById(chatId)
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
@@ -148,7 +157,10 @@ class ChatRepositoryImpl(
             .map { it.id!! }
             .collectList()
             .flatMap { messageIds ->
-                messageRepository.deleteMessagesByIds(messageIds)
+                messageRepository.deleteMessagesByIds(messageIds).thenReturn(messageIds)
+            }
+            .flatMap { messageIds ->
+                removeMessages(messageIds, chatId)
             }
     }
 }

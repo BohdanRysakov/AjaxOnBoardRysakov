@@ -16,14 +16,14 @@ import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
 
 @Repository
-class MessageRepository(private val mongoTemplate: ReactiveMongoTemplate) :
+class MessageRepositoryImpl(private val mongoTemplate: ReactiveMongoTemplate) :
     MessageRepository {
     override fun findMessageById(id: String): Mono<MongoMessage> {
         return mongoTemplate.findById<MongoMessage>(id)
     }
 
     override fun save(message: MongoMessage): Mono<MongoMessage> {
-        return mongoTemplate.save(message)
+        return mongoTemplate.save(message.copy(id = null))
     }
 
     override fun deleteAll(): Mono<Unit> {

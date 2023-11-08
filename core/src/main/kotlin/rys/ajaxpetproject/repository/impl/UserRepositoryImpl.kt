@@ -17,7 +17,7 @@ import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
 
 @Repository
-class UserRepository(private val mongoTemplate: ReactiveMongoTemplate) :
+class UserRepositoryImpl(private val mongoTemplate: ReactiveMongoTemplate) :
     UserRepository {
     override fun findById(id: String): Mono<MongoUser> {
         return mongoTemplate.findById<MongoUser>(id)
