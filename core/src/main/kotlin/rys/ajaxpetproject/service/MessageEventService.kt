@@ -3,6 +3,7 @@ package rys.ajaxpetproject.service
 import io.nats.client.Connection
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.internalapi.MessageEvent
 import rys.ajaxpetproject.model.MongoMessage
@@ -47,7 +48,7 @@ class MessageEventService(
             .flatMap { message ->
                 val messageDto = message.toDto(chatId)
                 val response = buildSuccessResponse(messageDto)
-                Flux.just(response)
+                response.toMono()
             }
     }
 

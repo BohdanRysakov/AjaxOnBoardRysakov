@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory
 import reactor.core.scheduler.Schedulers
 
 class ReactiveNatsHandler(
-    private val natsChatController: NatsController<*, *>,
-) : MessageHandler {
+    private val natsChatController: NatsController<*, *>
+    ) : MessageHandler {
 
     override fun onMessage(message: Message) {
-        natsChatController.handle(message)
+        natsChatController.reply(message)
             .doOnNext {
                 logger.info("Received message: subject={}, message={}", message.replyTo, it)
             }

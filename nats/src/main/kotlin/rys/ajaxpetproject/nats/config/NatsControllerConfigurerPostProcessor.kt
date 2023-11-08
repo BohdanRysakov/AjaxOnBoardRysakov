@@ -22,10 +22,7 @@ class NatsControllerConfigurerPostProcessor : BeanPostProcessor {
         controller: NatsController<RequestT, ResponseT>,
         connection: Connection
     ) {
-        connection.createDispatcher { message ->
-
-            ReactiveNatsHandler(controller).onMessage(message)
-
-        }.apply { subscribe(controller.subject) }
+        val handler = ReactiveNatsHandler(controller)
+        connection.createDispatcher(handler).apply { subscribe(controller.subject) }
     }
 }
