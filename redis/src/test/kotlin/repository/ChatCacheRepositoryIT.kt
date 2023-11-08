@@ -644,7 +644,7 @@ class ChatCacheRepositoryIT {
     }
 
     @Test
-    fun `should return unit when messages and clean cache from user is deleted`() {
+    fun `should return unit and clean cache when messages from user is deleted`() {
         //GIVEN
         val userId = ObjectId().toString()
 

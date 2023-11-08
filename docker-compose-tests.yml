@@ -13,7 +13,7 @@ services:
     ports:
       - "4444:4222"
 
-  redis:
+  redis-test:
     image: redis:alpine3.18
     container_name: "redis-test"
     ports:

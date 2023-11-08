@@ -162,7 +162,5 @@ class ChatRepositoryImpl(
             .flatMap { messageIds ->
                 removeMessages(messageIds, chatId)
             }
-
-
     }
 }

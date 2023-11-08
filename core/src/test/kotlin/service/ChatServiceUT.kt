@@ -43,7 +43,7 @@ class ChatServiceUT {
         val userId = ObjectId().toString()
         val chatId = ObjectId().toString()
 
-        val user  = MongoUser(
+        val user = MongoUser(
             id = userId,
             userName = "userName",
             password = "password",
@@ -76,7 +76,7 @@ class ChatServiceUT {
             )
         )
 
-        every{
+        every {
             chatRepository.findChatById(chatId)
         } returns chat.toMono()
 

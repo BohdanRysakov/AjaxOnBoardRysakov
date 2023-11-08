@@ -36,7 +36,7 @@ class NatsChatDeleteController(
         }.build()
 
     private fun buildFailureResponse(e: Throwable): ChatDeleteResponse {
-        logger.error("Error while deleting chat: {}",e.message, e)
+        logger.error("Error while deleting chat: {}", e.message, e)
 
         return ChatDeleteResponse.newBuilder().apply {
             failureBuilder

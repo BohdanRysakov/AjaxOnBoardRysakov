@@ -1,8 +1,9 @@
 # Ajax On Board
 
 -----
-Project to train technologies 
-Todo: 
+Project to train technologies
+Todo:
+
 - :exclamation: MongoDB
 - :exclamation: Redis
 - :exclamation: Reactive Java

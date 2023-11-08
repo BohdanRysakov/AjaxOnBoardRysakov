@@ -62,7 +62,7 @@ class NatsControllersIT {
     private lateinit var chatService: ChatService
 
     @MockBean
-    private lateinit var kafkaSenderEvent : MessageCreateEventProducer
+    private lateinit var kafkaSenderEvent: MessageCreateEventProducer
 
     @Autowired
     private lateinit var connection: Connection
@@ -86,8 +86,7 @@ class NatsControllersIT {
             this.chat = expectedChat.toProto()
         }.build()
 
-        whenever(kafkaSenderEvent.sendCreateEvent(any())).
-        thenReturn(Unit.toMono())
+        whenever(kafkaSenderEvent.sendCreateEvent(any())).thenReturn(Unit.toMono())
 
         //WHEN
         val actualChat = ChatCreateResponse.parseFrom(
