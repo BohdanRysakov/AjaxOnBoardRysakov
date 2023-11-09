@@ -12,7 +12,7 @@ import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneRequest
 import rys.ajaxpetproject.request.findOne.create.proto.ChatFindOneResponse
 import rys.ajaxpetproject.internalapi.ChatSubjectsV1
-import rys.ajaxpetproject.utils.toProto
+import rys.ajaxpetproject.internalapi.utils.toProto
 
 @Component
 @Suppress("NestedBlockDepth")
@@ -33,7 +33,7 @@ class NatsChatFindOneController(
 
     private fun buildSuccessResponse(chat: MongoChat): ChatFindOneResponse =
         ChatFindOneResponse.newBuilder().apply {
-            successBuilder.result = chat.toProto()
+            successBuilder.result = rys.ajaxpetproject.internalapi.utils.toProto()
         }.build()
 
     private fun buildFailureResponse(e: Throwable): ChatFindOneResponse {

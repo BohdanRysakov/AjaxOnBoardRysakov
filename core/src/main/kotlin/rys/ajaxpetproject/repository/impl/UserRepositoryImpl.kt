@@ -1,19 +1,13 @@
 package rys.ajaxpetproject.repository.impl
 
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.findById
-import org.springframework.data.mongodb.core.findOne
-import org.springframework.data.mongodb.core.FindAndModifyOptions
-import org.springframework.data.mongodb.core.findAndModify
-import org.springframework.data.mongodb.core.remove
-import org.springframework.data.mongodb.core.findAll
+import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import rys.ajaxpetproject.model.MongoUser
+import rys.ajaxpetproject.internalapi.mongodb.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
 
 @Repository

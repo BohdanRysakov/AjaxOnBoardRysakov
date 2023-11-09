@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import rys.ajaxpetproject.exceptions.UserAlreadyExistsException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
-import rys.ajaxpetproject.model.MongoUser
+import rys.ajaxpetproject.internalapi.mongodb.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
 import rys.ajaxpetproject.service.UserService
 

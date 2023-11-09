@@ -6,8 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import reactor.core.publisher.Mono
-import rys.ajaxpetproject.exceptions.UserNotFoundException
 import rys.ajaxpetproject.exceptions.ChatNotFoundException
+import rys.ajaxpetproject.exceptions.UserNotFoundException
 
 @RestControllerAdvice
 class GlobalRestExceptionHandler {

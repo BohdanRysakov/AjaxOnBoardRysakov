@@ -2,7 +2,7 @@ package rys.ajaxpetproject.service
 
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import rys.ajaxpetproject.model.MongoUser
+import rys.ajaxpetproject.internalapi.mongodb.model.MongoUser
 
 interface UserService {
     fun createUser(mongoUser: MongoUser): Mono<MongoUser>

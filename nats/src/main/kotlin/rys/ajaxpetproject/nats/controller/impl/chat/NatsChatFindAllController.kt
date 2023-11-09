@@ -12,7 +12,7 @@ import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllRequest
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllResponse
 import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.internalapi.ChatSubjectsV1
-import rys.ajaxpetproject.utils.toProto
+import rys.ajaxpetproject.internalapi.utils.toProto
 
 @Service
 class NatsChatFindAllController(
@@ -36,7 +36,7 @@ class NatsChatFindAllController(
         return ChatFindAllResponse.newBuilder().apply {
             successBuilder.also { success ->
                 chats.map { chat ->
-                    chat.toProto()
+                    rys.ajaxpetproject.internalapi.utils.toProto()
                 }
                     .fold(success) { result: ChatFindAllResponse.Success.Builder, chat ->
                         result.addResult(chat)

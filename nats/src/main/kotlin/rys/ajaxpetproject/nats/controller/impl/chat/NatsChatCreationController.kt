@@ -13,8 +13,8 @@ import rys.ajaxpetproject.nats.controller.NatsController
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateRequest
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateResponse
 import rys.ajaxpetproject.internalapi.ChatSubjectsV1
-import rys.ajaxpetproject.utils.toModel
-import rys.ajaxpetproject.utils.toProto
+import rys.ajaxpetproject.internalapi.utils.toModel
+import rys.ajaxpetproject.internalapi.utils.toProto
 
 @Service
 @Suppress("NestedBlockDepth")
@@ -39,7 +39,7 @@ class NatsChatCreationController(
 
     private fun buildSuccessResponse(chat: MongoChat): ChatCreateResponse {
         return ChatCreateResponse.newBuilder().apply {
-            successBuilder.result = chat.toProto()
+            successBuilder.result = rys.ajaxpetproject.internalapi.utils.toProto()
         }.build()
 
     }

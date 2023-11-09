@@ -40,8 +40,8 @@ import rys.ajaxpetproject.service.ChatService
 import rys.ajaxpetproject.service.impl.ChatServiceImpl
 import rys.ajaxpetproject.service.impl.MessageServiceImpl
 import rys.ajaxpetproject.service.impl.UserServiceImpl
-import rys.ajaxpetproject.utils.toModel
-import rys.ajaxpetproject.utils.toProto
+import rys.ajaxpetproject.internalapi.utils.toModel
+import rys.ajaxpetproject.internalapi.utils.toProto
 import java.time.Duration
 
 
@@ -90,7 +90,7 @@ class NatsControllersIT {
             users = listOf(ObjectId().toString(), ObjectId().toString())
         )
         val request = ChatCreateRequest.newBuilder().apply {
-            this.chat = expectedChat.toProto()
+            this.chat = rys.ajaxpetproject.internalapi.utils.toProto()
         }.build()
 
         whenever(kafkaSenderEvent.sendCreateEvent(any())).thenReturn(Unit.toMono())
@@ -137,7 +137,7 @@ class NatsControllersIT {
 
         val request = ChatCreateRequest.newBuilder()
             .apply {
-                this.chat = unexpectedChat.toProto()
+                this.chat = rys.ajaxpetproject.internalapi.utils.toProto()
             }.build()
 
         //WHEN
@@ -343,7 +343,7 @@ class NatsControllersIT {
         val request = ChatUpdateRequest.newBuilder()
             .apply {
                 this.requestId = idOfChatToUpdate
-                this.chat = chatUpdatedVersion.toProto()
+                this.chat = rys.ajaxpetproject.internalapi.utils.toProto()
             }.build()
 
         //WHEN
@@ -388,7 +388,7 @@ class NatsControllersIT {
         val request = ChatUpdateRequest.newBuilder()
             .apply {
                 this.requestId = idOfChatToUpdate
-                this.chat = chatUpdatedVersion.toProto()
+                this.chat = rys.ajaxpetproject.internalapi.utils.toProto()
             }.build()
 
         //WHEN
