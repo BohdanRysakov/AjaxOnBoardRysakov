@@ -8,7 +8,4 @@ package rys.ajaxpetproject.service.message;
 service MessageService {
   rpc create(request.message.create.proto.MessageCreateRequest)
       returns (request.message.create.proto.MessageCreateResponse);
-
-  rpc subscribe(request.message.subscription.proto.CreateSubscriptionRequest)
-      returns (stream request.message.subscription.proto.CreateSubscriptionResponse);
 }

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
-import rys.ajaxpetproject.exceptions.MessageNotFoundException
+import rys.ajaxpetproject.internalapi.exceptions.MessageNotFoundException
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.repository.MessageRepository
 import rys.ajaxpetproject.service.MessageService

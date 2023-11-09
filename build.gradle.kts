@@ -36,13 +36,14 @@ allprojects {
 }
 
 dependencies {
-    implementation(project(":nats"))
+//    implementation(project(":nats"))
     implementation(project(":core"))
-    implementation(project(":rest"))
+//    implementation(project(":rest"))
     implementation(project(":api"))
-    implementation(project(":kafka"))
+//    implementation(project(":kafka"))
     implementation(project(":gRPC"))
-    implementation(project(":redis"))
+//  //  implementation(project(":redis"))
+    implementation(project(":chat-module"))
     implementation("org.springframework.boot:spring-boot-devtools")
 }
 

@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
-import rys.ajaxpetproject.exceptions.UserAlreadyExistsException
+import rys.ajaxpetproject.internalapi.exceptions.UserAlreadyExistsException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
 import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository

@@ -2,10 +2,14 @@ syntax = "proto3";
 
 import "input/reqreply/chat/create.proto";
 import "input/reqreply/chat/findOne.proto";
+import "input/reqreply/message/eventSubscription.proto";
 
 package rys.ajaxpetproject.service.chat;
 
 service ChatService {
   rpc create(request.chat.create.proto.ChatCreateRequest)
       returns (request.chat.create.proto.ChatCreateResponse);
+
+  rpc subscribe(request.message.subscription.proto.CreateSubscriptionRequest)
+      returns (stream request.message.subscription.proto.CreateSubscriptionResponse);
 }

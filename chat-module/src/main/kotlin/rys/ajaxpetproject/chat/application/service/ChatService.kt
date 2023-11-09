@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.service.impl
+package rys.ajaxpetproject.chat.application.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -6,36 +6,36 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.exceptions.ChatNotFoundException
-import rys.ajaxpetproject.kafka.MessageCreateEventProducer
-import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.ChatRepository
-import rys.ajaxpetproject.service.ChatService
-import rys.ajaxpetproject.service.MessageService
+import rys.ajaxpetproject.chat.application.port.`in`.IChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.`in`.IMessageAddEventInPort
+import rys.ajaxpetproject.chat.application.port.out.IChatServiceOutPort
+import rys.ajaxpetproject.chat.application.port.out.IMessageServiceOutPort
+import rys.ajaxpetproject.chat.domain.entity.Chat
+import rys.ajaxpetproject.chat.domain.entity.Message
+import rys.ajaxpetproject.chat.domain.entity.toProto
+import rys.ajaxpetproject.internalapi.exceptions.ChatNotFoundException
+import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreatedEvent
 import rys.ajaxpetproject.service.UserService
-import rys.ajaxpetproject.utils.createEvent
 
 @Service
-@Suppress("TooManyFunctions")
-class ChatServiceImpl(
-    private val chatRepository: ChatRepository,
+class ChatService(
+    private val chatRepository: IChatServiceOutPort,
+    private val messageService: IMessageServiceOutPort,
     private val userService: UserService,
-    private val messageService: MessageService,
-    private val kafkaEventSender: MessageCreateEventProducer
-) : ChatService {
-    override fun findChatById(id: String): Mono<MongoChat> {
+    private val eventSender: IMessageAddEventInPort
+) : IChatServiceInPort {
+    override fun findChatById(id: String): Mono<Chat> {
         return chatRepository.findChatById(id)
     }
 
-    override fun getChatById(id: String): Mono<MongoChat> {
+    override fun getChatById(id: String): Mono<Chat> {
         return chatRepository.findChatById(id)
             .switchIfEmpty {
                 Mono.error(ChatNotFoundException("Chat with id $id not found"))
             }
     }
 
-    override fun save(chat: MongoChat): Mono<MongoChat> {
+    override fun save(chat: Chat): Mono<Chat> {
         return chatRepository.save(chat.copy(id = null))
     }
 
@@ -43,7 +43,7 @@ class ChatServiceImpl(
         return chatRepository.deleteAll()
     }
 
-    override fun update(id: String, chat: MongoChat): Mono<MongoChat> {
+    override fun update(id: String, chat: Chat): Mono<Chat> {
         return getChatById(id)
             .flatMap { chatRepository.update(id, chat) }
     }
@@ -73,7 +73,7 @@ class ChatServiceImpl(
             .flatMap<Unit> {
                 messageService.getMessageById(messageId)
                     .flatMap {
-                        kafkaEventSender.sendCreateEvent(
+                        eventSender.sendCreateEvent(
                             it.createEvent(chatId)
                         )
                     }
@@ -94,15 +94,15 @@ class ChatServiceImpl(
             .then(chatRepository.delete(id))
     }
 
-    override fun findAll(): Flux<MongoChat> {
+    override fun findAll(): Flux<Chat> {
         return chatRepository.findAll()
     }
 
-    override fun findChatsByUserId(userId: String): Flux<MongoChat> {
+    override fun findChatsByUserId(userId: String): Flux<Chat> {
         return chatRepository.findChatsByUserId(userId)
     }
 
-    override fun getMessagesFromChatByUser(userId: String, chatId: String): Flux<MongoMessage> {
+    override fun getMessagesFromChatByUser(userId: String, chatId: String): Flux<Message> {
         return Mono.`when`(
             userService.getUserById(userId),
             getChatById(chatId)
@@ -112,7 +112,7 @@ class ChatServiceImpl(
             )
     }
 
-    override fun getMessagesInChat(chatId: String): Flux<MongoMessage> {
+    override fun getMessagesInChat(chatId: String): Flux<Message> {
         return getChatById(chatId)
             .thenMany(chatRepository.findMessagesFromChat(chatId))
     }
@@ -131,7 +131,16 @@ class ChatServiceImpl(
             )
     }
 
+    fun Message.createEvent(chatId: String): MessageCreatedEvent {
+        val message = this
+
+        return MessageCreatedEvent.newBuilder().apply {
+            this.chatId = chatId
+            this.message = message.toProto()
+        }.build()
+    }
+
     companion object {
-        val logger = LoggerFactory.getLogger(ChatServiceImpl::class.java)
+        val logger = LoggerFactory.getLogger(ChatService::class.java)
     }
 }

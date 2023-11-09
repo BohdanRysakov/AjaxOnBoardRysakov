@@ -1,13 +1,6 @@
-package rys.ajaxpetproject.repository.impl
+package rys.ajaxpetproject.chat.infractructure.mongo
 
-import org.springframework.data.mongodb.core.FindAndModifyOptions
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.findById
-import org.springframework.data.mongodb.core.findAndModify
-import org.springframework.data.mongodb.core.find
-import org.springframework.data.mongodb.core.remove
-import org.springframework.data.mongodb.core.findOne
-import org.springframework.data.mongodb.core.findAll
+import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -15,24 +8,24 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import rys.ajaxpetproject.chat.application.port.out.IChatServiceOutPort
+import rys.ajaxpetproject.chat.domain.entity.*
 import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.repository.ChatRepository
 import rys.ajaxpetproject.repository.MessageRepository
 
+
 @Repository
-@Suppress("TooManyFunctions")
-class ChatRepositoryImpl(
+class ChatRepository(
     private val mongoTemplate: ReactiveMongoTemplate,
     private val messageRepository: MessageRepository
-) : ChatRepository {
+) : IChatServiceOutPort {
 
-    override fun findChatById(id: String): Mono<MongoChat> {
-        return mongoTemplate.findById<MongoChat>(id)
+    override fun findChatById(id: String): Mono<Chat> {
+        return mongoTemplate.findById<MongoChat>(id).map { it.toDomainChat() }
     }
 
-    override fun save(chat: MongoChat): Mono<MongoChat> {
-        return mongoTemplate.save(chat)
+    override fun save(chat: Chat): Mono<Chat> {
+        return mongoTemplate.save(chat.toMongoChat()).map { it.toDomainChat() }
     }
 
     override fun deleteAll(): Mono<Unit> {
@@ -40,7 +33,7 @@ class ChatRepositoryImpl(
             .thenReturn(Unit)
     }
 
-    override fun update(id: String, chat: MongoChat): Mono<MongoChat> {
+    override fun update(id: String, chat: Chat): Mono<Chat> {
         val query = Query.query(Criteria.where("_id").`is`(id))
         val updateDef = Update()
             .set("name", chat.name)
@@ -51,7 +44,7 @@ class ChatRepositoryImpl(
             query,
             updateDef,
             FindAndModifyOptions.options().returnNew(true)
-        )
+        ).map { it.toDomainChat() }
     }
 
     override fun addUser(userId: String, chatId: String): Mono<Unit> {
@@ -123,29 +116,29 @@ class ChatRepositoryImpl(
             .thenReturn(Unit)
     }
 
-    override fun findAll(): Flux<MongoChat> {
-        return mongoTemplate.findAll<MongoChat>()
+    override fun findAll(): Flux<Chat> {
+        return mongoTemplate.findAll<Chat>()
     }
 
-    override fun findChatsByUserId(userId: String): Flux<MongoChat> {
+    override fun findChatsByUserId(userId: String): Flux<Chat> {
         val query = Query.query(Criteria.where("users").`is`(userId))
-        return mongoTemplate.find<MongoChat>(query)
+        return mongoTemplate.find<MongoChat>(query).map { it.toDomainChat() }
     }
 
-    override fun findMessagesByUserIdAndChatId(userId: String, chatId: String): Flux<MongoMessage> {
+    override fun findMessagesByUserIdAndChatId(userId: String, chatId: String): Flux<Message> {
         val query = Query.query(Criteria.where("_id").`is`(chatId).and("users").`is`(userId))
         return mongoTemplate.findOne<MongoChat>(query)
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
             }
-            .filter { it.userId == userId }
+            .filter { it.userId == userId }.map { it.toDomainMessage() }
     }
 
-    override fun findMessagesFromChat(chatId: String): Flux<MongoMessage> {
+    override fun findMessagesFromChat(chatId: String): Flux<Message> {
         return findChatById(chatId)
             .flatMapMany { chat ->
                 messageRepository.findMessagesByIds(chat.messages)
-            }
+            }.map { it.toDomainMessage() }
     }
 
     override fun deleteMessagesFromChatByUserId(chatId: String, userId: String): Mono<Unit> {

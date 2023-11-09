@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
-import rys.ajaxpetproject.exceptions.UserAlreadyExistsException
+import rys.ajaxpetproject.internalapi.exceptions.UserAlreadyExistsException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
 import rys.ajaxpetproject.model.MongoUser
 import rys.ajaxpetproject.repository.UserRepository
