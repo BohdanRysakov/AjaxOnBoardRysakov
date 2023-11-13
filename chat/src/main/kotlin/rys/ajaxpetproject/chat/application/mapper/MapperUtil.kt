@@ -1,11 +1,12 @@
 package rys.ajaxpetproject.chat.application.mapper
 
 import rys.ajaxpetproject.chat.domain.Message
-import rys.ajaxpetproject.chat.domain.event.MessageAddEvent
+import rys.ajaxpetproject.commonmodels.message.proto.Message as ProtoMessage
+import rys.ajaxpetproject.chat.domain.event.MessageAddedEvent
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.request.message.create.proto.CreateEvent.MessageCreatedEvent
 
-fun MessageAddEvent.toProto(): MessageCreatedEvent {
+fun MessageAddedEvent.toProto(): MessageCreatedEvent {
     val event = this@toProto
     return MessageCreatedEvent.newBuilder().apply {
         this.chatId = event.chatId
@@ -21,9 +22,9 @@ fun Message.toDto(chatId: String): MessageDto {
     }.build()
 }
 
-fun Message.toProto(): rys.ajaxpetproject.commonmodels.message.proto.Message {
+fun Message.toProto(): ProtoMessage {
     val message = this@toProto
-    return rys.ajaxpetproject.commonmodels.message.proto.Message.newBuilder().apply {
+    return ProtoMessage.newBuilder().apply {
         this.userId = message.userId
         this.content = message.content
         this.sentTime =
@@ -31,7 +32,7 @@ fun Message.toProto(): rys.ajaxpetproject.commonmodels.message.proto.Message {
     }.build()
 }
 
-fun Message.createEvent(chatId :String) : MessageAddEvent {
+fun Message.createEvent(chatId: String): MessageAddedEvent {
     val message = this@createEvent
-    return MessageAddEvent(chatId, message)
+    return MessageAddedEvent(chatId, message)
 }

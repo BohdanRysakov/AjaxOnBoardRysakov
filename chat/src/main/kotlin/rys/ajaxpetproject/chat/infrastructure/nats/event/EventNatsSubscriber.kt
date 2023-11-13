@@ -3,7 +3,7 @@ package rys.ajaxpetproject.chat.infrastructure.nats.event
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
-import rys.ajaxpetproject.chat.application.port.out.EventListenerOutPort
+import rys.ajaxpetproject.chat.infrastructure.adapter.EventListener
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.internalapi.MessageEvent
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription
@@ -13,7 +13,7 @@ import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription
 @Suppress("TooGenericExceptionCaught")
 class EventNatsSubscriber(
     natsConnection: Connection,
-) : EventListenerOutPort {
+) : EventListener {
 
     private val messageParser = MessageDto.parser()
 

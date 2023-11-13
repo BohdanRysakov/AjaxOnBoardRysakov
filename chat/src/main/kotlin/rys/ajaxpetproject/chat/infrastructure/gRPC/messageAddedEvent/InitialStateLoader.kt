@@ -1,25 +1,18 @@
-package rys.ajaxpetproject.chat.application.service
+package rys.ajaxpetproject.chat.infrastructure.gRPC.messageAddedEvent
 
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.chat.application.mapper.toDto
 import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
-import rys.ajaxpetproject.chat.application.port.out.EventListenerOutPort
-import rys.ajaxpetproject.chat.application.port.out.MessageAddEventOutPort
+import rys.ajaxpetproject.chat.infrastructure.adapter.InitialStateEventLoader
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription
 
-@Service
-class EventProcessService(
-    private val eventPublisher: EventListenerOutPort,
+@Component
+class InitialStateLoader(
     private val chatService: ChatServiceInPort
-) : MessageAddEventOutPort {
-    override fun publishMessageCreatedEvent(chatId: String):
-            Flux<EventSubscription.CreateSubscriptionResponse> {
-        return eventPublisher.catchMessageCreatedEvent(chatId)
-    }
-
+) : InitialStateEventLoader {
     override fun loadInitialState(chatId: String): Flux<EventSubscription.CreateSubscriptionResponse> {
         return chatService.getMessagesInChat(chatId)
             .flatMap { message ->

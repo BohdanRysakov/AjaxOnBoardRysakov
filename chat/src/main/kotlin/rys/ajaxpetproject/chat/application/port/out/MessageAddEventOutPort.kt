@@ -5,6 +5,4 @@ import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription
 
 interface MessageAddEventOutPort {
     fun publishMessageCreatedEvent(chatId: String) : Flux<EventSubscription.CreateSubscriptionResponse>
-
-    fun loadInitialState(chatId: String): Flux<EventSubscription.CreateSubscriptionResponse>
 }
