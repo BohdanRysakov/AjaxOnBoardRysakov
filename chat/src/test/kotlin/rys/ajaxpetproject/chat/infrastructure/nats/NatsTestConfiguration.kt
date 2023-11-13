@@ -31,7 +31,8 @@ import rys.ajaxpetproject.service.impl.UserServiceImpl
         "rys.ajaxpetproject.chat.application.service",
         "rys.ajaxpetproject.chat.infrastructure.nats.config",
         "rys.ajaxpetproject.chat.infrastructure.nats.config",
-    ])
+    ]
+)
 @ContextConfiguration(
     classes = [
         UserServiceImpl::class,

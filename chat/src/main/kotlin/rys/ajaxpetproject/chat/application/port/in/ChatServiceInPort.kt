@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.domain.Message
 
-@Suppress("TooManyFunctions","InvalidPackageDeclaration")
+@Suppress("TooManyFunctions", "InvalidPackageDeclaration")
 interface ChatServiceInPort {
     fun findChatById(id: String): Mono<Chat>
 

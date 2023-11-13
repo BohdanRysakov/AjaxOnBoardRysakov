@@ -4,5 +4,5 @@ import rys.ajaxpetproject.chat.domain.Message
 
 class MessageAddedEvent(
     val chatId: String,
-    val message : Message
+    val message: Message
 )

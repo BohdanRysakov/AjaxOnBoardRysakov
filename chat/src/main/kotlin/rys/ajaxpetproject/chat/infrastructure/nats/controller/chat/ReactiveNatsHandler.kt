@@ -7,7 +7,7 @@ import reactor.core.scheduler.Schedulers
 
 class ReactiveNatsHandler(
     private val natsChatController: NatsController<*, *>
-    ) : MessageHandler {
+) : MessageHandler {
 
     override fun onMessage(message: Message) {
         natsChatController.reply(message)

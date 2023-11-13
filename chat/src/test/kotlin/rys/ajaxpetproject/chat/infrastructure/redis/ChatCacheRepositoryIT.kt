@@ -21,7 +21,7 @@ import rys.ajaxpetproject.repository.impl.UserRepositoryImpl
 
 
 @DbIntegrationTest
-@Suppress("LongMethod")
+@Suppress("LongMethod", "LargeClass")
 @ActiveProfiles("tests")
 class ChatCacheRepositoryIT {
 

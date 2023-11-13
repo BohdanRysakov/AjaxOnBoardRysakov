@@ -20,7 +20,7 @@ import rys.ajaxpetproject.chat.domain.Message
 @RestController
 @RequestMapping("/chats")
 @Suppress("TooManyFunctions")
-class ChatController(val chatService: ChatServiceInPort){
+class ChatController(val chatService: ChatServiceInPort) {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/")

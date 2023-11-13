@@ -21,7 +21,7 @@ import rys.ajaxpetproject.service.chat.ReactorChatServiceGrpc
 class ChatGrpcService(
     private val chatService: ChatServiceInPort,
     private val messageEventService: MessageAddEventOutPort,
-    private val initialStateEventLoader : InitialStateEventLoader
+    private val initialStateEventLoader: InitialStateEventLoader
 ) : ReactorChatServiceGrpc.ChatServiceImplBase() {
 
     override fun subscribe(request: EventSubscription.CreateSubscriptionRequest):
