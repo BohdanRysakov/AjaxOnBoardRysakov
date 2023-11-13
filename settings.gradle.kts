@@ -1,11 +1,9 @@
 rootProject.name = "AjaxPetProject"
 include(
-//    "rest",
-//    "nats",
+    "rest",
     "core",
     "api",
     "gRPC",
-////    "kafka",
-//    "redis",
-    "chat-module"
+    "redis",
+    "chat"
 )

@@ -1,7 +1,0 @@
-spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27018/testDB
-
-nats:
-  uri: nats://localhost:4444
