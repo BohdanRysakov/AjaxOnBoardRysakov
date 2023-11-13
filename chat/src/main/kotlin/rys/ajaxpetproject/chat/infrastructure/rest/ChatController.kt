@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.DeleteMapping
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.domain.Message
 

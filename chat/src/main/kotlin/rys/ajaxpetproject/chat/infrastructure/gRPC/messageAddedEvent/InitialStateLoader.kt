@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.kotlin.core.publisher.toMono
 import rys.ajaxpetproject.chat.application.mapper.toDto
-import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
 import rys.ajaxpetproject.chat.infrastructure.adapter.InitialStateEventLoader
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription

@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteRequest
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteResponse
 import rys.ajaxpetproject.internalapi.ChatSubjectsV1

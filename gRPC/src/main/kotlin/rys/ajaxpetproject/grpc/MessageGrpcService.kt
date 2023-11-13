@@ -3,7 +3,7 @@ package rys.ajaxpetproject.grpc
 import net.devh.boot.grpc.server.service.GrpcService
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateResponse
 import rys.ajaxpetproject.request.message.create.proto.MessageCreateRequest
 import rys.ajaxpetproject.service.MessageService
@@ -42,9 +42,5 @@ class MessageGrpcService(
                 this.errorBuilder
             }
         }.build()
-    }
-
-    companion object {
-        private val logger = org.slf4j.LoggerFactory.getLogger(MessageGrpcService::class.java)
     }
 }

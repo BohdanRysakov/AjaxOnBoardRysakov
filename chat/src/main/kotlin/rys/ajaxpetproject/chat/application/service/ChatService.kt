@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import rys.ajaxpetproject.chat.application.mapper.createEvent
 import rys.ajaxpetproject.chat.application.mapper.toProto
-import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
 import rys.ajaxpetproject.chat.application.port.out.EventSenderOutPort
 import rys.ajaxpetproject.chat.application.port.out.ChatServiceOutPort
 import rys.ajaxpetproject.chat.application.port.out.MessageServiceOutPort

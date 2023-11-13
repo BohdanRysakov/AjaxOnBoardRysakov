@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.chat.application.port.`in`.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
 import rys.ajaxpetproject.chat.application.port.out.MessageAddEventOutPort
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.infrastructure.adapter.InitialStateEventLoader
