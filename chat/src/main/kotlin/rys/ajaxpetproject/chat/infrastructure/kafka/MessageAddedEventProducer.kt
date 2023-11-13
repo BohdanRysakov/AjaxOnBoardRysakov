@@ -11,7 +11,7 @@ import rys.ajaxpetproject.internalapi.MessageEvent
 import rys.ajaxpetproject.request.message.create.proto.CreateEvent
 
 @Component
-class MessageAddEventProducer(
+class MessageAddedEventProducer(
     private val kafkaSender: KafkaSender<String, CreateEvent.MessageCreatedEvent>
 ) : EventSenderOutPort {
     override fun sendCreateEvent(event: CreateEvent.MessageCreatedEvent): Mono<Unit> {

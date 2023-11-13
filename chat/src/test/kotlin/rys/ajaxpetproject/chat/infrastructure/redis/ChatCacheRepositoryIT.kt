@@ -1,4 +1,4 @@
-package repository
+package rys.ajaxpetproject.chat.infrastructure.redis
 
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions
@@ -7,18 +7,22 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ScanOptions
+import org.springframework.test.context.ActiveProfiles
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.test.test
-import rys.ajaxpetproject.model.MongoChat
-import rys.ajaxpetproject.model.MongoMessage
-import rys.ajaxpetproject.redis.repository.CacheChatRepository
-import rys.ajaxpetproject.redis.repository.CacheMessageRepository
-import rys.ajaxpetproject.repository.impl.UserRepositoryImpl
+import rys.ajaxpetproject.chat.domain.Chat
+import rys.ajaxpetproject.chat.domain.Message
+import rys.ajaxpetproject.chat.infrastructure.config.DbIntegrationTest
 import rys.ajaxpetproject.internalapi.RedisPrefixes.CHAT_CACHE_KEY_PREFIX
 import rys.ajaxpetproject.internalapi.RedisPrefixes.MESSAGE_CACHE_KEY_PREFIX
+import rys.ajaxpetproject.model.MongoMessage
+import rys.ajaxpetproject.redis.repository.CacheMessageRepository
+import rys.ajaxpetproject.repository.impl.UserRepositoryImpl
+
 
 @DbIntegrationTest
 @Suppress("LongMethod")
+@ActiveProfiles("tests")
 class ChatCacheRepositoryIT {
 
     @Autowired
@@ -31,7 +35,7 @@ class ChatCacheRepositoryIT {
     private lateinit var userRepository: UserRepositoryImpl
 
     @Autowired
-    private lateinit var redisOperations: ReactiveRedisTemplate<String, MongoChat>
+    private lateinit var redisOperations: ReactiveRedisTemplate<String, Chat>
 
     @BeforeEach
     fun init() {
@@ -44,7 +48,7 @@ class ChatCacheRepositoryIT {
     @Test
     fun `should return chat and cache him when chat found by id`() {
         //GIVEN
-        val chat = MongoChat(
+        val chat = Chat(
             name = "chat1 - ${System.nanoTime()}",
         )
         val expectedChat = chatCacheRepository.save(chat).block()!!
@@ -75,7 +79,7 @@ class ChatCacheRepositoryIT {
     @Test
     fun `should return chat and cache him when chat saved`() {
         //GIVEN
-        val expectedChatWithoutId = MongoChat(
+        val expectedChatWithoutId = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -124,13 +128,13 @@ class ChatCacheRepositoryIT {
     @Test
     fun `should return unit and clean cache when all chats deleted`() {
         //GIVEN
-        val chat1 = MongoChat(
+        val chat1 = Chat(
             name = "chat1 - ${System.nanoTime()}",
         )
-        val chat2 = MongoChat(
+        val chat2 = Chat(
             name = "chat2",
         )
-        val chat3 = MongoChat(
+        val chat3 = Chat(
             name = "chat3",
         )
 
@@ -171,7 +175,7 @@ class ChatCacheRepositoryIT {
         val expectedUsers = listOf(ObjectId().toString(), ObjectId().toString())
         val expectedMessages = listOf(ObjectId().toString(), ObjectId().toString())
 
-        val oldChat = MongoChat(
+        val oldChat = Chat(
             name = "OLD_NAME - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -179,7 +183,7 @@ class ChatCacheRepositoryIT {
 
         val oldChatId = chatCacheRepository.save(oldChat).block()!!.id!!.toString()
 
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             id = oldChatId,
             name = expectedName,
             users = expectedUsers,
@@ -225,7 +229,7 @@ class ChatCacheRepositoryIT {
         //GIVEN
         val expectedNewUserId = ObjectId().toString()
         val listOfUsers = mutableListOf(ObjectId().toString(), ObjectId().toString())
-        val oldChat = MongoChat(
+        val oldChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOfUsers,
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -234,7 +238,7 @@ class ChatCacheRepositoryIT {
 
         val savedChatId = chatCacheRepository.save(oldChat).block()!!.id!!
 
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             id = savedChatId,
             name = oldChat.name,
             users = listOfUsers,
@@ -277,7 +281,7 @@ class ChatCacheRepositoryIT {
     fun `should remove user from list then return unit and update cache when removeUser invoked`() {
         //GIVEN
         val unexpectedUser = ObjectId().toString()
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString(), unexpectedUser),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -322,7 +326,7 @@ class ChatCacheRepositoryIT {
     fun `should add message to list and return unit and update cache when addMessage is invoked`() {
         //GIVEN
         val expectedNewMessageId = ObjectId().toString()
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -367,7 +371,7 @@ class ChatCacheRepositoryIT {
     fun `should remove message from chat and return unit and update cache when removeMessage is invoked`() {
         //GIVEN
         val unexpectedMessageId = ObjectId().toString()
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString(), unexpectedMessageId),
@@ -411,7 +415,7 @@ class ChatCacheRepositoryIT {
     @Test
     fun `should return unit and clean cache when chat is deleted`() {
         //GIVEN
-        val unexpectedChat = MongoChat(
+        val unexpectedChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -443,17 +447,17 @@ class ChatCacheRepositoryIT {
     @Test
     fun `should return list of all chats when findAll is invoked `() {
         //GIVEN
-        val expectedChat1 = MongoChat(
+        val expectedChat1 = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
-        val expectedChat2 = MongoChat(
+        val expectedChat2 = Chat(
             name = "chat2",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
-        val expectedChat3 = MongoChat(
+        val expectedChat3 = Chat(
             name = "chat3",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -469,7 +473,7 @@ class ChatCacheRepositoryIT {
         chatCacheRepository.findAll()
             .test()
             .expectSubscription()
-            .recordWith { mutableListOf<MongoChat>() }
+            .recordWith { mutableListOf<Chat>() }
             .thenConsumeWhile { true }
             .consumeRecordedWith { actualList ->
                 Assertions.assertIterableEquals(
@@ -484,22 +488,22 @@ class ChatCacheRepositoryIT {
     fun `should return all user's chats when findChatsByUserId is invoked`() {
         //GIVEN
         val expectedUserId = ObjectId().toString()
-        val expectedChat1 = MongoChat(
+        val expectedChat1 = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(expectedUserId, ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
-        val expectedChat2 = MongoChat(
+        val expectedChat2 = Chat(
             name = "chat2 = ${System.nanoTime()}",
             users = listOf(expectedUserId, ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
-        val expectedChat3 = MongoChat(
+        val expectedChat3 = Chat(
             name = "chat3 - ${System.nanoTime()}",
             users = listOf(expectedUserId, ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
         )
-        val unexpectedChat = MongoChat(
+        val unexpectedChat = Chat(
             name = "chat3 - ${System.nanoTime()}",
             users = listOf(ObjectId().toString(), ObjectId().toString()),
             messages = listOf(ObjectId().toString(), ObjectId().toString()),
@@ -515,7 +519,7 @@ class ChatCacheRepositoryIT {
         chatCacheRepository.findChatsByUserId(expectedUserId)
             .test()
             .expectSubscription()
-            .recordWith { mutableListOf<MongoChat>() }
+            .recordWith { mutableListOf<Chat>() }
             .thenConsumeWhile { true }
             .consumeRecordedWith { actualList ->
                 Assertions.assertIterableEquals(
@@ -531,29 +535,30 @@ class ChatCacheRepositoryIT {
         //GIVEN
         val expectedUserId = ObjectId().toString()
 
-        val expectedMessage1 = MongoMessage(
+        val expectedMessage1 = Message(
             content = "message1 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
-        val expectedMessage2 = MongoMessage(
+        val expectedMessage2 = Message(
             content = "message2 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
-        val expectedMessage3 = MongoMessage(
+        val expectedMessage3 = Message(
             content = "message3 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
-        val unexpectedMessage = MongoMessage(
+        val unexpectedMessage = Message(
             content = "message3 - ${System.nanoTime()}",
             userId = ObjectId().toString(),
         )
-        val unexpectedMessageId: String = messageCacheRepository.save(unexpectedMessage).block()!!.id!!
+        val unexpectedMessageId: String = messageCacheRepository.save(unexpectedMessage.toMongoMessage()).block()!!.id!!
 
         val expectedListOfMessages = listOf(
-            messageCacheRepository.save(expectedMessage1).block()!!,
-            messageCacheRepository.save(expectedMessage2).block()!!,
-            messageCacheRepository.save(expectedMessage3).block()!!,
-        )
+            messageCacheRepository.save(expectedMessage1.toMongoMessage()).block()!!,
+            messageCacheRepository.save(expectedMessage2.toMongoMessage()).block()!!,
+            messageCacheRepository.save(expectedMessage3.toMongoMessage()).block()!!,
+        ).map { it.toValueObject() }
+
         val expectedMessagesIds: List<String?> = expectedListOfMessages.map { it.id!! }
 
         val listOfAllMessages: List<String> = listOf(
@@ -563,7 +568,7 @@ class ChatCacheRepositoryIT {
             unexpectedMessageId
         )
 
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(expectedUserId, ObjectId().toString()),
             messages = listOfAllMessages,
@@ -575,7 +580,7 @@ class ChatCacheRepositoryIT {
         chatCacheRepository.findMessagesByUserIdAndChatId(expectedUserId, expectedChatId)
             .test()
             .expectSubscription()
-            .recordWith { mutableListOf<MongoMessage>() }
+            .recordWith { mutableListOf<Message>() }
             .thenConsumeWhile { true }
             .consumeRecordedWith { actualList ->
                 Assertions.assertIterableEquals(
@@ -592,34 +597,34 @@ class ChatCacheRepositoryIT {
 
         val expectedUserId = ObjectId().toString()
 
-        val expectedMessage1 = MongoMessage(
+        val expectedMessage1 = Message(
             content = "message1 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
-        val expectedMessage2 = MongoMessage(
+        val expectedMessage2 = Message(
             content = "message2 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
-        val expectedMessage3 = MongoMessage(
+        val expectedMessage3 = Message(
             content = "message3 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
-        val unexpectedMessage = MongoMessage(
+        val unexpectedMessage = Message(
             content = "message4 - ${System.nanoTime()}",
             userId = expectedUserId,
         )
 
         val expectedListOfMessages = listOf(
-            messageCacheRepository.save(expectedMessage1).block()!!,
-            messageCacheRepository.save(expectedMessage2).block()!!,
-            messageCacheRepository.save(expectedMessage3).block()!!,
-        )
+            messageCacheRepository.save(expectedMessage1.toMongoMessage()).block()!!,
+            messageCacheRepository.save(expectedMessage2.toMongoMessage()).block()!!,
+            messageCacheRepository.save(expectedMessage3.toMongoMessage()).block()!!,
+        ).map { it.toValueObject() }
 
-        messageCacheRepository.save(unexpectedMessage).block()!!.id!!
+        messageCacheRepository.save(unexpectedMessage.toMongoMessage()).block()!!.id!!
 
         val expectedMessagesIds: List<String> = expectedListOfMessages.map { it.id!! }
 
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             id = null,
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(expectedUserId),
@@ -632,7 +637,7 @@ class ChatCacheRepositoryIT {
         chatCacheRepository.findMessagesFromChat(expectedChatId)
             .test()
             .expectSubscription()
-            .recordWith { mutableListOf<MongoMessage>() }
+            .recordWith { mutableListOf<Message>() }
             .thenConsumeWhile { true }
             .consumeRecordedWith { actualList ->
                 Assertions.assertIterableEquals(
@@ -648,31 +653,31 @@ class ChatCacheRepositoryIT {
         //GIVEN
         val userId = ObjectId().toString()
 
-        val unexpectedMessage1 = MongoMessage(
+        val unexpectedMessage1 = Message(
             content = "message1 - ${System.nanoTime()}",
             userId = userId,
         )
-        val unexpectedMessage2 = MongoMessage(
+        val unexpectedMessage2 = Message(
             content = "message2 - ${System.nanoTime()}",
             userId = userId,
         )
-        val unexpectedMessage3 = MongoMessage(
+        val unexpectedMessage3 = Message(
             content = "message3 - ${System.nanoTime()}",
             userId = userId,
         )
-        val expectedInitialMessage = MongoMessage(
+        val expectedInitialMessage = Message(
             content = "message4 - ${System.nanoTime()}",
             userId = ObjectId().toString(),
         )
 
         val unexpectedMessages = listOf(
-            messageCacheRepository.save(unexpectedMessage1).block()!!,
-            messageCacheRepository.save(unexpectedMessage2).block()!!,
-            messageCacheRepository.save(unexpectedMessage3).block()!!,
+            messageCacheRepository.save(unexpectedMessage1.toMongoMessage()).block()!!,
+            messageCacheRepository.save(unexpectedMessage2.toMongoMessage()).block()!!,
+            messageCacheRepository.save(unexpectedMessage3.toMongoMessage()).block()!!,
         )
 
-        val expectedMessage = messageCacheRepository.save(expectedInitialMessage).block()!!
-        val expectedMessageList: List<MongoMessage> = listOf(expectedMessage)
+        val expectedMessage = messageCacheRepository.save(expectedInitialMessage.toMongoMessage()).block()!!
+        val expectedMessageList: List<Message> = listOf(expectedMessage).map { it.toValueObject() }
 
         val unexpectedMessagesIds: List<String> = unexpectedMessages.map { it.id!! }
 
@@ -683,7 +688,7 @@ class ChatCacheRepositoryIT {
             expectedMessage.id!!
         )
 
-        val expectedChat = MongoChat(
+        val expectedChat = Chat(
             name = "chat1 - ${System.nanoTime()}",
             users = listOf(userId, ObjectId().toString()),
             messages = listOfAllMessages,
@@ -702,7 +707,7 @@ class ChatCacheRepositoryIT {
         chatCacheRepository.findMessagesFromChat(expectedChatId)
             .test()
             .expectSubscription()
-            .recordWith { mutableListOf<MongoMessage>() }
+            .recordWith { mutableListOf<Message>() }
             .thenConsumeWhile { true }
             .consumeRecordedWith { actualList ->
                 Assertions.assertIterableEquals(
@@ -732,5 +737,22 @@ class ChatCacheRepositoryIT {
             .test()
             .expectNextCount(0)
             .verifyComplete()
+    }
+
+    fun MongoMessage.toValueObject(): Message {
+        return Message(
+            id = this.id,
+            userId = this.userId,
+            content = this.content,
+            sentAt = this.sentAt
+        )
+    }
+
+    fun Message.toMongoMessage(): MongoMessage {
+        return MongoMessage(
+            id = this.id,
+            userId = this.userId,
+            content = this.content,
+        )
     }
 }

@@ -44,8 +44,7 @@ class MessageServiceKludge(
         return messageService.deleteMessagesByIds(ids)
     }
 
-
-    private fun MongoMessage.toValueObject(): Message {
+    internal fun MongoMessage.toValueObject(): Message {
         return Message(
             id = this.id,
             userId = this.userId,
@@ -54,7 +53,7 @@ class MessageServiceKludge(
         )
     }
 
-    private fun Message.toMongoMessage(): MongoMessage {
+    internal fun Message.toMongoMessage(): MongoMessage {
         return MongoMessage(
             id = this.id,
             userId = this.userId,

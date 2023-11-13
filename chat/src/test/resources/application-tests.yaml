@@ -1,0 +1,15 @@
+nats:
+  uri: nats://localhost:4444
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27018/testDB
+    redis:
+      port: 6479
+  kafka:
+    bootstrap-servers: http://localhost:9092
+    properties:
+      schema.registry.url: http://localhost:8081
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest

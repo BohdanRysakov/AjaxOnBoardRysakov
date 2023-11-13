@@ -10,8 +10,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class NatsConfig {
-    @Value("\${nats.uri}")
-    private lateinit var natsUri: String
+    @Value("\${nats.uri}") private lateinit var natsUri: String
 
     @Bean
     fun connection(): Connection {

@@ -9,7 +9,7 @@ import rys.ajaxpetproject.request.message.create.proto.CreateEvent
 import javax.annotation.PostConstruct
 
 @Component
-class MessageAddEventReceiver(
+class MessageAddedEventReceiver(
     private val eventPublisher: EventNatsPublisher,
     private val kafkaReceiver: KafkaReceiver<String, CreateEvent.MessageCreatedEvent>
 ) {
@@ -28,6 +28,6 @@ class MessageAddEventReceiver(
 
 
     companion object {
-        private val logger = LoggerFactory.getLogger(MessageAddEventReceiver::class.java)
+        private val logger = LoggerFactory.getLogger(MessageAddedEventReceiver::class.java)
     }
 }
