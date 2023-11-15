@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.chat.application.service
+package rys.ajaxpetproject.chat.infrastructure.mongo
 
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -9,7 +9,7 @@ import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.service.MessageService
 
 @Service
-class MessageServiceKludge(
+class MessageService(
     private val messageService: MessageService
 ) : MessageServiceOutPort {
     override fun findMessageById(id: String): Mono<Message> {

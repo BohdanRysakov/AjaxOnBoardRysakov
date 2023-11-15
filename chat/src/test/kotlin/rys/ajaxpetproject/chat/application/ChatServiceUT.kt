@@ -11,7 +11,7 @@ import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
 import rys.ajaxpetproject.chat.application.service.ChatService
-import rys.ajaxpetproject.chat.application.service.MessageServiceKludge
+import rys.ajaxpetproject.chat.infrastructure.mongo.MessageService
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.domain.Message
 import rys.ajaxpetproject.chat.infrastructure.kafka.MessageAddedEventProducer
@@ -32,7 +32,7 @@ class ChatServiceUT {
     private lateinit var userService: UserService
 
     @MockK
-    private lateinit var messageService: MessageServiceKludge
+    private lateinit var messageService: MessageService
 
     @InjectMockKs
     private lateinit var chatService: ChatService

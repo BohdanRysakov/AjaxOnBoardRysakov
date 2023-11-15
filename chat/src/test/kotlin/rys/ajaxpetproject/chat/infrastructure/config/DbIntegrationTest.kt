@@ -5,11 +5,13 @@ import org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoCo
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.test.context.ContextConfiguration
+import rys.ajaxpetproject.service.impl.MessageServiceImpl
 
 @EnableAutoConfiguration
 @SpringBootTest
 @ContextConfiguration(
     classes = [
+        MessageServiceImpl::class,
         MongoRepositoriesAutoConfiguration::class,
         DbIntegrationTest.DbIntegrationTestComponentScan::class,
     ]
