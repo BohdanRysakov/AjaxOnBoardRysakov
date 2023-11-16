@@ -12,7 +12,5 @@ class SecurityConfiguration {
         return BCryptPasswordEncoder()
 
         test tset
-
-            tetsts 2
     }
 }
