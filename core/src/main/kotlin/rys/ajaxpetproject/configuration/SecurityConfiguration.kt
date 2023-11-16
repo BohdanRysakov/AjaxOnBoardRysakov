@@ -15,6 +15,4 @@ class SecurityConfiguration {
 
             tetsts 2
     }
-
-
 }
