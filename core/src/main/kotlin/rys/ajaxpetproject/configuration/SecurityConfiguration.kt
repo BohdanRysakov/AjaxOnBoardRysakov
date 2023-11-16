@@ -7,7 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 commit-2
 @Configuration
 class SecurityConfiguration {
-    @Bean
+    @Bean commit-1-2
     fun getPasswordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
