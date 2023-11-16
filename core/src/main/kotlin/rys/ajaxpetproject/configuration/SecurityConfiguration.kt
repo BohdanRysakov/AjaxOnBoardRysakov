@@ -10,5 +10,7 @@ class SecurityConfiguration {
     @Bean
     fun getPasswordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
+
+        test tset
     }
 }
