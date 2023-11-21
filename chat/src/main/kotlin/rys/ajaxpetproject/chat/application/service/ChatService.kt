@@ -6,15 +6,14 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import rys.ajaxpetproject.chat.application.exceptions.ChatNotFoundException
 import rys.ajaxpetproject.chat.application.mapper.createEvent
-import rys.ajaxpetproject.chat.application.mapper.toProto
-import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
-import rys.ajaxpetproject.chat.application.port.out.EventSenderOutPort
-import rys.ajaxpetproject.chat.application.port.out.ChatServiceOutPort
-import rys.ajaxpetproject.chat.application.port.out.MessageServiceOutPort
+import rys.ajaxpetproject.chat.application.port.input.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.output.EventSenderOutPort
+import rys.ajaxpetproject.chat.application.port.output.ChatServiceOutPort
+import rys.ajaxpetproject.chat.application.port.output.MessageServiceOutPort
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.domain.Message
-import rys.ajaxpetproject.internalapi.exceptions.ChatNotFoundException
 import rys.ajaxpetproject.service.UserService
 
 @Service
@@ -75,7 +74,7 @@ class ChatService(
                 messageService.getMessageById(messageId)
                     .flatMap {
                         eventSender.sendCreateEvent(
-                            it.createEvent(chatId).toProto()
+                            it.createEvent(chatId)
                         )
                     }
             }

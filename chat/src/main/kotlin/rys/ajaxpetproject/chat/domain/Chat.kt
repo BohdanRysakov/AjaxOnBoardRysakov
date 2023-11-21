@@ -1,6 +1,6 @@
 package rys.ajaxpetproject.chat.domain
 
-import java.util.*
+import java.util.Date
 
 data class Chat(
     val id: String? = null,

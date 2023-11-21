@@ -20,11 +20,10 @@ import reactor.kotlin.test.test
 import rys.ajaxpetproject.chat.application.service.ChatService
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.infrastructure.kafka.MessageAddedEventProducer
-import rys.ajaxpetproject.chat.infrastructure.mapper.toDomainModel
-import rys.ajaxpetproject.chat.infrastructure.mapper.toProto
 import rys.ajaxpetproject.chat.infrastructure.mongo.ChatRepository
+import rys.ajaxpetproject.chat.infrastructure.nats.mapper.toDomainModel
+import rys.ajaxpetproject.chat.infrastructure.nats.mapper.toProto
 import rys.ajaxpetproject.internalapi.ChatSubjectsV1
-import rys.ajaxpetproject.internalapi.exceptions.InternalException
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateRequest
 import rys.ajaxpetproject.request.chat.create.proto.ChatCreateResponse
 import rys.ajaxpetproject.request.chat.delete.proto.ChatDeleteRequest
@@ -383,3 +382,5 @@ class NatsControllersIT {
         assert(response.failure.internalError.isInitialized)
     }
 }
+
+class InternalException(message: String?) : RuntimeException(message)

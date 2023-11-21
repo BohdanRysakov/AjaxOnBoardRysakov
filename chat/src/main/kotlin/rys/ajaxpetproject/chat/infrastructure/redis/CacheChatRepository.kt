@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.chat.application.port.out.ChatServiceOutPort
+import rys.ajaxpetproject.chat.application.port.output.ChatServiceOutPort
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.internalapi.RedisPrefixes.CHAT_CACHE_KEY_PREFIX
 import rys.ajaxpetproject.internalapi.RedisPrefixes.MESSAGE_CACHE_KEY_PREFIX

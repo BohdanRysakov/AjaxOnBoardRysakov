@@ -3,7 +3,7 @@ package rys.ajaxpetproject.chat.infrastructure.mongo
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import rys.ajaxpetproject.chat.application.port.out.MessageServiceOutPort
+import rys.ajaxpetproject.chat.application.port.output.MessageServiceOutPort
 import rys.ajaxpetproject.chat.domain.Message
 import rys.ajaxpetproject.model.MongoMessage
 import rys.ajaxpetproject.service.MessageService

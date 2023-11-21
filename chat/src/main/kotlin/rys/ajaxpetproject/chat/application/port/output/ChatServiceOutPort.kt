@@ -1,4 +1,4 @@
-package rys.ajaxpetproject.chat.application.port.out
+package rys.ajaxpetproject.chat.application.port.output
 
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono

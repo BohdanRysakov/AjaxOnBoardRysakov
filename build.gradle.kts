@@ -91,8 +91,6 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("org.springframework.boot:spring-boot-starter-data-redis")
         implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
-//        implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
-
 
         implementation("com.salesforce.servicelibs:reactor-grpc:1.2.4")
         implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.4")

@@ -3,11 +3,11 @@ package rys.ajaxpetproject.chat.infrastructure.nats.event
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
+import rys.ajaxpetproject.chat.domain.event.MessageAddedEvent
 import rys.ajaxpetproject.chat.infrastructure.adapter.EventListener
+import rys.ajaxpetproject.chat.infrastructure.nats.mapper.toDomainMessage
 import rys.ajaxpetproject.commonmodels.message.proto.MessageDto
 import rys.ajaxpetproject.internalapi.MessageEvent
-import rys.ajaxpetproject.request.message.subscription.proto.EventSubscription
-
 
 @Component
 @Suppress("TooGenericExceptionCaught")
@@ -19,8 +19,8 @@ class EventNatsSubscriber(
 
     private val natsDispatcher = natsConnection.createDispatcher()
 
-    override fun catchMessageCreatedEvent(chatId: String):
-            Flux<EventSubscription.CreateSubscriptionResponse> {
+    override fun handleMessageCreatedEvent(chatId: String):
+            Flux<MessageAddedEvent> {
         return Flux.create { sink ->
             val subject = MessageEvent.createMessageCreateNatsSubject(chatId)
 
@@ -44,9 +44,10 @@ class EventNatsSubscriber(
 
 
     private fun buildSuccessResponse(messageDto: MessageDto):
-            EventSubscription.CreateSubscriptionResponse {
-        return EventSubscription.CreateSubscriptionResponse.newBuilder().apply {
-            successBuilder.messageDto = messageDto
-        }.build()
+            MessageAddedEvent {
+        return MessageAddedEvent(
+            chatId = messageDto.chatId,
+            message = messageDto.message.toDomainMessage()
+        )
     }
 }

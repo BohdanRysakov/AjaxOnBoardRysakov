@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import rys.ajaxpetproject.chat.application.port.inn.ChatServiceInPort
+import rys.ajaxpetproject.chat.application.port.input.ChatServiceInPort
 import rys.ajaxpetproject.chat.domain.Chat
-import rys.ajaxpetproject.chat.infrastructure.mapper.toProto
+import rys.ajaxpetproject.chat.infrastructure.nats.mapper.toProto
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllRequest
 import rys.ajaxpetproject.request.findAll.create.proto.ChatFindAllResponse
 import rys.ajaxpetproject.internalapi.ChatSubjectsV1

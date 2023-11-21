@@ -15,12 +15,12 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
-import rys.ajaxpetproject.chat.application.port.out.ChatServiceOutPort
+import rys.ajaxpetproject.chat.application.port.output.ChatServiceOutPort
 import rys.ajaxpetproject.chat.domain.Chat
 import rys.ajaxpetproject.chat.domain.Message
-import rys.ajaxpetproject.chat.infrastructure.mapper.toDomainChat
-import rys.ajaxpetproject.chat.infrastructure.mapper.toDomainMessage
-import rys.ajaxpetproject.chat.infrastructure.mapper.toMongoChat
+import rys.ajaxpetproject.chat.infrastructure.mongo.mapper.toDomainChat
+import rys.ajaxpetproject.chat.infrastructure.mongo.mapper.toDomainMessage
+import rys.ajaxpetproject.chat.infrastructure.mongo.mapper.toMongoChat
 import rys.ajaxpetproject.model.MongoChat
 import rys.ajaxpetproject.repository.MessageRepository
 
