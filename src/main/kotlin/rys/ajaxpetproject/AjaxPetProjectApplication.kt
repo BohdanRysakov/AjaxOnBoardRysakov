@@ -2,7 +2,6 @@ package rys.ajaxpetproject
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import rys.ajaxpetproject.kafka.MessageCreateEventReceiver
 
 @SpringBootApplication
 class AjaxPetProjectApplication
