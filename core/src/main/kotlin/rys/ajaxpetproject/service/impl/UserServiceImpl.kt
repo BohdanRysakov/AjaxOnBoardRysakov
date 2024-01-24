@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.onErrorResume
 import reactor.kotlin.core.publisher.switchIfEmpty
 import rys.ajaxpetproject.exceptions.UserAlreadyExistsException
 import rys.ajaxpetproject.exceptions.UserNotFoundException
@@ -88,3 +89,21 @@ class UserServiceImpl(
         private const val MIN_PASSWORD_LENGTH = 8
     }
 }
+
+fun main() {
+    val x = Mono.error<IllegalStateException> {
+        IllegalStateException("test")
+    }
+    val y = x.onErrorResume {
+        Mono.empty()
+    }
+    val z = y.thenReturn("THEN RETURN")
+
+    z.map {
+        System.out.println("test")
+    }
+        .subscribe {
+            System.out.println("sub")
+        }
+}
+
