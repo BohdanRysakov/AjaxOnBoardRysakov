@@ -324,6 +324,7 @@ class NatsControllersIT {
         assert(response.failure.internalError.isInitialized)
     }
 
+ 
     @Test
     fun `Nats chat update success scenario`() {
         val chatToUpdate = MongoChat(
